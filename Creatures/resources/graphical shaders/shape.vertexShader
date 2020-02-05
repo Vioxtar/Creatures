@@ -1,0 +1,47 @@
+#version 460 core
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec2 aNrm;
+
+
+layout (std430, binding = 0) buffer CreatureColors
+{
+	float colrs[];
+};
+
+layout (std430, binding = 1) buffer CreaturePositions
+{
+	vec2 poses[];
+};
+
+layout (std430, binding = 2) buffer CreatureRadii
+{
+	float radii[];
+};
+
+layout (std430, binding = 3) buffer CreatureLives
+{
+	float lives[];
+};
+
+
+out vec4 oVertexColor;
+uniform mat4 uTransform;
+
+void main()
+{
+	vec2 pos = poses[gl_InstanceID];
+	float rad = radii[gl_InstanceID];
+	float life = lives[gl_InstanceID];
+
+	float finalRad = rad * (2.0 - life) / 2.0;
+	float strokeSize = life * rad / 2.0;
+	
+	vec2 absolute = pos + (aPos.xy * finalRad + aNrm.xy * strokeSize);
+	vec4 transformed = uTransform * vec4(absolute.xy, 0.0, 1.0);
+	gl_Position = transformed;
+
+	// Vec3's are not supported by the std430 format, so we have to do this:
+	uint colIndex = gl_InstanceID * 3;
+	vec3 col = vec3(colrs[colIndex], colrs[colIndex + 1], colrs[colIndex + 2]);
+	oVertexColor = vec4(col.xyz, 1.0);
+}

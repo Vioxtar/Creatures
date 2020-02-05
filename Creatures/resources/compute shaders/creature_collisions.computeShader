@@ -1,0 +1,120 @@
+#version 460 core
+
+layout (std430, binding = 0) buffer CreaturePositions
+{
+	vec2 poses[];
+};
+
+layout (std430, binding = 1) buffer CreatureVelocities
+{
+	vec2 velos[];
+};
+
+layout (std430, binding = 2) buffer CreatureRadii
+{
+	float radii[];
+};
+
+layout (std430, binding = 3) buffer UniformGrid
+{
+	uint ugrid[];
+};
+
+layout (std430, binding = 4) buffer CreatureTiles
+{
+	uint tiles[];
+};
+
+layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
+
+
+uniform uvec2 uGridDimensions;
+uniform uint uGridTileBufferSize;
+
+
+void main()
+{
+	uint gid = gl_GlobalInvocationID.x;
+
+	uint gridXDim = uGridDimensions.x;
+	uint gridYDim = uGridDimensions.y;	
+
+	// Find our own tile
+	uint tileIndex = tiles[gid];
+
+	// Find its x,y tile indices
+	uint xTileIndex = uint(mod(tileIndex, gridXDim));
+	uint yTileIndex = (tileIndex - xTileIndex) / gridXDim;
+
+	// Find the start/end x,y indices (consider uGridDimensions in case we're near edges)
+	uint xStart = max(xTileIndex - 1, 0);
+	uint xEnd = min(xTileIndex + 1, gridXDim);
+	uint yStart = max(yTileIndex -1, 0);
+	uint yEnd = min(yTileIndex + 1, gridYDim);
+
+
+	// Iterate on the uniform grid throughout start/end x,y indices
+	for (uint x = xStart; x <= xEnd; x++)
+	{
+		for (uint y = yStart; y <= yEnd; y++)
+		{
+			// Find the 1D tile again
+			uint tile = x + gridXDim * y;
+			uint tileCountIndex = tile * uGridTileBufferSize;
+			uint creaturesInTile = ugrid[tileCountIndex];
+			uint lastPopulatedIndex = tileCountIndex + creaturesInTile;
+			for (uint b = tileCountIndex + 1; b <= lastPopulatedIndex; b++)
+			{
+				uint bGID = ugrid[b];
+				
+				// Only the creature with the lesser GID performs the calculations
+				if (bGID <= gid)
+				{
+					continue;
+				}
+
+				vec2 aPos = poses[gid];
+				float aRad = radii[gid];
+				
+				vec2 bPos = poses[bGID];
+				float bRad = radii[bGID];
+
+				vec2 c1c2PosDiff = bPos - aPos;
+				float distSquared = dot(c1c2PosDiff, c1c2PosDiff);
+
+				if (distSquared <= 0)
+				{
+					continue;
+				}
+
+				float radiiSum = aRad + bRad;
+				if (distSquared < radiiSum * radiiSum)
+				{
+					float dist = sqrt(distSquared);
+
+					float violation = radiiSum - dist;
+					float push = violation / radiiSum;
+					float m1 = 1;
+					float m2 = 1;
+					float m1Frac = m1 / (m1 + m2);
+					float m2Frac = m2 / (m1 + m2);
+
+					vec2 c1PosSub = -c1c2PosDiff;
+					vec2 c2PosSub = c1c2PosDiff;
+
+					c1PosSub = c1PosSub * push;
+					c2PosSub = c2PosSub * push;
+
+					c1PosSub = c1PosSub * m2Frac;
+					c2PosSub = c2PosSub * m1Frac;
+
+					poses[gid] += c1PosSub;
+					poses[bGID] += c2PosSub;
+
+					velos[gid] += c1PosSub;
+					velos[bGID] += c2PosSub;
+				}
+			}
+		}
+	}
+}

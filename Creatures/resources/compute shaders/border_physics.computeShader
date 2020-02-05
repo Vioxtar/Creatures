@@ -1,0 +1,61 @@
+#version 460 core
+
+layout (std430, binding = 0) buffer CreaturePositions
+{
+	vec2 poses[];
+};
+
+layout (std430, binding = 1) buffer CreatureVelocities
+{
+	vec2 velos[];
+};
+
+layout (std430, binding = 2) buffer CreatureRadii
+{
+	float radii[];
+};
+
+layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
+
+
+uniform vec2 uSimDimensions;
+
+
+void main()
+{
+	uint gid = gl_GlobalInvocationID.x;
+
+	float violation;
+	vec2 pos = poses[gid];
+	float rad = radii[gid];
+
+
+	float rightBorder = uSimDimensions.x / 2.0;
+	float leftBorder = -rightBorder;
+	float upBorder = uSimDimensions.y / 2.0;
+	float downBorder = -upBorder;
+	vec2 fix = vec2(0, 0);
+
+	// Right border
+	violation = max(0, pos.x + rad - rightBorder);
+	fix.x -= violation;
+	fix.x -= violation;
+	
+	// Left border
+	violation = min(0, pos.x - rad - leftBorder);
+	fix.x -= violation;
+	fix.x -= violation;
+
+	// Up border
+	violation = max(0, pos.y + rad - upBorder);
+	fix.y -= violation;
+	fix.y -= violation;
+	
+	// Down border
+	violation = min(0, pos.y - rad - downBorder);
+	fix.y -= violation;
+	fix.y -= violation;
+
+	poses[gid] += fix;
+	velos[gid] += fix;
+}
