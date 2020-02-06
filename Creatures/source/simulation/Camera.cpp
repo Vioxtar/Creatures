@@ -1,16 +1,13 @@
 #include "Camera.h"
 
-const float cameraBuffer = 1;
-
-
 // Camera zoom cached settings
 float maxZoomOut;
 float cameraZoomTargetWeight;
 float cameraZoomWeight;
 
 // Camera zoom controls
-float cameraZoom = 0.0;
-float cameraZoomTarget = 1.0;
+float cameraZoom;
+float cameraZoomTarget;
 
 
 // Camera movement cached settings
@@ -56,6 +53,9 @@ void Camera_Init()
 	float zoomInterpolationSpeed = SIM_SETTINGS.CAMERA_ZOOM_INTERPOLATION_SPEED;
 	cameraZoomTargetWeight = zoomInterpolationSpeed;
 	cameraZoomWeight = 1.0f - zoomInterpolationSpeed;
+
+	cameraZoom = SIM_SETTINGS.CAMERA_START_ZOOM;
+	cameraZoomTarget = cameraZoom * 0.5;
 }
 
 void Camera_Update()

@@ -25,6 +25,11 @@ layout (std430, binding = 4) buffer CreatureTiles
 	uint tiles[];
 };
 
+layout (std430, binding = 5) buffer CreatureGeneralPurpose
+{
+	vec2 physicsFix[];
+};
+
 layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 
 
@@ -58,7 +63,10 @@ void main()
 	uint yStart = max(yTileIndex - 1, 0);
 	uint yEnd = min(yTileIndex + 1, gridYDim - 1);
 
-	   
+	// Cache our own values, we don't need to access them every iteration
+	vec2 aPos = poses[gid];
+	float aRad = radii[gid];
+
 	// Iterate on the uniform grid throughout start/end x,y indices
 	for (uint x = xStart; x <= xEnd; x++)
 	{
@@ -86,9 +94,6 @@ void main()
 					continue;
 				}
 
-				vec2 aPos = poses[gid];
-				float aRad = radii[gid];
-				
 				vec2 bPos = poses[bGID];
 				float bRad = radii[bGID];
 
@@ -120,14 +125,13 @@ void main()
 
 					c1PosSub = c1PosSub * m2Frac;
 					c2PosSub = c2PosSub * m1Frac;
-
-					poses[gid] += c1PosSub;
-					poses[bGID] += c2PosSub;
-
-					velos[gid] += c1PosSub;
-					velos[bGID] += c2PosSub;
+				
+					// Register the fix
+					physicsFix[gid] += c1PosSub;
+					physicsFix[bGID] += c2PosSub;
 				}
 			}
 		}
 	}
+
 }
