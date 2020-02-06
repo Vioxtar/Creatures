@@ -36,8 +36,8 @@ int main()
 #endif
 
 	// Starting width and height parameters
-	const int startingWidth = 500;
-	const int startingHeight = 500;
+	const int startingWidth = 800;
+	const int startingHeight = 800;
 
 	// Create window object
 	GLFWwindow* window = glfwCreateWindow(startingWidth, startingHeight, "Creatures", NULL, NULL);
@@ -81,6 +81,10 @@ int main()
 	SimulationSettings_Init();
 	Simulation_Init();
 	Camera_Init();
+
+	// Try and disable microstutters with V-Sync off
+	glfwSwapInterval(0);
+
 
 
 	// @DEBUG

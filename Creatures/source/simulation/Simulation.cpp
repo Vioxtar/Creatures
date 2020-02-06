@@ -368,10 +368,10 @@ GLuint ugrid_GridXDim;
 GLuint ugrid_GridYDim;
 GLfloat ugrid_SimWidth;
 GLfloat ugrid_SimHeight;
-GLuint ugrid_TileBufferSize;
+GLuint ugrid_IndicesInTile;
 
-const uint creaturesSqueezableInTileScaler = 5;
-
+const uint creaturesSqueezableInTileScaler = 3;
+const float uniformGridSimulationDimensionBuffer = 1.0;
 void BuildUniformGrid()
 {
 	// Start by checking whether or not we need to rebuild the grid
@@ -393,16 +393,19 @@ void BuildUniformGrid()
 
 	// Things changed, we need to rebuild the uniform grid and update a bunch of values
 
-	ugrid_GridXDim = ceil(newSimulationWidth / newInteractDist);
-	ugrid_GridYDim = ceil(newSimulationHeight / newInteractDist);
+	// A small buffer around our simulation width/height ensures that creatures never over-step our uniform grid space
+	// as long as they remain within the actual simulation space
+	ugrid_SimWidth = newSimulationWidth + uniformGridSimulationDimensionBuffer;
+	ugrid_SimHeight = newSimulationHeight + uniformGridSimulationDimensionBuffer;
 
-	ugrid_SimWidth = newSimulationWidth;
-	ugrid_SimHeight = newSimulationHeight;
+	ugrid_GridXDim = (GLuint)std::max(1, (int)floor(ugrid_SimWidth / newInteractDist));
+	ugrid_GridYDim = (GLuint)std::max(1, (int)floor(ugrid_SimHeight / newInteractDist));
 
 	uint maxNumOfCreaturesSqueezableInTile = ceil(pow(newInteractDist, 2) / (M_PI * (pow(newMinCreatureRadius, 2))));
 	maxNumOfCreaturesSqueezableInTile *= creaturesSqueezableInTileScaler;
-	ugrid_TileBufferSize = maxNumOfCreaturesSqueezableInTile + 1;
-	GLuint newSSBOSize = ugrid_GridXDim * ugrid_GridYDim * ugrid_TileBufferSize;
+	ugrid_IndicesInTile = maxNumOfCreaturesSqueezableInTile + 1; // We also have our creature counter at the first index!
+	uint tileBufferSize = ugrid_IndicesInTile * sizeof(GLuint);
+	GLuint newSSBOSize = ugrid_GridXDim * ugrid_GridYDim * tileBufferSize;
 
 	// Delete the old buffer
 	GLuint buffersToDelete = { ugrid_SSBO };
@@ -412,6 +415,7 @@ void BuildUniformGrid()
 	glGenBuffers(1, &ugrid_SSBO);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ugrid_SSBO);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, newSSBOSize, NULL, ssbo_usage);
+
 
 	// Finally, update our values again
 	ugrid_LastMaxCreatureRadius = newMaxCreatureRadius;
@@ -503,15 +507,12 @@ void Simulation_Init()
 		CreatureData data;
 		data.col = vec3(random(), random(), random());
 		data.pos = vec2(0, 0);
-		data.vel = vec2((random() - 0.5) * 2, (random() - 0.5) * 2);
+		data.vel = vec2((random() - 0.5) * 2 * 0.1, (random() - 0.5) * 2 * 0.1);
 		data.rad = SIM_SETTINGS.MIN_CREATURE_RADIUS.value;
 		data.life = random() * 0.8 + 0.1;
 		data.tile = -1;
 		AddCreature(data);
 	}
-
-	SimulationSettings_SetFloat((SIM_SETTINGS.SIMULATION_WIDTH), 50.0);
-	SimulationSettings_SetFloat((SIM_SETTINGS.SIMULATION_WIDTH), 100.0);
 
 }
 
@@ -521,6 +522,7 @@ void Simulation_Init()
 
 void Simulation_Logic()
 {
+
 	/* @TODO:
 	The number of work groups that can be dispatched in a single dispatch call is defined
 	by GL_MAX_COMPUTE_WORK_GROUP_COUNT. This must be queried with glGetIntegeri_v.
@@ -537,34 +539,11 @@ void Simulation_Logic()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos);
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
-	// Uniform grid bind
-	program = uniformGridBindProgram;
-	glUseProgram(program);
-	SetUniformVector2f(program, "uSimDimensions", vec2(ugrid_SimWidth, ugrid_SimHeight));
-	SetUniformVector2ui(program, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
-	SetUniformUInteger(program, "uGridTileBufferSize", ugrid_TileBufferSize);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ugrid_SSBO);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_tiles);
-	glDispatchCompute(numOfWorkGroups, 1, 1);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
-	// Physics
-	program = creatureCollisionsProgram;
-	glUseProgram(program);
-	SetUniformVector2ui(program, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
-	SetUniformUInteger(program, "uGridTileBufferSize", ugrid_TileBufferSize);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ugrid_SSBO);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_tiles);
-	glDispatchCompute(numOfWorkGroups, 1, 1);
 
-	// Sensors
-
-
-	// Border physics
+	// Border physics (before uniform bind so we don't step out of bounds!)
 	program = borderPhysicsProgram;
 	glUseProgram(program);
 	SetUniformVector2f(program, "uSimDimensions", vec2(SIM_SETTINGS.SIMULATION_WIDTH.value, SIM_SETTINGS.SIMULATION_HEIGHT.value));
@@ -573,14 +552,51 @@ void Simulation_Logic()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii);
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+
+	// Uniform grid bind
+	program = uniformGridBindProgram;
+	glUseProgram(program);
+	SetUniformVector2f(program, "uSimDimensions", vec2(ugrid_SimWidth, ugrid_SimHeight));
+	SetUniformVector2ui(program, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
+	SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ugrid_SSBO);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_tiles);
+	glDispatchCompute(numOfWorkGroups, 1, 1);
+
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+
+	// Physics
+	program = creatureCollisionsProgram;
+	glUseProgram(program);
+	SetUniformVector2ui(program, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
+	SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ugrid_SSBO);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_tiles);
+	glDispatchCompute(numOfWorkGroups, 1, 1);
+
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+
+	// Sensors
+
 	
 	// Uniform grid unbind
 	program = uniformGridUnBindProgram;
 	glUseProgram(program);
-	SetUniformUInteger(program, "uGridTileBufferSize", ugrid_TileBufferSize);
+	SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ugrid_SSBO);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_tiles);
 	glDispatchCompute(numOfWorkGroups, 1, 1);
+
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
 }
 
 void Simulation_Render()
@@ -593,6 +609,7 @@ void Simulation_Render()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_lives);
 
 	InstancedDrawCall(circleDrawCallData, creature_count);
+
 }
 
 void Simulation_Update()

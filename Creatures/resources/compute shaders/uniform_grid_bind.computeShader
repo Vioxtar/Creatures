@@ -16,12 +16,13 @@ layout (std430, binding = 2) buffer CreatureTiles
 };
 
 
+
 layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 
 
 uniform vec2 uSimDimensions;
 uniform uvec2 uGridDimensions;
-uniform uint uGridTileBufferSize;
+uniform uint uIndicesInTile;
 
 void main()
 {
@@ -36,7 +37,7 @@ void main()
 
 	// The first index is always the number of creatures already in the tile,
 	// hence the true capacity is the tile buffer size - 1
-	uint tileCreatureCapacity = uGridTileBufferSize - 1;
+	uint tileCreatureCapacity = uIndicesInTile - 1;
 	
 	// Find our tile index
 	vec2 pos = poses[gid];
@@ -46,17 +47,28 @@ void main()
 
 	uint xTileIndex = uint(floor(remappedXPos * gridXDim / simWidth));
 	uint yTileIndex = uint(floor(remappedYPos * gridYDim / simHeight));
-	
+
 	uint tileIndex = xTileIndex + gridXDim * yTileIndex;
 
 	// Find if we have room inside the tile
-	uint tileCreaturesCountIndex = tileIndex * uGridTileBufferSize;
+	uint tileCreaturesCountIndex = tileIndex * uIndicesInTile;
 	uint numOfCreaturesAlreadyAssigned = atomicAdd(ugrid[tileCreaturesCountIndex], 1);
+
 	if (numOfCreaturesAlreadyAssigned < tileCreatureCapacity)
 	{
+
 		// We have enough room, register
 		uint placementIndex = tileCreaturesCountIndex + numOfCreaturesAlreadyAssigned + 1;
 		ugrid[placementIndex] = gid;
-		tiles[gid] = tileIndex;
+	
+	} else {
+
+		// The tile is already full (creatures assigned >= tileCreatureCapacity), lower the counter again, we didn't enter
+		atomicAdd(ugrid[tileCreaturesCountIndex], -1);
+
 	}
+
+	// Regardless, store the tile to index so that we can unbind all tiles afterwards
+	tiles[gid] = tileIndex;		
+
 }

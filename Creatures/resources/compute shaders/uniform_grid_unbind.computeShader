@@ -13,15 +13,21 @@ layout (std430, binding = 1) buffer CreatureTiles
 
 layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 
-uniform uint uGridTileBufferSize;
+
+uniform uint uIndicesInTile;
 
 void main()
 {
+
 	uint gid = gl_GlobalInvocationID.x;
 
+	// Get the index of the tile we were mapped to
 	uint tileIndex = tiles[gid];
-	tiles[gid] = -1;
 
-	uint tileCreaturesCountIndex = tileIndex * uGridTileBufferSize;
+	// Forget our last tile (disabled, we may not even need this...)
+	//tiles[gid] = -1;
+
+	// Reset the creature counter of the tile
+	uint tileCreaturesCountIndex = tileIndex * uIndicesInTile;
 	ugrid[tileCreaturesCountIndex] = 0;
 }

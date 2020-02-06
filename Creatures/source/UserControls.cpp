@@ -73,7 +73,9 @@ void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int 
 	if (button == GLFW_MOUSE_BUTTON_RIGHT)
 	{
 		vec2 simPos = ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
-		cout << "X"
+		cout << "MOUSE POS:" << endl;
+		cout << "X: " << simPos.x << "  Y: " << simPos.y << endl;
+
 	}
 }
 

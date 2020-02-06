@@ -29,7 +29,7 @@ layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 
 
 uniform uvec2 uGridDimensions;
-uniform uint uGridTileBufferSize;
+uniform uint uIndicesInTile;
 
 
 void main()
@@ -42,17 +42,23 @@ void main()
 	// Find our own tile
 	uint tileIndex = tiles[gid];
 
+	if (tileIndex == -1)
+	{
+		// We weren't included in the tile because it ran out of space
+		return;
+	}
+
 	// Find its x,y tile indices
 	uint xTileIndex = uint(mod(tileIndex, gridXDim));
 	uint yTileIndex = (tileIndex - xTileIndex) / gridXDim;
 
 	// Find the start/end x,y indices (consider uGridDimensions in case we're near edges)
 	uint xStart = max(xTileIndex - 1, 0);
-	uint xEnd = min(xTileIndex + 1, gridXDim);
-	uint yStart = max(yTileIndex -1, 0);
-	uint yEnd = min(yTileIndex + 1, gridYDim);
+	uint xEnd = min(xTileIndex + 1, gridXDim - 1);
+	uint yStart = max(yTileIndex - 1, 0);
+	uint yEnd = min(yTileIndex + 1, gridYDim - 1);
 
-
+	   
 	// Iterate on the uniform grid throughout start/end x,y indices
 	for (uint x = xStart; x <= xEnd; x++)
 	{
@@ -60,9 +66,16 @@ void main()
 		{
 			// Find the 1D tile again
 			uint tile = x + gridXDim * y;
-			uint tileCountIndex = tile * uGridTileBufferSize;
+			uint tileCountIndex = tile * uIndicesInTile;
+			
+			// It's ensured that creaturesInTile will not be above creature capacity since we don't
+			// increase the creature counter of our tile if we don't enter it.
+			// It's also probably still best to double check this here. Otherwise lastPopulatedIndex
+			// will overstep its boundary and cause a memory miss, which is terrible for performance!
 			uint creaturesInTile = ugrid[tileCountIndex];
+
 			uint lastPopulatedIndex = tileCountIndex + creaturesInTile;
+				
 			for (uint b = tileCountIndex + 1; b <= lastPopulatedIndex; b++)
 			{
 				uint bGID = ugrid[b];
