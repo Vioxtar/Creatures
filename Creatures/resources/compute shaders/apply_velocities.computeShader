@@ -26,6 +26,6 @@ void main()
 	velos[gid] += physFix;
 	poses[gid] += physFix;
 	physicsFix[gid] = vec2(0, 0);
-	
+
 	poses[gid] += velos[gid];
 }

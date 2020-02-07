@@ -1,38 +1,5 @@
 #include "Simulation.h"
 
-/*
-I wana be able to:
-	remove creature (index)
-	index = add creature()
-
-	For new spawns:
-		setPos(index)
-		setVel(index)
-		set ... (index)
-
-In case the GPU can't provide me with information about creatures that died or newborns, I need to be able to:
-	QueryCreatureHealths(vectorToFill) and remove creatures with <0 health
-	QueryCreaturePregnants(vectorToFill) and add creatures appropriately
-
-
-So i need to use glMapBufferRange or memcpy or some shit like that to implement:
-	1. efficient swap remove last (buffer, attributeBytesSize, index), which nullifies all data from creature_count_comp to max_creature_count_comp
-	2. increase or decrease(?) buffer size with reallocation if we need to, use glCopyBufferSubData to copy old buffer to new buffer after glBufferData(newsize, null)
-
-
-Things I still need to figure out:
-	1. How to get information from the GPU to tell the CPU when to handle creatures that died/new births?
-	2. When I allocate my buffers, can I safely pass NULL data and then only use the left-most-portion of the buffer as if it was the exact size?
-
-		[float, float, float, float, float, float, float, float, null, null, null, null, null, null, null]
-														  ^creature_count_comp                            ^max_supported_creature_count_comp
-
-	3. How do I then integrate my SSBOs into the graphical drawing stage to draw the instances? How can I implement the logic of whether or not I want to draw spikes or shields? Should I use alpha?
-	4. Why do I need to bind my SSBOs to GL_VERTEX_ARRAYS like AbbRima suggested to provide layout, when I can already glBindBufferBase my current ssbos and get the layout there?
-
-*/
-
-
 ///////////////////
 // -- STRUCTS -- //
 ///////////////////
@@ -286,77 +253,7 @@ void RemoveCreature(GLuint creatureIndex)
 // -- UNIFORM GRID -- //
 ////////////////////////
 
-	/*
-	Assuming:
-		1. Creature sense radius is measured from center of creature
-		2. Creature max body radius < creature max sense radius
-		3. Creature c1 can sense creature c2 if dist(c1, c2) - c2.radius < c1.senseRadius
-
-	We may safely define the max creature interaction distance threshold as:
-
-		InteractDist: MaxCreatureRadius + MaxCreatureSenseRadius
-
-	... beyond which creatures do not "know" (sense or collide) each other.
-
-	We build a uniform grid made out of square tiles with dimensions InteractDist x InteractDist, correspond
-	creatures to their relevant tile, and then iterate said tile and its neighbourhood, hence the dimensions of each interaction 'bubble' is:
-
-		BufferedTileDim = 3 * InteractDist x 3 * InteractDist
-
-	The uniform grid will cover the entire simulation space.
-
-	Inside every tile of the uniform grid is a creature index buffer with the size MaxTileCreatureCapacity, where:
-
-		MaxTileCreatureCapacity >= the maximum number of creatures, with the minimal radii, that can be squeezed into
-								   a InteractDist x InteractDist square.
-
-		To satisfy this property, assuming creatures are 'hard' (do not allow prolonged penetrative collisions) we must make sure that:
-			
-			MaxTileCreatureCapacity >= InteractDist^2 / (pi * MinRadius^2)
-
-	In the uniform grid binding phase, each creature will associate itself to a single tile by:
-		1. Writing its own index into the tile creature indices buffer
-		2. Storing the tile it was mapped to in a specialized SSBO whose size is 2 * sizeof(int) * creature_count, where
-		   two numbers are stored:
-			a. the 1D tile index
-			b. the offset within the tile buffer
-
-	In the usage phase, for every creature that is inside tile t and its neighbourhood, we perform a naive physics / sensory solution for all
-	other creatures inside t, and the 8 (or less, in the case of simulation edge tiles) neighbouring tiles. To avoid duplicate
-	calculations, we avoid (continue) entering solution if our creature index is bigger than the other (in which case the other
-	will take care of us).
-
-	In the uniform grid unbind phase, every creature will reset:
-		1. The uniform grid SSBO's tile (by checking its specialized uniform grid map attributes)
-		2. The map attributes(?)
-
-		------------
-
-	Thus we are to rebuild the uniform grid SSBO every time the following values are changed:
-		1. InteractDist (check if it changed whenever MaxCreatureRadius and MaxCreatureSenseRadius change) (to change tile dimensions)
-		2. MinCreatureRadius (to change MaxTileCreatureCapacity)
-		3. Simulation Height / Width dimensions (to change the number of tiles)
-
-	The number of tiles to be spread across the simulation space is: GridXDim x GridYDim, where:
-		GridXDim = ceiling(SimulationWidth / InteractDist)
-		GridYDim = ceiling(SimulationHeight / InteractDist)
-
-	We can 1D-ify the 2D uniform grid:
-		1DTileIndex = xTileIndex + GridXDim * yTileIndex
-
-	As a creature, we would like to find our 'intile' xTileIndex and yTileIndex:
-
-		xTileIndex = floor((remapped pos.x) * GridXDim / SimWidth)
-		yTileIndex = floor((remapped pos.y) * GridYDim / SimHeight)
-
-		Where we remap pos.x from (-SimWidth / 2, SimWidth / 2) to (0, SimWidth)
-					   pos.y from (-SimHeght / 2, SimHeght / 2) to (0, SimHeght)
-
-		For example:
-			Remmaped pos.x = pos.x + simWidth / 2
-	*/
-
-// Stores the creature indices per tiles
+// The uniform grid buffer: stores the creature indices per tiles
 GLuint ugrid_SSBO;
 
 // Used to find out when we need to rebuild the uniform grid
@@ -460,23 +357,24 @@ void Simulation_Init()
 	// Initialize logic programs
 	GLenum applyVelocitiesShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* applyVelocitiesShaderPaths[] = { "resources/compute shaders/apply_velocities.computeShader" };
-	applyVelocitiesProgram = CreateLinkedShaderProgram(1, applyVelocitiesShaderTypes, applyVelocitiesShaderPaths);
+	applyVelocitiesProgram = CreateLinkedShaderProgram(1, applyVelocitiesShaderTypes, applyVelocitiesShaderPaths, NULL);
 
 	GLenum borderPhysicsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* borderPhysicsShaderPaths[] = { "resources/compute shaders/border_physics.computeShader" };
-	borderPhysicsProgram = CreateLinkedShaderProgram(1, borderPhysicsShaderTypes, borderPhysicsShaderPaths);
+	borderPhysicsProgram = CreateLinkedShaderProgram(1, borderPhysicsShaderTypes, borderPhysicsShaderPaths, NULL);
 
 	GLenum uniformGridBindShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* uniformGridBindShaderPaths[] = { "resources/compute shaders/uniform_grid_bind.computeShader" };
-	uniformGridBindProgram = CreateLinkedShaderProgram(1, uniformGridBindShaderTypes, uniformGridBindShaderPaths);
+	uniformGridBindProgram = CreateLinkedShaderProgram(1, uniformGridBindShaderTypes, uniformGridBindShaderPaths, NULL);
 	
 	GLenum uniformGridUnBindShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* uniformGridUnBindShaderPaths[] = { "resources/compute shaders/uniform_grid_unbind.computeShader" };
-	uniformGridUnBindProgram = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths);
+	uniformGridUnBindProgram = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths, NULL);
 
 	GLenum creatureCollisionsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* creatureCollisionsShaderPaths[] = { "resources/compute shaders/creature_collisions.computeShader" };
-	creatureCollisionsProgram = CreateLinkedShaderProgram(1, creatureCollisionsShaderTypes, creatureCollisionsShaderPaths);
+	creatureCollisionsProgram = CreateLinkedShaderProgram(1, creatureCollisionsShaderTypes, creatureCollisionsShaderPaths, NULL);
+
 
 
 	// Initialize drawing programs
@@ -488,14 +386,13 @@ void Simulation_Init()
 		"resources/graphical shaders/shape.vertexShader",
 		"resources/graphical shaders/shape.fragmentShader"
 	};
-	GLuint circleShapeProgram = CreateLinkedShaderProgram(2, shapeShaderTypes, shapeShaderPaths);
+	GLuint circleShapeProgram = CreateLinkedShaderProgram(2, shapeShaderTypes, shapeShaderPaths, NULL);
 	vector<vec2> circleBase = CreateCircleBase(10, 1);
 	circleDrawCallData = InitializeInstancedDrawCallData(circleShapeProgram, circleBase, true);
 
 
 
 	// Initialize uniform grid
-
 	// @TODO: Check that this actually works and that the grid updates succesfully
 	SimulationSettingsChangedSubscribe(BuildUniformGrid); // Set callback
 
@@ -542,18 +439,6 @@ void Simulation_Logic()
 
 
 
-
-
-	// Border physics (before uniform bind so we don't step out of bounds!)
-	program = borderPhysicsProgram;
-	glUseProgram(program);
-		SetUniformVector2f(program, "uSimDimensions", vec2(SIM_SETTINGS.SIMULATION_WIDTH.value, SIM_SETTINGS.SIMULATION_HEIGHT.value));
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii);
-	glDispatchCompute(numOfWorkGroups, 1, 1);
-
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
 
@@ -610,6 +495,18 @@ void Simulation_Logic()
 		SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ugrid_SSBO);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_tiles);
+	glDispatchCompute(numOfWorkGroups, 1, 1);
+
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+
+	// Border physics (before uniform bind so we don't step out of bounds!)
+	program = borderPhysicsProgram;
+	glUseProgram(program);
+		SetUniformVector2f(program, "uSimDimensions", vec2(SIM_SETTINGS.SIMULATION_WIDTH.value, SIM_SETTINGS.SIMULATION_HEIGHT.value));
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii);
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);

@@ -47,6 +47,8 @@ struct SimSettings
 	TweakableFloatSetting MIN_CREATURE_RADIUS;
 	TweakableFloatSetting MAX_CREATURE_SENSE_RADIUS;
 
+	
+
 };
 
 void SimulationSettings_SetInt(TweakableIntegerSetting& setting, int value);

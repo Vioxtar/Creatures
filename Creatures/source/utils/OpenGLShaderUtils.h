@@ -16,7 +16,7 @@ bool CheckShaderCompileSuccess(GLuint obj);
 bool CheckProgramLinkSuccess(GLuint obj);
 string GetShaderSourceStringFromFilePath(const char* shaderFilePath);
 GLuint CreateAndCompileShader(string& shaderSourceString, GLenum shaderType);
-GLuint CreateLinkedShaderProgram(int numOfShaders, GLuint* shaderTypes, const char** shaderFilePaths);
+GLuint CreateLinkedShaderProgram(int numOfShaders, GLuint* shaderTypes, const char** shaderFilePaths, vector<pair<string, string>>* replacers);
 
 
 // Comfort uniform functions

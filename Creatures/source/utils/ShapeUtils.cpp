@@ -389,7 +389,7 @@ void ShapeUtils_Init()
 
 	GLenum shapeShaderTypes[] = { GL_VERTEX_SHADER, GL_FRAGMENT_SHADER };
 	const char* shapeShaderPaths[] = { vertexShaderPath, fragmentShaderPath };
-	GLuint shapeProgram = CreateLinkedShaderProgram(2, shapeShaderTypes, shapeShaderPaths);
+	GLuint shapeProgram = CreateLinkedShaderProgram(2, shapeShaderTypes, shapeShaderPaths, NULL);
 
 	vector<vec2> circleBase = CreateCircleBase(10, 1);
 	circleShapeGPUInstance = new ShapeGPUInstance(circleBase, true, shapeProgram, expectedInstanceCount);

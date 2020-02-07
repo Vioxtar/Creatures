@@ -78,7 +78,17 @@ GLuint CreateAndCompileShader(string& shaderSourceString, GLenum shaderType)
 	return shaderID;
 }
 
-GLuint CreateLinkedShaderProgram(int numOfShaders, GLuint* shaderTypes, const char** shaderFilePaths)
+void FindAndReplaceSubstrings(string& stringToBeEdited, string lookFor, string replaceWith)
+{
+	size_t pos = stringToBeEdited.find(lookFor);
+	while (pos != string::npos)
+	{
+		stringToBeEdited.replace(pos, lookFor.size(), replaceWith);
+		pos = stringToBeEdited.find(lookFor, pos + replaceWith.size());
+	}
+}
+
+GLuint CreateLinkedShaderProgram(int numOfShaders, GLuint* shaderTypes, const char** shaderFilePaths, vector<pair<string, string>>* replacers)
 {
 	bool success = true;
 	
@@ -95,6 +105,18 @@ GLuint CreateLinkedShaderProgram(int numOfShaders, GLuint* shaderTypes, const ch
 		const char* shaderFilePath = shaderFilePaths[i];
 		GLuint shaderType = shaderTypes[i];
 		string shaderSourceString = GetShaderSourceStringFromFilePath(shaderFilePath);
+
+		// Edit the source code with a DEFINE style replacing mechanism
+		if (replacers != nullptr)
+		{
+			for (auto replacePair : *replacers)
+			{
+				string lookFor = replacePair.first;
+				string replaceWith = replacePair.second;
+				FindAndReplaceSubstrings(shaderSourceString, lookFor, replaceWith);
+			}
+		}
+
 		GLuint compiledShaderID = CreateAndCompileShader(shaderSourceString, shaderType);
 		compiledShaders.emplace_back(compiledShaderID);
 	}
