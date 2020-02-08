@@ -1,11 +1,11 @@
 #include "Simulation.h"
 
 
-
 ///////////////////
 // -- STRUCTS -- //
 ///////////////////
 
+// Drawing related structs
 struct InstancedDrawCallData
 {
 	GLuint program;
@@ -15,10 +15,29 @@ struct InstancedDrawCallData
 	GLuint numOfIndices;
 };
 
+// Brains related structs
+struct Link
+{
+	GLfloat scalar;
+	GLfloat bias;
+};
+
+struct Node
+{
+	GLfloat value;
+	Link links[CREATURE_MAX_NODES_IN_LEVEL];
+};
+
+struct Brain
+{
+	GLuint structure[CREATURE_MAX_BRAIN_LEVELS];
+	Node nodes[CREATURE_MAX_NODES_IN_BRAIN];
+};
 
 // Just used for passing around creature data arguments more neatly
 struct CreatureData
 {
+	Brain brain;
 	vec3 col;
 	vec2 pos;
 	vec2 vel;
@@ -28,29 +47,33 @@ struct CreatureData
 };
 
 
+
 /////////////////////////////
 // -- WORKING VARIABLES -- //
 /////////////////////////////
 
+struct CreatureAttributesSSBOInfo
+{
+	GLuint ssbo;
+	GLuint attributeBytesSize;
+};
+
 // Creature Data SSBOs
-GLuint creature_colrs; // The colors of the creatures
-GLuint creature_poses; // The positions of the creatures
-GLuint creature_velos; // The position velocities of the creatures
-GLuint creature_radii; // The radii of the creatures
-GLuint creature_lives; // The health of the creatures
-GLuint creature_tiles; // Uniform grid tile index keeping
+CreatureAttributesSSBOInfo creature_brans{ 0, sizeof(Brain) };	// The brains of the creatures
+CreatureAttributesSSBOInfo creature_colrs{ 0, sizeof(vec3) };		// The colors of the creatures
+CreatureAttributesSSBOInfo creature_poses{ 0, sizeof(vec2) };		// The positions of the creatures
+CreatureAttributesSSBOInfo creature_velos{ 0, sizeof(vec2) };		// The position velocities of the creatures
+CreatureAttributesSSBOInfo creature_radii{ 0, sizeof(GLfloat) };	// The radii of the creatures
+CreatureAttributesSSBOInfo creature_lives{ 0, sizeof(GLfloat) };	// The health of the creatures
+CreatureAttributesSSBOInfo creature_tiles{ 0, sizeof(GLuint) };	// Uniform grid tile index keeping
+CreatureAttributesSSBOInfo creature_gprps{ 0, sizeof(vec2) };		// A general purpose buffer of vec2's
 
-GLuint creature_gprps; // A general purpose buffer of vec2's
-
-GLuint creature_count;
-GLuint max_supported_creature_count_by_current_buffers;
-const GLuint max_supported_creature_count_increase_on_reallocation = 500;
+GLuint creature_count = 0; // The count of active creatures in the simulation
+GLuint max_supported_creature_count_by_current_buffers; // The number of creatures supported by current SSBO buffers
 
 const GLenum ssbo_usage = GL_STREAM_READ;
 
 // Logic programs
-const GLuint workGroupSize = 1024;
-
 GLuint applyVelocitiesProgram;
 GLuint borderPhysicsProgram;
 GLuint uniformGridBindProgram;
@@ -67,217 +90,6 @@ InstancedDrawCallData circleDrawCallData;
 
 
 
-//////////////////////
-// -- DRAW UTILS -- //
-//////////////////////
-
-
-InstancedDrawCallData InitializeInstancedDrawCallData(GLuint program, vector<vec2> shapeBase, bool loop)
-{
-	InstancedDrawCallData newDrawCallData;
-
-	newDrawCallData.program = program;
-
-	ShapeData shapeData = CreateStrokeVertices(shapeBase, loop);
-	newDrawCallData.numOfIndices = shapeData.indices.size();
-	
-	glGenVertexArrays(1, &newDrawCallData.VAO);
-	glBindVertexArray(newDrawCallData.VAO);
-
-	// Create vertices buffer
-	glGenBuffers(1, &newDrawCallData.VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, newDrawCallData.VBO);
-	glBufferData(GL_ARRAY_BUFFER, shapeData.vertices.size() * sizeof(GLfloat), shapeData.vertices.data(), GL_STATIC_DRAW);
-
-	// Create elements buffer
-	glGenBuffers(1, &newDrawCallData.EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, newDrawCallData.EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, shapeData.indices.size() * sizeof(GLuint), shapeData.indices.data(), GL_STATIC_DRAW);
-
-	// Vertex Positions
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-
-	// Vertex Normals
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-	// Unbind (unbinding the vertex array essentially stores the currently bound VBO and EBO)
-	glBindVertexArray(0);
-
-	return newDrawCallData;
-}
-
-void InstancedDrawCall(InstancedDrawCallData data, GLuint numOfInstances)
-{
-	glBindVertexArray(data.VAO);
-
-	glUseProgram(data.program);
-	SetUniformMatrix4(data.program, cameraTransformUniformName, cameraTransform);
-	glDrawElementsInstanced(GL_TRIANGLES, data.numOfIndices, GL_UNSIGNED_INT, 0, numOfInstances);
-
-	glBindVertexArray(0);
-}
-
-
-//////////////////////
-// -- SSBO UTILS -- //
-//////////////////////
-
-GLuint InitEmptySSBO(GLuint attributeCount, GLuint attributeSize)
-{
-	// Create a new SSBO
-	GLuint newSSBO;
-	glGenBuffers(1, &newSSBO);
-
-	// Initialize with NULL data
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, newSSBO);
-	GLuint size = attributeCount * attributeSize;
-	glBufferData(GL_SHADER_STORAGE_BUFFER, size, NULL, ssbo_usage);
-
-	return newSSBO;
-}
-
-void ExpandSSBO(GLuint& oldSSBO, GLuint attributeSize, GLuint attributeCountAdd)
-{
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, oldSSBO);
-
-	// Get old size, and calculate new size
-	GLint64 oldSize;
-	glGetBufferParameteri64v(GL_SHADER_STORAGE_BUFFER, GL_BUFFER_SIZE, &oldSize);
-	GLuint newSize = (GLuint)oldSize + attributeCountAdd * attributeSize;
-
-	// Create a new empty SSBO
-	GLuint newSSBO;
-	glGenBuffers(1, &newSSBO);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, newSSBO);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, newSize, NULL, ssbo_usage);
-
-	// Copy old SSBO to new SSBO
-	glBindBuffer(GL_COPY_READ_BUFFER, oldSSBO);
-	glBindBuffer(GL_COPY_WRITE_BUFFER, newSSBO);
-	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, oldSize); // This causes a performance running for some reason
-
-	// Delete old SSBO
-	GLuint buffersToDelete = { oldSSBO };
-	glDeleteBuffers(1, &buffersToDelete);
-
-	// Finalize
-	oldSSBO = newSSBO;
-}
-
-
-///////////////////////////////////////////////
-// -- CREATURE MANIPULATION COMFORT TOOLS -- //
-///////////////////////////////////////////////
-
-void SetCreatureAttribute(GLuint ssbo, GLuint creatureIndex, GLuint attributeSize, const void* data)
-{
-	GLuint writeOffset = attributeSize * creatureIndex;
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, writeOffset, attributeSize, data);
-}
-
-void RemoveCreatureAttribute(GLuint ssbo, GLuint creatureIndex, GLuint attributeSize)
-{
-	GLuint lastCreatureIndex = creature_count - 1;
-	if (lastCreatureIndex != creatureIndex)
-	{
-		// Copy the data in lastCreatureIndex to our creatureIndex
-		glBindBuffer(GL_COPY_READ_BUFFER, ssbo);
-		glBindBuffer(GL_COPY_WRITE_BUFFER, ssbo);
-
-		GLuint readOffset = lastCreatureIndex * attributeSize;
-		GLuint writeOffset = creatureIndex * attributeSize;
-		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, readOffset, writeOffset, attributeSize);
-	}
-
-	// Nullify the new last creature index
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, lastCreatureIndex, attributeSize, NULL);
-}
-
-// @TODO: At some point in time we'll eventually need to account for the absolute max buffer size supported by our GPU
-GLuint AddCreature(CreatureData newCreatureData)
-{
-	// Check if we're exceeding capacity
-	if (creature_count >= max_supported_creature_count_by_current_buffers)
-	{
-		// We're exceeding capacities for all of our SSBOs, expand them
-		GLuint increaseSize = max_supported_creature_count_increase_on_reallocation;
-		ExpandSSBO(creature_colrs, 3 * sizeof(GLfloat), increaseSize);
-		ExpandSSBO(creature_poses, 2 * sizeof(GLfloat), increaseSize);
-		ExpandSSBO(creature_velos, 2 * sizeof(GLfloat), increaseSize);
-		ExpandSSBO(creature_gprps, 2 * sizeof(GLfloat), increaseSize);
-		ExpandSSBO(creature_radii, sizeof(GLfloat), increaseSize);
-		ExpandSSBO(creature_lives, sizeof(GLfloat), increaseSize);
-		ExpandSSBO(creature_tiles, sizeof(GLuint), increaseSize);
-
-
-		max_supported_creature_count_by_current_buffers += max_supported_creature_count_increase_on_reallocation;
-	}
-
-	GLuint newCreatureIndex = creature_count;
-	SetCreatureAttribute(creature_colrs, newCreatureIndex, 3 * sizeof(GLfloat), &newCreatureData.col);
-	SetCreatureAttribute(creature_poses, newCreatureIndex, 2 * sizeof(GLfloat), &newCreatureData.pos);
-	SetCreatureAttribute(creature_velos, newCreatureIndex, 2 * sizeof(GLfloat), &newCreatureData.vel);
-	SetCreatureAttribute(creature_gprps, newCreatureIndex, 2 * sizeof(GLfloat), NULL);
-	SetCreatureAttribute(creature_radii, newCreatureIndex, sizeof(GLfloat), &newCreatureData.rad);
-	SetCreatureAttribute(creature_lives, newCreatureIndex, sizeof(GLfloat), &newCreatureData.life);
-	SetCreatureAttribute(creature_tiles, newCreatureIndex, sizeof(GLuint), &newCreatureData.tile);
-
-
-	creature_count++;
-
-	return newCreatureIndex;
-}
-
-void RemoveCreature(GLuint creatureIndex)
-{
-	if (creature_count <= 0)
-		return;
-
-	RemoveCreatureAttribute(creature_colrs, creatureIndex, 3 * sizeof(GLfloat));
-	RemoveCreatureAttribute(creature_poses, creatureIndex, 2 * sizeof(GLfloat));
-	RemoveCreatureAttribute(creature_velos, creatureIndex, 2 * sizeof(GLfloat));
-	RemoveCreatureAttribute(creature_gprps, creatureIndex, 2 * sizeof(GLfloat));
-	RemoveCreatureAttribute(creature_radii, creatureIndex, sizeof(GLfloat));
-	RemoveCreatureAttribute(creature_lives, creatureIndex, sizeof(GLfloat));
-	RemoveCreatureAttribute(creature_tiles, creatureIndex, sizeof(GLuint));
-
-
-	creature_count--;
-}
-
-
-//////////////////
-// -- BRAINS -- //
-//////////////////
-
-/*
-	
-	We don't even need to define our C++ structs, we can just create a buffer with the appropriate size of bytes and send it away.
-	Struct layout will be dynamically defined in the GLSL shader source via DEFINE replacers.
-
-*/
-
-struct Link
-{
-	float scalar;
-	float bias;
-};
-
-struct Node
-{
-	float value;
-	Link links[5];
-};
-
-struct Brain
-{
-	uint structure[5];
-	Node nodes[10];
-};
 
 
 ////////////////////////
@@ -337,7 +149,7 @@ struct Brain
 			Remmaped pos.x = pos.x + simWidth / 2
 	*/
 
-// The uniform grid buffer: stores the creature indices per tiles
+	// The uniform grid buffer: stores the creature indices per tiles
 GLuint ugrid_SSBO;
 
 // Used to find out when we need to rebuild the uniform grid
@@ -390,7 +202,7 @@ void BuildUniformGrid()
 	// Calculate how many creatures we can squeeze in a tile, and scale
 	uint maxNumOfCreaturesSqueezableInTile = ceil(pow(newInteractDist, 2) / (M_PI * (pow(newMinCreatureRadius, 2))));
 	maxNumOfCreaturesSqueezableInTile *= SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR;
-	
+
 	// Calculate buffer sizes
 	ugrid_IndicesInTile = maxNumOfCreaturesSqueezableInTile + 1; // We also have our creature counter at the first index!
 	uint tileBufferSize = ugrid_IndicesInTile * sizeof(GLuint);
@@ -416,30 +228,220 @@ void BuildUniformGrid()
 }
 
 
+//////////////////////
+// -- DRAW UTILS -- //
+//////////////////////
+
+
+InstancedDrawCallData InitializeInstancedDrawCallData(GLuint program, vector<vec2> shapeBase, bool loop)
+{
+	InstancedDrawCallData newDrawCallData;
+
+	newDrawCallData.program = program;
+
+	ShapeData shapeData = CreateStrokeVertices(shapeBase, loop);
+	newDrawCallData.numOfIndices = shapeData.indices.size();
+	
+	glGenVertexArrays(1, &newDrawCallData.VAO);
+	glBindVertexArray(newDrawCallData.VAO);
+
+	// Create vertices buffer
+	glGenBuffers(1, &newDrawCallData.VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, newDrawCallData.VBO);
+	glBufferData(GL_ARRAY_BUFFER, shapeData.vertices.size() * sizeof(GLfloat), shapeData.vertices.data(), GL_STATIC_DRAW);
+
+	// Create elements buffer
+	glGenBuffers(1, &newDrawCallData.EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, newDrawCallData.EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, shapeData.indices.size() * sizeof(GLuint), shapeData.indices.data(), GL_STATIC_DRAW);
+
+	// Vertex Positions
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+	// Vertex Normals
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	// Unbind (unbinding the vertex array essentially stores the currently bound VBO and EBO)
+	glBindVertexArray(0);
+
+	return newDrawCallData;
+}
+
+void InstancedDrawCall(InstancedDrawCallData data, GLuint numOfInstances)
+{
+	glBindVertexArray(data.VAO);
+
+	glUseProgram(data.program);
+	SetUniformMatrix4(data.program, cameraTransformUniformName, cameraTransform);
+	glDrawElementsInstanced(GL_TRIANGLES, data.numOfIndices, GL_UNSIGNED_INT, 0, numOfInstances);
+
+	glBindVertexArray(0);
+}
+
+
+///////////////////////////////
+// -- CREATURE SSBO UTILS -- //
+///////////////////////////////
+
+
+void InitEmptyCreatureAttributesSSBO(CreatureAttributesSSBOInfo& attributes, GLuint attributesCount)
+{
+	// Create a new SSBO
+	GLuint newSSBO;
+	glGenBuffers(1, &newSSBO);
+
+	// Initialize with NULL data
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, newSSBO);
+	GLuint size = attributesCount * attributes.attributeBytesSize;
+	glBufferData(GL_SHADER_STORAGE_BUFFER, size, NULL, ssbo_usage);
+
+	attributes.ssbo = newSSBO;
+}
+
+void ExpandCreatureAttributesSSBO(CreatureAttributesSSBOInfo& attributes, GLuint attributeCountAdd)
+{
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
+
+	// Get old size, and calculate new size
+	GLint64 oldSize;
+	glGetBufferParameteri64v(GL_SHADER_STORAGE_BUFFER, GL_BUFFER_SIZE, &oldSize);
+	GLuint newSize = (GLuint)oldSize + attributeCountAdd * attributes.attributeBytesSize;
+
+	// Create a new empty SSBO
+	GLuint newSSBO;
+	glGenBuffers(1, &newSSBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, newSSBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, newSize, NULL, ssbo_usage);
+
+	// Copy old SSBO to new SSBO
+	glBindBuffer(GL_COPY_READ_BUFFER, attributes.ssbo);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, newSSBO);
+	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, oldSize); // This causes a performance running for some reason
+
+	// Delete old SSBO
+	GLuint buffersToDelete = { attributes.ssbo };
+	glDeleteBuffers(1, &buffersToDelete);
+
+	// Finalize
+	attributes.ssbo = newSSBO;
+}
+
+
+///////////////////////////////////////////////
+// -- CREATURE MANIPULATION COMFORT TOOLS -- //
+///////////////////////////////////////////////
+
+void SetCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creatureIndex, const void* data)
+{
+	GLuint writeOffset = attributes.attributeBytesSize * creatureIndex;
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, writeOffset, attributes.attributeBytesSize, data);
+}
+
+void RemoveCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creatureIndex)
+{
+	GLuint lastCreatureIndex = creature_count - 1;
+	if (lastCreatureIndex != creatureIndex)
+	{
+		// Copy the data in lastCreatureIndex to our creatureIndex
+		glBindBuffer(GL_COPY_READ_BUFFER, attributes.ssbo);
+		glBindBuffer(GL_COPY_WRITE_BUFFER, attributes.ssbo);
+
+		GLuint readOffset = lastCreatureIndex * attributes.attributeBytesSize;
+		GLuint writeOffset = creatureIndex * attributes.attributeBytesSize;
+		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, readOffset, writeOffset, attributes.attributeBytesSize);
+	}
+
+	// Nullify the new last creature index
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, lastCreatureIndex, attributes.attributeBytesSize, NULL);
+}
+
+// @TODO: At some point in time we'll eventually need to account for the absolute max buffer size supported by our GPU
+GLuint AddCreature(CreatureData newCreatureData)
+{
+	// Check if we're exceeding capacity
+	if (creature_count >= max_supported_creature_count_by_current_buffers)
+	{
+		// We're exceeding capacities for all of our SSBOs, expand them
+		GLuint increaseSize = TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
+		ExpandCreatureAttributesSSBO(creature_brans, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_colrs, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_poses, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_velos, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_gprps, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_radii, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_lives, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_tiles, increaseSize);
+
+
+		max_supported_creature_count_by_current_buffers += TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
+	}
+
+
+
+	GLuint newCreatureIndex = creature_count;
+	SetCreatureAttribute(creature_brans, newCreatureIndex, &newCreatureData.brain);
+	SetCreatureAttribute(creature_colrs, newCreatureIndex, &newCreatureData.col);
+	SetCreatureAttribute(creature_poses, newCreatureIndex, &newCreatureData.pos);
+	SetCreatureAttribute(creature_velos, newCreatureIndex, &newCreatureData.vel);
+	SetCreatureAttribute(creature_gprps, newCreatureIndex, NULL);
+	SetCreatureAttribute(creature_radii, newCreatureIndex, &newCreatureData.rad);
+	SetCreatureAttribute(creature_lives, newCreatureIndex, &newCreatureData.life);
+	SetCreatureAttribute(creature_tiles, newCreatureIndex, &newCreatureData.tile);
+
+
+	creature_count++;
+
+	return newCreatureIndex;
+}
+
+void RemoveCreature(GLuint creatureIndex)
+{
+	if (creature_count <= 0)
+		return;
+
+	RemoveCreatureAttribute(creature_brans, creatureIndex);
+	RemoveCreatureAttribute(creature_colrs, creatureIndex);
+	RemoveCreatureAttribute(creature_poses, creatureIndex);
+	RemoveCreatureAttribute(creature_velos, creatureIndex);
+	RemoveCreatureAttribute(creature_gprps, creatureIndex);
+	RemoveCreatureAttribute(creature_radii, creatureIndex);
+	RemoveCreatureAttribute(creature_lives, creatureIndex);
+	RemoveCreatureAttribute(creature_tiles, creatureIndex);
+
+
+	creature_count--;
+}
+
+
+
 
 /////////////////////////////////////
 // -- SIMULATION INITIALIZATION -- //
 /////////////////////////////////////
 
-void Simulation_Init()
+void InitSSBOs()
 {
 	const unsigned int numOfCreaturesOnInit = SIMULATION_NUM_OF_CREATURES_ON_INIT.value;
-
+	
 	creature_count = 0;
 	max_supported_creature_count_by_current_buffers = numOfCreaturesOnInit;
-	   
-	// Initialize creature data SSBOs
-	creature_colrs = InitEmptySSBO(numOfCreaturesOnInit, 3 * sizeof(GLfloat));
-	creature_poses = InitEmptySSBO(numOfCreaturesOnInit, 2 * sizeof(GLfloat));
-	creature_velos = InitEmptySSBO(numOfCreaturesOnInit, 2 * sizeof(GLfloat));
-	creature_gprps = InitEmptySSBO(numOfCreaturesOnInit, 2 * sizeof(GLfloat));
-	creature_radii = InitEmptySSBO(numOfCreaturesOnInit, sizeof(GLfloat));
-	creature_lives = InitEmptySSBO(numOfCreaturesOnInit, sizeof(GLfloat));
-	creature_tiles = InitEmptySSBO(numOfCreaturesOnInit, sizeof(GLuint));
 
+	InitEmptyCreatureAttributesSSBO(creature_brans, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_colrs, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_poses, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_velos, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_gprps, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_radii, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_lives, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_tiles, numOfCreaturesOnInit);
+}
 
-
-	// Initialize logic programs
+void InitLogicPrograms()
+{
 	GLenum applyVelocitiesShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* applyVelocitiesShaderPaths[] = { "resources/compute shaders/apply_velocities.computeShader" };
 	applyVelocitiesProgram = CreateLinkedShaderProgram(1, applyVelocitiesShaderTypes, applyVelocitiesShaderPaths, NULL);
@@ -451,7 +453,7 @@ void Simulation_Init()
 	GLenum uniformGridBindShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* uniformGridBindShaderPaths[] = { "resources/compute shaders/uniform_grid_bind.computeShader" };
 	uniformGridBindProgram = CreateLinkedShaderProgram(1, uniformGridBindShaderTypes, uniformGridBindShaderPaths, NULL);
-	
+
 	GLenum uniformGridUnBindShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* uniformGridUnBindShaderPaths[] = { "resources/compute shaders/uniform_grid_unbind.computeShader" };
 	uniformGridUnBindProgram = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths, NULL);
@@ -459,9 +461,10 @@ void Simulation_Init()
 	GLenum creatureCollisionsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* creatureCollisionsShaderPaths[] = { "resources/compute shaders/creature_collisions.computeShader" };
 	creatureCollisionsProgram = CreateLinkedShaderProgram(1, creatureCollisionsShaderTypes, creatureCollisionsShaderPaths, NULL);
+}
 
-
-
+void InitDrawingPrograms()
+{
 	// Initialize drawing programs
 	GLenum shapeShaderTypes[] = {
 		GL_VERTEX_SHADER,
@@ -474,9 +477,10 @@ void Simulation_Init()
 	GLuint circleShapeProgram = CreateLinkedShaderProgram(2, shapeShaderTypes, shapeShaderPaths, NULL);
 	vector<vec2> circleBase = CreateCircleBase(10, 1);
 	circleDrawCallData = InitializeInstancedDrawCallData(circleShapeProgram, circleBase, true);
+}
 
-
-
+void InitUniformGrid()
+{
 	// Initialize uniform grid
 	// @TODO: Check that this actually works and that the grid updates succesfully
 	SimulationSettingsChangedSubscribe(BuildUniformGrid); // Set callback
@@ -490,14 +494,29 @@ void Simulation_Init()
 	ugrid_LastInteractDist = -1;
 
 	BuildUniformGrid();
+}
+
+void Simulation_Init()
+{
+
+	cout << creature_brans.attributeBytesSize << endl;
+	cout << creature_colrs.attributeBytesSize << endl;
+
+	InitSSBOs();
+	InitLogicPrograms();
+	InitDrawingPrograms();
+	InitUniformGrid();
 
 	// Add some creatures (TEMP)
-	for (int i = 0; i < numOfCreaturesOnInit; i++)
+	for (int i = 0; i < SIMULATION_NUM_OF_CREATURES_ON_INIT.value; i++)
 	{
+		Brain someBrain();
+
 		CreatureData data;
+		data.brain = someBrain;
 		data.col = vec3(random(), random(), random());
 		data.pos = vec2(0, 0);
-		data.vel = vec2((random() - 0.5) * 2 * 0.1, (random() - 0.5) * 2 * 0.1);
+		data.vel = vec2((random() - 0.5) * 2 * 0.000000001, (random() - 0.5) * 2 * 0.000000001);
 		data.rad = CREATURE_MIN_RADIUS.value;
 		data.life = random() * 0.8 + 0.1;
 		data.tile = -1;
@@ -517,15 +536,10 @@ void Simulation_Logic()
 	The number of work groups that can be dispatched in a single dispatch call is defined
 	by GL_MAX_COMPUTE_WORK_GROUP_COUNT. This must be queried with glGetIntegeri_v.
 	*/
-	int numOfWorkGroups = creature_count / workGroupSize +
-		(creature_count % workGroupSize == 0 ? 0 : 1);
+	int numOfWorkGroups = creature_count / TECH_COMPUTE_PROGRAM_WORKGROUP_SIZE +
+		(creature_count % TECH_COMPUTE_PROGRAM_WORKGROUP_SIZE == 0 ? 0 : 1);
 
 	GLuint program;
-
-
-
-
-
 
 	// Uniform grid bind
 	program = uniformGridBindProgram;
@@ -533,9 +547,9 @@ void Simulation_Logic()
 		SetUniformVector2f(program, "uSimDimensions", vec2(ugrid_SimWidth, ugrid_SimHeight));
 		SetUniformVector2ui(program, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
 		SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ugrid_SSBO);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_tiles);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_tiles.ssbo);
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -547,12 +561,12 @@ void Simulation_Logic()
 	glUseProgram(program);
 		SetUniformVector2ui(program, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
 		SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ugrid_SSBO);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_tiles);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_gprps); // Writes physics fix vector for decoupling purposes
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_tiles.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_gprps.ssbo); // Writes physics fix vector for decoupling purposes
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -562,9 +576,9 @@ void Simulation_Logic()
 	// Velocity / physics value application
 	program = applyVelocitiesProgram;
 	glUseProgram(program);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_gprps); // Applies physics fix vector, zerofies
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_gprps.ssbo); // Applies physics fix vector, zerofies
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -579,7 +593,7 @@ void Simulation_Logic()
 	glUseProgram(program);
 		SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ugrid_SSBO);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_tiles);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_tiles.ssbo);
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -589,9 +603,9 @@ void Simulation_Logic()
 	program = borderPhysicsProgram;
 	glUseProgram(program);
 		SetUniformVector2f(program, "uSimDimensions", vec2(SIMULATION_WIDTH.value, SIMULATION_HEIGHT.value));
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii.ssbo);
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -602,10 +616,10 @@ void Simulation_Render()
 {
 	cameraTransform = GetSimSpaceToCameraTransform();
 
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_colrs);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_poses);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_lives);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_colrs.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_poses.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_lives.ssbo);
 
 	InstancedDrawCall(circleDrawCallData, creature_count);
 

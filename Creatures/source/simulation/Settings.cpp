@@ -1,6 +1,15 @@
 #include "Settings.h"
 
 
+
+
+
+
+// Technical settings
+extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 500;
+extern const uint16_t TECH_COMPUTE_PROGRAM_WORKGROUP_SIZE = 1024;
+
+
 // Camera settings
 extern const float CAMERA_MAX_ZOOM_OUT = 0.001f;
 extern const float CAMERA_MAX_ZOOM_IN = 10.0f;
@@ -10,6 +19,7 @@ extern const float CAMERA_ZOOM_MOVE_SCALE = 0.0002f;
 extern const float CAMERA_VELOCITY_FRICTION = 0.985f;
 extern const float CAMERA_START_ZOOM = 0.01f;
 
+
 // Simulation settings
 extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
 extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 1;
@@ -18,15 +28,23 @@ extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0
 extern TweakableFloatSetting SIMULATION_WIDTH = { 200, 5, 300 };
 extern TweakableFloatSetting SIMULATION_HEIGHT = { 200, 5, 300 };
 
+
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.1, 0.1, 0.1 };
 extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.1, 0.1, 0.1 };
 extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS = { 0.1, 0.1, 2.0 };
 
-// Creature brain settings
-const uint8_t CREATURE_MAX_BRAIN_LEVELS = 6;
-const uint8_t CREATURE_MAX_NODES_IN_LEVEL = 35;
 
+
+
+
+
+
+
+
+////////////////////////////////////
+// -- TWEAKABLE SETTINGS UTILS -- //
+////////////////////////////////////
 
 
 vector<SimSettingsChangedSubscriber> simSettingsChangedSubscribers;
