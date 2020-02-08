@@ -1,5 +1,7 @@
 #include "Simulation.h"
 
+
+
 ///////////////////
 // -- STRUCTS -- //
 ///////////////////
@@ -248,10 +250,92 @@ void RemoveCreature(GLuint creatureIndex)
 }
 
 
+//////////////////
+// -- BRAINS -- //
+//////////////////
+
+/*
+	
+	We don't even need to define our C++ structs, we can just create a buffer with the appropriate size of bytes and send it away.
+	Struct layout will be dynamically defined in the GLSL shader source via DEFINE replacers.
+
+*/
+
+struct Link
+{
+	float scalar;
+	float bias;
+};
+
+struct Node
+{
+	float value;
+	Link links[5];
+};
+
+struct Brain
+{
+	uint structure[5];
+	Node nodes[10];
+};
+
 
 ////////////////////////
 // -- UNIFORM GRID -- //
 ////////////////////////
+
+	/*
+
+	(This is outdated but still relevant for understanding uniform grid approach)
+
+	Assuming:
+		1. Creature sense radius is measured from center of creature
+		2. Creature max body radius < creature max sense radius
+		3. Creature c1 can sense creature c2 if dist(c1, c2) - c2.radius < c1.senseRadius
+	We may safely define the max creature interaction distance threshold as:
+		InteractDist: MaxCreatureRadius + MaxCreatureSenseRadius
+	... beyond which creatures do not "know" (sense or collide) each other.
+	We build a uniform grid made out of square tiles with dimensions InteractDist x InteractDist, correspond
+	creatures to their relevant tile, and then iterate said tile and its neighbourhood, hence the dimensions of each interaction 'bubble' is:
+		BufferedTileDim = 3 * InteractDist x 3 * InteractDist
+	The uniform grid will cover the entire simulation space.
+	Inside every tile of the uniform grid is a creature index buffer with the size MaxTileCreatureCapacity, where:
+		MaxTileCreatureCapacity >= the maximum number of creatures, with the minimal radii, that can be squeezed into
+								   a InteractDist x InteractDist square.
+		To satisfy this property, assuming creatures are 'hard' (do not allow prolonged penetrative collisions) we must make sure that:
+
+			MaxTileCreatureCapacity >= InteractDist^2 / (pi * MinRadius^2)
+	In the uniform grid binding phase, each creature will associate itself to a single tile by:
+		1. Writing its own index into the tile creature indices buffer
+		2. Storing the tile it was mapped to in a specialized SSBO whose size is 2 * sizeof(int) * creature_count, where
+		   two numbers are stored:
+			a. the 1D tile index
+			b. the offset within the tile buffer
+	In the usage phase, for every creature that is inside tile t and its neighbourhood, we perform a naive physics / sensory solution for all
+	other creatures inside t, and the 8 (or less, in the case of simulation edge tiles) neighbouring tiles. To avoid duplicate
+	calculations, we avoid (continue) entering solution if our creature index is bigger than the other (in which case the other
+	will take care of us).
+	In the uniform grid unbind phase, every creature will reset:
+		1. The uniform grid SSBO's tile (by checking its specialized uniform grid map attributes)
+		2. The map attributes(?)
+		------------
+	Thus we are to rebuild the uniform grid SSBO every time the following values are changed:
+		1. InteractDist (check if it changed whenever MaxCreatureRadius and MaxCreatureSenseRadius change) (to change tile dimensions)
+		2. MinCreatureRadius (to change MaxTileCreatureCapacity)
+		3. Simulation Height / Width dimensions (to change the number of tiles)
+	The number of tiles to be spread across the simulation space is: GridXDim x GridYDim, where:
+		GridXDim = ceiling(SimulationWidth / InteractDist)
+		GridYDim = ceiling(SimulationHeight / InteractDist)
+	We can 1D-ify the 2D uniform grid:
+		1DTileIndex = xTileIndex + GridXDim * yTileIndex
+	As a creature, we would like to find our 'intile' xTileIndex and yTileIndex:
+		xTileIndex = floor((remapped pos.x) * GridXDim / SimWidth)
+		yTileIndex = floor((remapped pos.y) * GridYDim / SimHeight)
+		Where we remap pos.x from (-SimWidth / 2, SimWidth / 2) to (0, SimWidth)
+					   pos.y from (-SimHeght / 2, SimHeght / 2) to (0, SimHeght)
+		For example:
+			Remmaped pos.x = pos.x + simWidth / 2
+	*/
 
 // The uniform grid buffer: stores the creature indices per tiles
 GLuint ugrid_SSBO;
@@ -271,14 +355,15 @@ GLfloat ugrid_SimWidth;
 GLfloat ugrid_SimHeight;
 GLuint ugrid_IndicesInTile;
 
+
 void BuildUniformGrid()
 {
 	// Start by checking whether or not we need to rebuild the grid
-	float newMaxCreatureRadius = SIM_SETTINGS.MAX_CREATURE_RADIUS.value;
-	float newMaxCreatureSenseRadius = SIM_SETTINGS.MAX_CREATURE_SENSE_RADIUS.value;
-	float newMinCreatureRadius = SIM_SETTINGS.MIN_CREATURE_RADIUS.value;
-	float newSimulationWidth = SIM_SETTINGS.SIMULATION_WIDTH.value;
-	float newSimulationHeight = SIM_SETTINGS.SIMULATION_HEIGHT.value;
+	float newMaxCreatureRadius = CREATURE_MAX_RADIUS.value;
+	float newMaxCreatureSenseRadius = CREATURE_MAX_SENSE_RADIUS.value;
+	float newMinCreatureRadius = CREATURE_MIN_RADIUS.value;
+	float newSimulationWidth = SIMULATION_WIDTH.value;
+	float newSimulationHeight = SIMULATION_HEIGHT.value;
 	float newInteractDist = newMaxCreatureRadius + newMaxCreatureSenseRadius;
 
 	bool interactDistChanged = ugrid_LastInteractDist != newInteractDist;
@@ -294,7 +379,7 @@ void BuildUniformGrid()
 
 	// A small buffer around our simulation width/height ensures that creatures never over-step our uniform grid space
 	// as long as they remain within the actual simulation space
-	float uniformGridSimulationDimensionBuffer = SIM_SETTINGS.SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER;
+	float uniformGridSimulationDimensionBuffer = SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER;
 	ugrid_SimWidth = newSimulationWidth + uniformGridSimulationDimensionBuffer;
 	ugrid_SimHeight = newSimulationHeight + uniformGridSimulationDimensionBuffer;
 
@@ -304,7 +389,7 @@ void BuildUniformGrid()
 
 	// Calculate how many creatures we can squeeze in a tile, and scale
 	uint maxNumOfCreaturesSqueezableInTile = ceil(pow(newInteractDist, 2) / (M_PI * (pow(newMinCreatureRadius, 2))));
-	maxNumOfCreaturesSqueezableInTile *= SIM_SETTINGS.SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR;
+	maxNumOfCreaturesSqueezableInTile *= SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR;
 	
 	// Calculate buffer sizes
 	ugrid_IndicesInTile = maxNumOfCreaturesSqueezableInTile + 1; // We also have our creature counter at the first index!
@@ -338,7 +423,7 @@ void BuildUniformGrid()
 
 void Simulation_Init()
 {
-	const unsigned int numOfCreaturesOnInit = SIM_SETTINGS.NUM_OF_CREATURES_ON_INIT.value;
+	const unsigned int numOfCreaturesOnInit = SIMULATION_NUM_OF_CREATURES_ON_INIT.value;
 
 	creature_count = 0;
 	max_supported_creature_count_by_current_buffers = numOfCreaturesOnInit;
@@ -413,7 +498,7 @@ void Simulation_Init()
 		data.col = vec3(random(), random(), random());
 		data.pos = vec2(0, 0);
 		data.vel = vec2((random() - 0.5) * 2 * 0.1, (random() - 0.5) * 2 * 0.1);
-		data.rad = SIM_SETTINGS.MIN_CREATURE_RADIUS.value;
+		data.rad = CREATURE_MIN_RADIUS.value;
 		data.life = random() * 0.8 + 0.1;
 		data.tile = -1;
 		AddCreature(data);
@@ -503,7 +588,7 @@ void Simulation_Logic()
 	// Border physics (before uniform bind so we don't step out of bounds!)
 	program = borderPhysicsProgram;
 	glUseProgram(program);
-		SetUniformVector2f(program, "uSimDimensions", vec2(SIM_SETTINGS.SIMULATION_WIDTH.value, SIM_SETTINGS.SIMULATION_HEIGHT.value));
+		SetUniformVector2f(program, "uSimDimensions", vec2(SIMULATION_WIDTH.value, SIMULATION_HEIGHT.value));
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii);

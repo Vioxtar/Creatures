@@ -1,6 +1,32 @@
 #include "Settings.h"
 
-SimSettings SIM_SETTINGS;
+
+// Camera settings
+extern const float CAMERA_MAX_ZOOM_OUT = 0.001f;
+extern const float CAMERA_MAX_ZOOM_IN = 10.0f;
+extern const float CAMERA_ZOOM_INTERPOLATION_SPEED = 0.035f;
+extern const float CAMERA_ZOOM_SCROLL_SCALE = 0.1f;
+extern const float CAMERA_ZOOM_MOVE_SCALE = 0.0002f;
+extern const float CAMERA_VELOCITY_FRICTION = 0.985f;
+extern const float CAMERA_START_ZOOM = 0.01f;
+
+// Simulation settings
+extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
+extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 1;
+
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 200, 5, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 200, 5, 300 };
+
+// Creature body settings
+extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.1, 0.1, 0.1 };
+extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.1, 0.1, 0.1 };
+extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS = { 0.1, 0.1, 2.0 };
+
+// Creature brain settings
+const uint8_t CREATURE_MAX_BRAIN_LEVELS = 6;
+const uint8_t CREATURE_MAX_NODES_IN_LEVEL = 35;
+
 
 
 vector<SimSettingsChangedSubscriber> simSettingsChangedSubscribers;
@@ -17,7 +43,6 @@ void NotifySimSettingChangedSubscribers()
 		sub();
 	}
 }
-
 
 void SimulationSettings_SetInt(TweakableIntegerSetting& setting, const int value)
 {
@@ -47,44 +72,4 @@ void SimulationSettings_SetBool(bool& setting, const bool value)
 	{
 		NotifySimSettingChangedSubscribers();
 	}
-}
-
-void SimulationSettings_Init()
-{
-	// Camera settings
-	SIM_SETTINGS.MAX_CAMERA_ZOOM_OUT = 0.001f;
-	SIM_SETTINGS.MAX_CAMERA_ZOOM_IN = 10.0f;
-	SIM_SETTINGS.CAMERA_ZOOM_INTERPOLATION_SPEED = 0.035f;
-	SIM_SETTINGS.CAMERA_ZOOM_SCROLL_SCALE = 0.1f;
-	SIM_SETTINGS.CAMERA_ZOOM_MOVE_SCALE = 0.0002f;
-	SIM_SETTINGS.CAMERA_VELOCITY_FRICTION = 0.985f;
-	SIM_SETTINGS.CAMERA_START_ZOOM = 0.01f;
-
-	// Simulation settings
-	SIM_SETTINGS.SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0;
-	SIM_SETTINGS.SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 1;
-
-	SIM_SETTINGS.NUM_OF_CREATURES_ON_INIT.min = 0;
-	SIM_SETTINGS.NUM_OF_CREATURES_ON_INIT.max = 1000000;
-	SimulationSettings_SetInt(SIM_SETTINGS.NUM_OF_CREATURES_ON_INIT, 200000);
-
-	SIM_SETTINGS.SIMULATION_WIDTH.min = 5;
-	SIM_SETTINGS.SIMULATION_WIDTH.max = 300;
-	SimulationSettings_SetFloat(SIM_SETTINGS.SIMULATION_WIDTH, 200);
-
-	SIM_SETTINGS.SIMULATION_HEIGHT.min = 5;
-	SIM_SETTINGS.SIMULATION_HEIGHT.max = 300;
-	SimulationSettings_SetFloat(SIM_SETTINGS.SIMULATION_HEIGHT, 200);
-
-	SIM_SETTINGS.MAX_CREATURE_RADIUS.min = 0.1;
-	SIM_SETTINGS.MAX_CREATURE_RADIUS.max = 0.1;
-	SimulationSettings_SetFloat(SIM_SETTINGS.MAX_CREATURE_RADIUS, 0.1);
-
-	SIM_SETTINGS.MIN_CREATURE_RADIUS.min = 0.1;
-	SIM_SETTINGS.MIN_CREATURE_RADIUS.max = 0.1;
-	SimulationSettings_SetFloat(SIM_SETTINGS.MIN_CREATURE_RADIUS, 0.1);
-
-	SIM_SETTINGS.MAX_CREATURE_SENSE_RADIUS.min = 0.1;
-	SIM_SETTINGS.MAX_CREATURE_SENSE_RADIUS.max = 1;
-	SimulationSettings_SetFloat(SIM_SETTINGS.MAX_CREATURE_SENSE_RADIUS, 1.0);
 }

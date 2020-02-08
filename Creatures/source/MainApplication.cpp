@@ -9,7 +9,6 @@
 #include "utils/ShapeUtils.h"
 #include "utils/OpenGLErrorDebugger.h"
 
-#include "simulation/Settings.h"
 #include "simulation/Simulation.h"
 #include "simulation/Camera.h"
 
@@ -78,7 +77,6 @@ int main()
 
 
 	// Intiailize settings, simulation and camera
-	SimulationSettings_Init();
 	Simulation_Init();
 	Camera_Init();
 

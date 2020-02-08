@@ -47,14 +47,14 @@ void UpdateCameraPlacement()
 void Camera_Init()
 {
 	// Load camera cached settings
-	maxZoomOut = SIM_SETTINGS.MAX_CAMERA_ZOOM_OUT;
-	camVelocityFriction = SIM_SETTINGS.CAMERA_VELOCITY_FRICTION;
+	maxZoomOut = CAMERA_MAX_ZOOM_OUT;
+	camVelocityFriction = CAMERA_VELOCITY_FRICTION;
 
-	float zoomInterpolationSpeed = SIM_SETTINGS.CAMERA_ZOOM_INTERPOLATION_SPEED;
+	float zoomInterpolationSpeed = CAMERA_ZOOM_INTERPOLATION_SPEED;
 	cameraZoomTargetWeight = zoomInterpolationSpeed;
 	cameraZoomWeight = 1.0f - zoomInterpolationSpeed;
 
-	cameraZoom = SIM_SETTINGS.CAMERA_START_ZOOM;
+	cameraZoom = CAMERA_START_ZOOM;
 	cameraZoomTarget = cameraZoom * 0.5;
 }
 
@@ -76,10 +76,10 @@ void Camera_Move(vec2 offset)
 
 void Camera_Zoom(float zoom)
 {
-	float zoomTargetAdd = zoom * SIM_SETTINGS.CAMERA_ZOOM_SCROLL_SCALE;
+	float zoomTargetAdd = zoom * CAMERA_ZOOM_SCROLL_SCALE;
 	zoomTargetAdd *= cameraZoom; // Zoom out less the more we're already zoomed out
 
-	cameraZoomTarget = mathutils::clamp(cameraZoomTarget + zoomTargetAdd, SIM_SETTINGS.MAX_CAMERA_ZOOM_OUT, SIM_SETTINGS.MAX_CAMERA_ZOOM_IN);
+	cameraZoomTarget = mathutils::clamp(cameraZoomTarget + zoomTargetAdd, CAMERA_MAX_ZOOM_OUT, CAMERA_MAX_ZOOM_IN);
 }
 
 mat4 GetSimSpaceToCameraTransform()
