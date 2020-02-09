@@ -30,7 +30,7 @@ layout (std430, binding = 5) buffer CreatureGeneralPurpose
 	vec2 physicsFix[];
 };
 
-layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
+layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 
 uniform uvec2 uGridDimensions;

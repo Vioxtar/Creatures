@@ -1,0 +1,46 @@
+#version 460 core
+
+
+struct BrainLink
+{
+	float scalar;
+};
+
+struct BrainNode
+{
+	float value;
+};
+
+struct Brain
+{
+	uint structure[@CREATURE_MAX_NUM_OF_STRUCTURE_INDICES@];
+	BrainNode nodes[@CREATURE_MAX_NUM_OF_NODES@];
+	BrainLink links[@CREATURE_MAX_NUM_OF_LINKS@];
+};
+
+
+layout (std430, binding = 0) buffer CreatureBrains
+{
+	Brain brans[];
+};
+
+layout (std430, binding = 1) buffer CreatureLives
+{
+	float lives[];
+};
+
+layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
+
+
+void main()
+{
+	uint gid = gl_GlobalInvocationID.x;
+	
+	// Acquire the brain
+	Brain brain = brans[gid];
+	
+	// The number of inputs we aim to provide (we assume this is large enough for what we want to push!)
+	uint numOfInputs = @CREATURE_NUM_OF_INPUTS@;
+
+
+}

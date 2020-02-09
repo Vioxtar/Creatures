@@ -7,7 +7,7 @@
 
 // Technical settings
 extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 500;
-extern const uint16_t TECH_COMPUTE_PROGRAM_WORKGROUP_SIZE = 1024;
+extern const uint16_t TECH_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE = 1024;
 
 
 // Camera settings
@@ -17,16 +17,16 @@ extern const float CAMERA_ZOOM_INTERPOLATION_SPEED = 0.035f;
 extern const float CAMERA_ZOOM_SCROLL_SCALE = 0.1f;
 extern const float CAMERA_ZOOM_MOVE_SCALE = 0.0002f;
 extern const float CAMERA_VELOCITY_FRICTION = 0.985f;
-extern const float CAMERA_START_ZOOM = 0.01f;
+extern const float CAMERA_START_ZOOM = 0.035f;
 
 
 // Simulation settings
 extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
 extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 1;
 
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 200, 5, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 200, 5, 300 };
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 200000, 0, 1000000 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 500, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 50, 1, 300 };
 
 
 // Creature body settings

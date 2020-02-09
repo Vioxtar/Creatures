@@ -1,5 +1,71 @@
 #include "Simulation.h"
 
+/*
+
+	Approach to brains:
+	We wish to minimize memory complexity of brains with minimal time complexity tradeoffs.
+	
+	Assume that:
+	1. We have about 2 GB of usage space for brains
+	2. We want to support up to 100,000 creatures at once
+
+	Some numbers:
+		1 GB =~ 250,000,000 floats
+		250,000,000 / 100,000 = 2500 floats per creature
+		However we about just about 2 GB available, so that's 500,000,000 floats / 100,000 creatures = 5000 floats per creature.
+		Going by that number, that gives us just about 4500 floats per brain, leaving us with 500*4 bytes for other attributes.
+		
+
+	Some more numbers:
+		If we would have 40 nodes in a level, and up to 5 levels, then every link level would have 40^2 = 1600 links, meaning 1600*5 = 8000 total links in the brain. If every link has a scalar float and a bias float, then that's 16000 floats per brain!
+		A more feasible scenario is have 60 input nodes, 10 nodes in every hidden level, and 5 levels, that means: 60*10 + 10*10*4 = 1000 links in the entire brain! 2 floats in a link implies 2000 floats, and were we to consider node values, then that's 110 more floats = 2110 floats per brain.
+	
+		If a sensor each has:
+			1. Activation
+			2. Hue
+			3. Lightness
+			4. Saturation
+		
+		And we have 8 sensors, then that's 4*8 = 32 inputs. 
+
+	To minimize memory complexity we can take several approaches:
+
+		a. Instead of merely defining # of nodes per level (which is always a very big number since inputs is about 40-50 nodes), define # of nodes per hidden level and # of nodes per input level, this will drastically decrease size!
+		b. Instead of having every node connect to every other node in the previous layer, have it only connect to X nodes
+		c. Don't use biases! Just scalars...
+
+	The overall approach for brains:
+
+		A single brain buffer would contain:
+
+			[STRUCTURE HEADER UINTS | A SEQUENCE OF ALL NODES' CURRENT VALUES | A SEQUENCE OF LINKS]
+
+		The structure header is simply a sequence of uints that tells us the structure of the brain.
+			[32, 15, 10, 18, 12] for example means 32 inputs, 3 middle levels (15, 10 and 18 nodes), and 12 outputs.
+
+		The sequence of notes is merely the current values stored at each node. We know that this buffer always starts immediately after
+		the structure header, and is exactly sum(structure values) indices long.
+
+		Afterwards, a sequence of links: the length of this buffer is exactly 32*15 + 15*10 + 10*18 + 18*12 indices long.
+
+	We can use this layout to cleverly iterate our brains and perform forward propagations.
+	While this layout is borderline dynamic, we must make each total brain size fixed for proper SSBO indexing.
+	We can choose one of two data layout approaches:
+		
+		[FIXED STRUCTURE | DYNAMIC NODES | DYNAMIC LINKS, empty space]
+		(gives us more flexibility in how we forward propagate, less convenient for mutation logic)
+	
+	Or this:
+
+		[FIXED STRUCTURE | FIXED NODES, empty space | FIXED LINKS, empty space]
+		(gives us more comfort in mutation handling, less in forward propagations)
+
+	We'll choose the first, since it may prove more flexible to changes in the future (no hard-coding of sub-buffer sizes)
+
+	Finally we wish for a straight forward method to provide an upper bound on memory complexity of brains.
+	
+*/
+
 
 ///////////////////
 // -- STRUCTS -- //
@@ -16,22 +82,21 @@ struct InstancedDrawCallData
 };
 
 // Brains related structs
-struct Link
+struct BrainLink
 {
 	GLfloat scalar;
-	GLfloat bias;
 };
 
-struct Node
+struct BrainNode
 {
 	GLfloat value;
-	Link links[CREATURE_MAX_NODES_IN_LEVEL];
 };
 
 struct Brain
 {
-	GLuint structure[CREATURE_MAX_BRAIN_LEVELS];
-	Node nodes[CREATURE_MAX_NODES_IN_BRAIN];
+	GLuint structure[CREATURE_MAX_NUM_OF_STRUCTURE_INDICES];
+	BrainNode nodes[CREATURE_MAX_NUM_OF_NODES];
+	BrainLink links[CREATURE_MAX_NUM_OF_LINKS];
 };
 
 // Just used for passing around creature data arguments more neatly
@@ -59,13 +124,13 @@ struct CreatureAttributesSSBOInfo
 };
 
 // Creature Data SSBOs
-CreatureAttributesSSBOInfo creature_brans{ 0, sizeof(Brain) };	// The brains of the creatures
+CreatureAttributesSSBOInfo creature_brans{ 0, sizeof(Brain) };		// The brains of the creatures
 CreatureAttributesSSBOInfo creature_colrs{ 0, sizeof(vec3) };		// The colors of the creatures
 CreatureAttributesSSBOInfo creature_poses{ 0, sizeof(vec2) };		// The positions of the creatures
 CreatureAttributesSSBOInfo creature_velos{ 0, sizeof(vec2) };		// The position velocities of the creatures
 CreatureAttributesSSBOInfo creature_radii{ 0, sizeof(GLfloat) };	// The radii of the creatures
 CreatureAttributesSSBOInfo creature_lives{ 0, sizeof(GLfloat) };	// The health of the creatures
-CreatureAttributesSSBOInfo creature_tiles{ 0, sizeof(GLuint) };	// Uniform grid tile index keeping
+CreatureAttributesSSBOInfo creature_tiles{ 0, sizeof(GLuint) };		// Uniform grid tile index keeping
 CreatureAttributesSSBOInfo creature_gprps{ 0, sizeof(vec2) };		// A general purpose buffer of vec2's
 
 GLuint creature_count = 0; // The count of active creatures in the simulation
@@ -79,7 +144,9 @@ GLuint borderPhysicsProgram;
 GLuint uniformGridBindProgram;
 GLuint uniformGridUnBindProgram;
 GLuint creatureCollisionsProgram;
-
+GLuint brainPushInputsProgram;
+GLuint brainForwardPropagateProgram;
+GLuint brainPullOutputsProgram;
 
 // Render working variables
 const char* cameraTransformUniformName("uTransform");
@@ -89,6 +156,9 @@ mat4 cameraTransform = mat4(1.0f);
 InstancedDrawCallData circleDrawCallData;
 
 
+//////////////////
+// -- BRAINS -- //
+//////////////////
 
 
 
@@ -149,7 +219,7 @@ InstancedDrawCallData circleDrawCallData;
 			Remmaped pos.x = pos.x + simWidth / 2
 	*/
 
-	// The uniform grid buffer: stores the creature indices per tiles
+// The uniform grid buffer: stores the creature indices per tiles
 GLuint ugrid_SSBO;
 
 // Used to find out when we need to rebuild the uniform grid
@@ -195,7 +265,7 @@ void BuildUniformGrid()
 	ugrid_SimWidth = newSimulationWidth + uniformGridSimulationDimensionBuffer;
 	ugrid_SimHeight = newSimulationHeight + uniformGridSimulationDimensionBuffer;
 
-	// Calculate how many tiles we are spreading over our grid
+	// Calculate how many tiles we are spreading over our simulation space
 	ugrid_GridXDim = (GLuint)std::max(1, (int)floor(ugrid_SimWidth / newInteractDist));
 	ugrid_GridYDim = (GLuint)std::max(1, (int)floor(ugrid_SimHeight / newInteractDist));
 
@@ -318,7 +388,7 @@ void ExpandCreatureAttributesSSBO(CreatureAttributesSSBOInfo& attributes, GLuint
 	// Copy old SSBO to new SSBO
 	glBindBuffer(GL_COPY_READ_BUFFER, attributes.ssbo);
 	glBindBuffer(GL_COPY_WRITE_BUFFER, newSSBO);
-	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, oldSize); // This causes a performance running for some reason
+	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, oldSize); // This causes a performance warning for some reason on NVIDIA drivers
 
 	// Delete old SSBO
 	GLuint buffersToDelete = { attributes.ssbo };
@@ -412,7 +482,6 @@ void RemoveCreature(GLuint creatureIndex)
 	RemoveCreatureAttribute(creature_lives, creatureIndex);
 	RemoveCreatureAttribute(creature_tiles, creatureIndex);
 
-
 	creature_count--;
 }
 
@@ -442,25 +511,44 @@ void InitSSBOs()
 
 void InitLogicPrograms()
 {
+	vector<pair<string, string>> replacers;
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(TECH_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE)));
+	replacers.push_back(make_pair("@CREATURE_MAX_NUM_OF_STRUCTURE_INDICES@", to_string(CREATURE_MAX_NUM_OF_STRUCTURE_INDICES)));
+	replacers.push_back(make_pair("@CREATURE_MAX_NUM_OF_NODES@", to_string(CREATURE_MAX_NUM_OF_NODES)));
+	replacers.push_back(make_pair("@CREATURE_MAX_NUM_OF_LINKS@", to_string(CREATURE_MAX_NUM_OF_LINKS)));
+	replacers.push_back(make_pair("@CREATURE_NUM_OF_INPUTS@", to_string(CREATURE_NUM_OF_INPUTS)));
+	
 	GLenum applyVelocitiesShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* applyVelocitiesShaderPaths[] = { "resources/compute shaders/apply_velocities.computeShader" };
-	applyVelocitiesProgram = CreateLinkedShaderProgram(1, applyVelocitiesShaderTypes, applyVelocitiesShaderPaths, NULL);
+	applyVelocitiesProgram = CreateLinkedShaderProgram(1, applyVelocitiesShaderTypes, applyVelocitiesShaderPaths, &replacers);
 
 	GLenum borderPhysicsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* borderPhysicsShaderPaths[] = { "resources/compute shaders/border_physics.computeShader" };
-	borderPhysicsProgram = CreateLinkedShaderProgram(1, borderPhysicsShaderTypes, borderPhysicsShaderPaths, NULL);
+	borderPhysicsProgram = CreateLinkedShaderProgram(1, borderPhysicsShaderTypes, borderPhysicsShaderPaths, &replacers);
 
 	GLenum uniformGridBindShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* uniformGridBindShaderPaths[] = { "resources/compute shaders/uniform_grid_bind.computeShader" };
-	uniformGridBindProgram = CreateLinkedShaderProgram(1, uniformGridBindShaderTypes, uniformGridBindShaderPaths, NULL);
+	uniformGridBindProgram = CreateLinkedShaderProgram(1, uniformGridBindShaderTypes, uniformGridBindShaderPaths, &replacers);
 
 	GLenum uniformGridUnBindShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* uniformGridUnBindShaderPaths[] = { "resources/compute shaders/uniform_grid_unbind.computeShader" };
-	uniformGridUnBindProgram = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths, NULL);
+	uniformGridUnBindProgram = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths, &replacers);
 
 	GLenum creatureCollisionsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* creatureCollisionsShaderPaths[] = { "resources/compute shaders/creature_collisions.computeShader" };
-	creatureCollisionsProgram = CreateLinkedShaderProgram(1, creatureCollisionsShaderTypes, creatureCollisionsShaderPaths, NULL);
+	creatureCollisionsProgram = CreateLinkedShaderProgram(1, creatureCollisionsShaderTypes, creatureCollisionsShaderPaths, &replacers);
+
+	GLenum brainPushInputsShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* brainPushInputsShaderPaths[] = { "resources/compute shaders/brain_push_inputs.computeShader" };
+	brainPushInputsProgram = CreateLinkedShaderProgram(1, brainPushInputsShaderTypes, brainPushInputsShaderPaths, &replacers);
+
+	GLenum brainForwardPropagateShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* brainForwardPropagateShaderPaths[] = { "resources/compute shaders/brain_forward_propagate.computeShader" };
+	brainForwardPropagateProgram = CreateLinkedShaderProgram(1, brainForwardPropagateShaderTypes, brainForwardPropagateShaderPaths, &replacers);
+
+	GLenum brainPullOutputsShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* brainPullOutputsShaderPaths[] = { "resources/compute shaders/brain_pull_outputs.computeShader" };
+	brainPullOutputsProgram = CreateLinkedShaderProgram(1, brainPullOutputsShaderTypes, brainPullOutputsShaderPaths, &replacers);
 }
 
 void InitDrawingPrograms()
@@ -499,9 +587,6 @@ void InitUniformGrid()
 void Simulation_Init()
 {
 
-	cout << creature_brans.attributeBytesSize << endl;
-	cout << creature_colrs.attributeBytesSize << endl;
-
 	InitSSBOs();
 	InitLogicPrograms();
 	InitDrawingPrograms();
@@ -510,7 +595,7 @@ void Simulation_Init()
 	// Add some creatures (TEMP)
 	for (int i = 0; i < SIMULATION_NUM_OF_CREATURES_ON_INIT.value; i++)
 	{
-		Brain someBrain();
+		Brain someBrain{ 0 };
 
 		CreatureData data;
 		data.brain = someBrain;
@@ -536,8 +621,8 @@ void Simulation_Logic()
 	The number of work groups that can be dispatched in a single dispatch call is defined
 	by GL_MAX_COMPUTE_WORK_GROUP_COUNT. This must be queried with glGetIntegeri_v.
 	*/
-	int numOfWorkGroups = creature_count / TECH_COMPUTE_PROGRAM_WORKGROUP_SIZE +
-		(creature_count % TECH_COMPUTE_PROGRAM_WORKGROUP_SIZE == 0 ? 0 : 1);
+	int numOfWorkGroups = creature_count / TECH_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE +
+		(creature_count % TECH_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE == 0 ? 0 : 1);
 
 	GLuint program;
 
@@ -599,7 +684,7 @@ void Simulation_Logic()
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
-	// Border physics (before uniform bind so we don't step out of bounds!)
+	// Border physics
 	program = borderPhysicsProgram;
 	glUseProgram(program);
 		SetUniformVector2f(program, "uSimDimensions", vec2(SIMULATION_WIDTH.value, SIMULATION_HEIGHT.value));
