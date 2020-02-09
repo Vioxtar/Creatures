@@ -81,28 +81,11 @@ struct InstancedDrawCallData
 	GLuint numOfIndices;
 };
 
-// Brains related structs
-struct BrainLink
-{
-	GLfloat scalar;
-};
-
-struct BrainNode
-{
-	GLfloat value;
-};
-
-struct Brain
-{
-	GLuint structure[CREATURE_MAX_NUM_OF_STRUCTURE_INDICES];
-	BrainNode nodes[CREATURE_MAX_NUM_OF_NODES];
-	BrainLink links[CREATURE_MAX_NUM_OF_LINKS];
-};
-
 // Just used for passing around creature data arguments more neatly
 struct CreatureData
 {
-	Brain brain;
+	GLfloat* brainData;
+	GLuint* brainStructure;
 	vec3 col;
 	vec2 pos;
 	vec2 vel;
@@ -110,6 +93,16 @@ struct CreatureData
 	GLfloat life;
 	GLuint tile;
 };
+
+
+//////////////////
+// -- BRAINS -- //
+//////////////////
+
+const GLuint brains_MaxNumOfNodes = CREATURE_NUM_OF_INPUTS + CREATURE_MAX_NUM_OF_MIDLEVELS * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL + CREATURE_NUM_OF_OUTPUTS;
+const GLuint brains_MaxNumOfLinks = (CREATURE_NUM_OF_INPUTS + CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL * (CREATURE_MAX_NUM_OF_MIDLEVELS - 1) + CREATURE_NUM_OF_OUTPUTS) * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL;
+const GLuint brains_MaxNumOfStructureIndices = 1 + CREATURE_MAX_NUM_OF_MIDLEVELS + 1;
+const GLuint brains_MaxNumOfFloatsInBrain = brains_MaxNumOfNodes + brains_MaxNumOfLinks;
 
 
 
@@ -123,15 +116,18 @@ struct CreatureAttributesSSBOInfo
 	GLuint attributeBytesSize;
 };
 
+
+
 // Creature Data SSBOs
-CreatureAttributesSSBOInfo creature_brans{ 0, sizeof(Brain) };		// The brains of the creatures
-CreatureAttributesSSBOInfo creature_colrs{ 0, sizeof(vec3) };		// The colors of the creatures
-CreatureAttributesSSBOInfo creature_poses{ 0, sizeof(vec2) };		// The positions of the creatures
-CreatureAttributesSSBOInfo creature_velos{ 0, sizeof(vec2) };		// The position velocities of the creatures
-CreatureAttributesSSBOInfo creature_radii{ 0, sizeof(GLfloat) };	// The radii of the creatures
-CreatureAttributesSSBOInfo creature_lives{ 0, sizeof(GLfloat) };	// The health of the creatures
-CreatureAttributesSSBOInfo creature_tiles{ 0, sizeof(GLuint) };		// Uniform grid tile index keeping
-CreatureAttributesSSBOInfo creature_gprps{ 0, sizeof(vec2) };		// A general purpose buffer of vec2's
+CreatureAttributesSSBOInfo creature_BrainsData{ 0, sizeof(GLfloat) * brains_MaxNumOfFloatsInBrain };			// The brains of the creatures
+CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * brains_MaxNumOfStructureIndices };	// The brains of the creatures
+CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };													// The colors of the creatures
+CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };												// The positions of the creatures
+CreatureAttributesSSBOInfo creature_Velocities{ 0, sizeof(vec2) };												// The position velocities of the creatures
+CreatureAttributesSSBOInfo creature_Radii{ 0, sizeof(GLfloat) };												// The radii of the creatures
+CreatureAttributesSSBOInfo creature_Lives{ 0, sizeof(GLfloat) };												// The health of the creatures
+CreatureAttributesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLuint) };										// Uniform grid tile index keeping
+CreatureAttributesSSBOInfo creature_GeneralPurpose{ 0, sizeof(vec2) };											// A general purpose buffer of vec2's
 
 GLuint creature_count = 0; // The count of active creatures in the simulation
 GLuint max_supported_creature_count_by_current_buffers; // The number of creatures supported by current SSBO buffers
@@ -139,26 +135,18 @@ GLuint max_supported_creature_count_by_current_buffers; // The number of creatur
 const GLenum ssbo_usage = GL_STREAM_READ;
 
 // Logic programs
-GLuint applyVelocitiesProgram;
-GLuint borderPhysicsProgram;
-GLuint uniformGridBindProgram;
-GLuint uniformGridUnBindProgram;
-GLuint creatureCollisionsProgram;
-GLuint brainPushInputsProgram;
-GLuint brainForwardPropagateProgram;
-GLuint brainPullOutputsProgram;
+GLuint program_ApplyVelocities;
+GLuint program_BorderPhysics;
+GLuint program_UniformGridBind;
+GLuint program_uniformGridUnbind;
+GLuint program_CreatureCollision;
+GLuint program_BrainPushInputs;
+GLuint program_BrainForwardPropagate;
+GLuint program_BrainPullOutputs;
 
-// Render working variables
-const char* cameraTransformUniformName("uTransform");
-mat4 cameraTransform = mat4(1.0f);
 
 // Render draw call datas
 InstancedDrawCallData circleDrawCallData;
-
-
-//////////////////
-// -- BRAINS -- //
-//////////////////
 
 
 
@@ -344,7 +332,7 @@ void InstancedDrawCall(InstancedDrawCallData data, GLuint numOfInstances)
 	glBindVertexArray(data.VAO);
 
 	glUseProgram(data.program);
-	SetUniformMatrix4(data.program, cameraTransformUniformName, cameraTransform);
+	SetUniformMatrix4(data.program, "uTransform", GetSimSpaceToCameraTransform());
 	glDrawElementsInstanced(GL_TRIANGLES, data.numOfIndices, GL_UNSIGNED_INT, 0, numOfInstances);
 
 	glBindVertexArray(0);
@@ -437,14 +425,15 @@ GLuint AddCreature(CreatureData newCreatureData)
 	{
 		// We're exceeding capacities for all of our SSBOs, expand them
 		GLuint increaseSize = TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
-		ExpandCreatureAttributesSSBO(creature_brans, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_colrs, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_poses, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_velos, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_gprps, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_radii, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_lives, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_tiles, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_BrainsData, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_BrainsStructures, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_Colors, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_Positions, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_Velocities, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_GeneralPurpose, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_Radii, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_Lives, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_UniformGridTiles, increaseSize);
 
 
 		max_supported_creature_count_by_current_buffers += TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
@@ -453,14 +442,15 @@ GLuint AddCreature(CreatureData newCreatureData)
 
 
 	GLuint newCreatureIndex = creature_count;
-	SetCreatureAttribute(creature_brans, newCreatureIndex, &newCreatureData.brain);
-	SetCreatureAttribute(creature_colrs, newCreatureIndex, &newCreatureData.col);
-	SetCreatureAttribute(creature_poses, newCreatureIndex, &newCreatureData.pos);
-	SetCreatureAttribute(creature_velos, newCreatureIndex, &newCreatureData.vel);
-	SetCreatureAttribute(creature_gprps, newCreatureIndex, NULL);
-	SetCreatureAttribute(creature_radii, newCreatureIndex, &newCreatureData.rad);
-	SetCreatureAttribute(creature_lives, newCreatureIndex, &newCreatureData.life);
-	SetCreatureAttribute(creature_tiles, newCreatureIndex, &newCreatureData.tile);
+	SetCreatureAttribute(creature_BrainsData, newCreatureIndex, NULL);
+	SetCreatureAttribute(creature_BrainsStructures, newCreatureIndex, NULL);
+	SetCreatureAttribute(creature_Colors, newCreatureIndex, &newCreatureData.col);
+	SetCreatureAttribute(creature_Positions, newCreatureIndex, &newCreatureData.pos);
+	SetCreatureAttribute(creature_Velocities, newCreatureIndex, &newCreatureData.vel);
+	SetCreatureAttribute(creature_GeneralPurpose, newCreatureIndex, NULL);
+	SetCreatureAttribute(creature_Radii, newCreatureIndex, &newCreatureData.rad);
+	SetCreatureAttribute(creature_Lives, newCreatureIndex, &newCreatureData.life);
+	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, &newCreatureData.tile);
 
 
 	creature_count++;
@@ -473,14 +463,15 @@ void RemoveCreature(GLuint creatureIndex)
 	if (creature_count <= 0)
 		return;
 
-	RemoveCreatureAttribute(creature_brans, creatureIndex);
-	RemoveCreatureAttribute(creature_colrs, creatureIndex);
-	RemoveCreatureAttribute(creature_poses, creatureIndex);
-	RemoveCreatureAttribute(creature_velos, creatureIndex);
-	RemoveCreatureAttribute(creature_gprps, creatureIndex);
-	RemoveCreatureAttribute(creature_radii, creatureIndex);
-	RemoveCreatureAttribute(creature_lives, creatureIndex);
-	RemoveCreatureAttribute(creature_tiles, creatureIndex);
+	RemoveCreatureAttribute(creature_BrainsData, creatureIndex);
+	RemoveCreatureAttribute(creature_BrainsStructures, creatureIndex);
+	RemoveCreatureAttribute(creature_Colors, creatureIndex);
+	RemoveCreatureAttribute(creature_Positions, creatureIndex);
+	RemoveCreatureAttribute(creature_Velocities, creatureIndex);
+	RemoveCreatureAttribute(creature_GeneralPurpose, creatureIndex);
+	RemoveCreatureAttribute(creature_Radii, creatureIndex);
+	RemoveCreatureAttribute(creature_Lives, creatureIndex);
+	RemoveCreatureAttribute(creature_UniformGridTiles, creatureIndex);
 
 	creature_count--;
 }
@@ -499,56 +490,53 @@ void InitSSBOs()
 	creature_count = 0;
 	max_supported_creature_count_by_current_buffers = numOfCreaturesOnInit;
 
-	InitEmptyCreatureAttributesSSBO(creature_brans, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_colrs, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_poses, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_velos, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_gprps, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_radii, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_lives, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_tiles, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_BrainsData, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_BrainsStructures, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_Colors, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_Positions, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_Velocities, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_GeneralPurpose, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_Radii, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_Lives, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_UniformGridTiles, numOfCreaturesOnInit);
 }
 
 void InitLogicPrograms()
 {
 	vector<pair<string, string>> replacers;
 	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(TECH_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE)));
-	replacers.push_back(make_pair("@CREATURE_MAX_NUM_OF_STRUCTURE_INDICES@", to_string(CREATURE_MAX_NUM_OF_STRUCTURE_INDICES)));
-	replacers.push_back(make_pair("@CREATURE_MAX_NUM_OF_NODES@", to_string(CREATURE_MAX_NUM_OF_NODES)));
-	replacers.push_back(make_pair("@CREATURE_MAX_NUM_OF_LINKS@", to_string(CREATURE_MAX_NUM_OF_LINKS)));
-	replacers.push_back(make_pair("@CREATURE_NUM_OF_INPUTS@", to_string(CREATURE_NUM_OF_INPUTS)));
 	
 	GLenum applyVelocitiesShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* applyVelocitiesShaderPaths[] = { "resources/compute shaders/apply_velocities.computeShader" };
-	applyVelocitiesProgram = CreateLinkedShaderProgram(1, applyVelocitiesShaderTypes, applyVelocitiesShaderPaths, &replacers);
+	program_ApplyVelocities = CreateLinkedShaderProgram(1, applyVelocitiesShaderTypes, applyVelocitiesShaderPaths, &replacers);
 
 	GLenum borderPhysicsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* borderPhysicsShaderPaths[] = { "resources/compute shaders/border_physics.computeShader" };
-	borderPhysicsProgram = CreateLinkedShaderProgram(1, borderPhysicsShaderTypes, borderPhysicsShaderPaths, &replacers);
+	program_BorderPhysics = CreateLinkedShaderProgram(1, borderPhysicsShaderTypes, borderPhysicsShaderPaths, &replacers);
 
 	GLenum uniformGridBindShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* uniformGridBindShaderPaths[] = { "resources/compute shaders/uniform_grid_bind.computeShader" };
-	uniformGridBindProgram = CreateLinkedShaderProgram(1, uniformGridBindShaderTypes, uniformGridBindShaderPaths, &replacers);
+	program_UniformGridBind = CreateLinkedShaderProgram(1, uniformGridBindShaderTypes, uniformGridBindShaderPaths, &replacers);
 
 	GLenum uniformGridUnBindShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* uniformGridUnBindShaderPaths[] = { "resources/compute shaders/uniform_grid_unbind.computeShader" };
-	uniformGridUnBindProgram = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths, &replacers);
+	program_uniformGridUnbind = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths, &replacers);
 
 	GLenum creatureCollisionsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* creatureCollisionsShaderPaths[] = { "resources/compute shaders/creature_collisions.computeShader" };
-	creatureCollisionsProgram = CreateLinkedShaderProgram(1, creatureCollisionsShaderTypes, creatureCollisionsShaderPaths, &replacers);
+	program_CreatureCollision = CreateLinkedShaderProgram(1, creatureCollisionsShaderTypes, creatureCollisionsShaderPaths, &replacers);
 
 	GLenum brainPushInputsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* brainPushInputsShaderPaths[] = { "resources/compute shaders/brain_push_inputs.computeShader" };
-	brainPushInputsProgram = CreateLinkedShaderProgram(1, brainPushInputsShaderTypes, brainPushInputsShaderPaths, &replacers);
+	program_BrainPushInputs = CreateLinkedShaderProgram(1, brainPushInputsShaderTypes, brainPushInputsShaderPaths, &replacers);
 
 	GLenum brainForwardPropagateShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* brainForwardPropagateShaderPaths[] = { "resources/compute shaders/brain_forward_propagate.computeShader" };
-	brainForwardPropagateProgram = CreateLinkedShaderProgram(1, brainForwardPropagateShaderTypes, brainForwardPropagateShaderPaths, &replacers);
+	program_BrainForwardPropagate = CreateLinkedShaderProgram(1, brainForwardPropagateShaderTypes, brainForwardPropagateShaderPaths, &replacers);
 
 	GLenum brainPullOutputsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* brainPullOutputsShaderPaths[] = { "resources/compute shaders/brain_pull_outputs.computeShader" };
-	brainPullOutputsProgram = CreateLinkedShaderProgram(1, brainPullOutputsShaderTypes, brainPullOutputsShaderPaths, &replacers);
+	program_BrainPullOutputs = CreateLinkedShaderProgram(1, brainPullOutputsShaderTypes, brainPullOutputsShaderPaths, &replacers);
 }
 
 void InitDrawingPrograms()
@@ -595,10 +583,10 @@ void Simulation_Init()
 	// Add some creatures (TEMP)
 	for (int i = 0; i < SIMULATION_NUM_OF_CREATURES_ON_INIT.value; i++)
 	{
-		Brain someBrain{ 0 };
 
 		CreatureData data;
-		data.brain = someBrain;
+		data.brainData = nullptr;
+		data.brainStructure = nullptr;
 		data.col = vec3(random(), random(), random());
 		data.pos = vec2(0, 0);
 		data.vel = vec2((random() - 0.5) * 2 * 0.000000001, (random() - 0.5) * 2 * 0.000000001);
@@ -627,14 +615,14 @@ void Simulation_Logic()
 	GLuint program;
 
 	// Uniform grid bind
-	program = uniformGridBindProgram;
+	program = program_UniformGridBind;
 	glUseProgram(program);
 		SetUniformVector2f(program, "uSimDimensions", vec2(ugrid_SimWidth, ugrid_SimHeight));
 		SetUniformVector2ui(program, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
 		SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ugrid_SSBO);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_tiles.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_UniformGridTiles.ssbo);
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -642,16 +630,16 @@ void Simulation_Logic()
 
 
 	// Creature collision
-	program = creatureCollisionsProgram;
+	program = program_CreatureCollision;
 	glUseProgram(program);
 		SetUniformVector2ui(program, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
 		SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ugrid_SSBO);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_tiles.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_gprps.ssbo); // Writes physics fix vector for decoupling purposes
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_UniformGridTiles.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_GeneralPurpose.ssbo); // Writes physics fix vector for decoupling purposes
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -659,11 +647,11 @@ void Simulation_Logic()
 
 
 	// Velocity / physics value application
-	program = applyVelocitiesProgram;
+	program = program_ApplyVelocities;
 	glUseProgram(program);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_gprps.ssbo); // Applies physics fix vector, zerofies
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurpose.ssbo); // Applies physics fix vector, zerofies
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -674,23 +662,23 @@ void Simulation_Logic()
 
 	
 	// Uniform grid unbind
-	program = uniformGridUnBindProgram;
+	program = program_uniformGridUnbind;
 	glUseProgram(program);
 		SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ugrid_SSBO);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_tiles.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_UniformGridTiles.ssbo);
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
 	// Border physics
-	program = borderPhysicsProgram;
+	program = program_BorderPhysics;
 	glUseProgram(program);
 		SetUniformVector2f(program, "uSimDimensions", vec2(SIMULATION_WIDTH.value, SIMULATION_HEIGHT.value));
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_poses.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_velos.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -699,12 +687,11 @@ void Simulation_Logic()
 
 void Simulation_Render()
 {
-	cameraTransform = GetSimSpaceToCameraTransform();
 
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_colrs.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_poses.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_radii.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_lives.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Colors.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Positions.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
 
 	InstancedDrawCall(circleDrawCallData, creature_count);
 

@@ -2,12 +2,12 @@
 
 layout (std430, binding = 0) buffer UniformGrid
 {
-	uint ugrid[];
+	uint UGrid[];
 };
 
 layout (std430, binding = 1) buffer CreatureTiles
 {
-	uint tiles[];
+	uint Tiles[];
 };
 
 
@@ -22,12 +22,12 @@ void main()
 	uint gid = gl_GlobalInvocationID.x;
 
 	// Get the index of the tile we were mapped to
-	uint tileIndex = tiles[gid];
+	uint tileIndex = Tiles[gid];
 
 	// Forget our last tile (disabled, we may not even need this...)
-	//tiles[gid] = -1;
+	//Tiles[gid] = -1;
 
 	// Reset the creature counter of the tile
 	uint tileCreaturesCountIndex = tileIndex * uIndicesInTile;
-	ugrid[tileCreaturesCountIndex] = 0;
+	UGrid[tileCreaturesCountIndex] = 0;
 }

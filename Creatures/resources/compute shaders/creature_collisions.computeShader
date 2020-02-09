@@ -2,32 +2,32 @@
 
 layout (std430, binding = 0) buffer CreaturePositions
 {
-	vec2 poses[];
+	vec2 Positions[];
 };
 
 layout (std430, binding = 1) buffer CreatureVelocities
 {
-	vec2 velos[];
+	vec2 Velocities[];
 };
 
 layout (std430, binding = 2) buffer CreatureRadii
 {
-	float radii[];
+	float Radii[];
 };
 
 layout (std430, binding = 3) buffer UniformGrid
 {
-	uint ugrid[];
+	uint UGrid[];
 };
 
 layout (std430, binding = 4) buffer CreatureTiles
 {
-	uint tiles[];
+	uint Tiles[];
 };
 
 layout (std430, binding = 5) buffer CreatureGeneralPurpose
 {
-	vec2 physicsFix[];
+	vec2 PhysicsFixes[];
 };
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
@@ -44,7 +44,7 @@ void main()
 	uint gridYDim = uGridDimensions.y;	
 
 	// Find our own tile
-	uint tileIndex = tiles[gid];
+	uint tileIndex = Tiles[gid];
 
 	if (tileIndex == -1)
 	{
@@ -63,8 +63,8 @@ void main()
 	uint yEnd = min(yTileIndex + 1, gridYDim - 1);
 
 	// Cache our own values, we don't need to access them every iteration
-	vec2 aPos = poses[gid];
-	float aRad = radii[gid];
+	vec2 aPos = Positions[gid];
+	float aRad = Radii[gid];
 
 	// Iterate on the uniform grid throughout start/end x,y indices
 	for (uint x = xStart; x <= xEnd; x++)
@@ -79,13 +79,13 @@ void main()
 			// increase the creature counter of our tile if we don't enter it.
 			// It's also probably still best to double check this here. Otherwise lastPopulatedIndex
 			// will overstep its boundary and cause a memory miss, which is terrible for performance!
-			uint creaturesInTile = ugrid[tileCountIndex];
+			uint creaturesInTile = UGrid[tileCountIndex];
 
 			uint lastPopulatedIndex = tileCountIndex + creaturesInTile;
 				
 			for (uint b = tileCountIndex + 1; b <= lastPopulatedIndex; b++)
 			{
-				uint bGID = ugrid[b];
+				uint bGID = UGrid[b];
 				
 				// Only the creature with the lesser GID performs the calculations
 				if (bGID <= gid)
@@ -93,8 +93,8 @@ void main()
 					continue;
 				}
 
-				vec2 bPos = poses[bGID];
-				float bRad = radii[bGID];
+				vec2 bPos = Positions[bGID];
+				float bRad = Radii[bGID];
 
 				vec2 c1c2PosDiff = bPos - aPos;
 				float distSquared = dot(c1c2PosDiff, c1c2PosDiff);
@@ -104,13 +104,13 @@ void main()
 					continue;
 				}
 
-				float radiiSum = aRad + bRad;
-				if (distSquared < radiiSum * radiiSum)
+				float RadiiSum = aRad + bRad;
+				if (distSquared < RadiiSum * RadiiSum)
 				{
 					float dist = sqrt(distSquared);
 
-					float violation = radiiSum - dist;
-					float push = violation / radiiSum;
+					float violation = RadiiSum - dist;
+					float push = violation / RadiiSum;
 					float m1 = 1;
 					float m2 = 1;
 					float m1Frac = m1 / (m1 + m2);
@@ -126,8 +126,8 @@ void main()
 					c2PosSub = c2PosSub * m1Frac;
 				
 					// Register the fix
-					physicsFix[gid] += c1PosSub;
-					physicsFix[bGID] += c2PosSub;
+					PhysicsFixes[gid] += c1PosSub;
+					PhysicsFixes[bGID] += c2PosSub;
 				}
 			}
 		}

@@ -35,7 +35,11 @@ extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.1, 0.1, 0.1 };
 extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS = { 0.1, 0.1, 2.0 };
 
 
-
+// Creature brain settings
+extern const uint16_t CREATURE_NUM_OF_INPUTS = 36;
+extern const uint16_t CREATURE_NUM_OF_OUTPUTS = 12;
+extern const uint16_t CREATURE_MAX_NUM_OF_MIDLEVELS = 4;
+extern const uint16_t CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL = 16;
 
 
 

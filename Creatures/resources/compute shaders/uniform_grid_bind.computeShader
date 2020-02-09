@@ -2,12 +2,12 @@
 
 layout (std430, binding = 0) buffer CreaturePositions
 {
-	vec2 poses[];
+	vec2 Positions[];
 };
 
 layout (std430, binding = 1) buffer UniformGrid
 {
-	uint ugrid[];
+	uint UGrid[];
 };
 
 layout (std430, binding = 2) buffer CreatureTiles
@@ -40,7 +40,7 @@ void main()
 	uint tileCreatureCapacity = uIndicesInTile - 1;
 	
 	// Find our tile index
-	vec2 pos = poses[gid];
+	vec2 pos = Positions[gid];
 
 	float remappedXPos = pos.x + (simWidth / 2.0);
 	float remappedYPos = pos.y + (simHeight / 2.0);
@@ -52,19 +52,19 @@ void main()
 
 	// Find if we have room inside the tile
 	uint tileCreaturesCountIndex = tileIndex * uIndicesInTile;
-	uint numOfCreaturesAlreadyAssigned = atomicAdd(ugrid[tileCreaturesCountIndex], 1);
+	uint numOfCreaturesAlreadyAssigned = atomicAdd(UGrid[tileCreaturesCountIndex], 1);
 
 	if (numOfCreaturesAlreadyAssigned < tileCreatureCapacity)
 	{
 
 		// We have enough room, register
 		uint placementIndex = tileCreaturesCountIndex + numOfCreaturesAlreadyAssigned + 1;
-		ugrid[placementIndex] = gid;
+		UGrid[placementIndex] = gid;
 	
 	} else {
 
 		// The tile is already full (creatures assigned >= tileCreatureCapacity), lower the counter again, we didn't enter
-		atomicAdd(ugrid[tileCreaturesCountIndex], -1);
+		atomicAdd(UGrid[tileCreaturesCountIndex], -1);
 
 	}
 

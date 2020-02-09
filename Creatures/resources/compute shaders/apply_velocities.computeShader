@@ -2,17 +2,17 @@
 
 layout (std430, binding = 0) buffer CreaturePositions
 {
-	vec2 poses[];
+	vec2 Positions[];
 };
 
 layout (std430, binding = 1) buffer CreatureVelocities
 {
-	vec2 velos[];
+	vec2 Velocities[];
 };
 
 layout (std430, binding = 2) buffer CreatureGeneralPurpose
 {
-	vec2 physicsFix[];
+	vec2 PhysicsFixes[];
 };
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
@@ -22,10 +22,10 @@ void main()
 	uint gid = gl_GlobalInvocationID.x;
 	
 	// Apply the physics fix from the creature collision program
-	vec2 physFix = physicsFix[gid];
-	velos[gid] += physFix;
-	poses[gid] += physFix;
-	physicsFix[gid] = vec2(0, 0);
+	vec2 physFix = PhysicsFixes[gid];
+	Velocities[gid] += physFix;
+	Positions[gid] += physFix;
+	PhysicsFixes[gid] = vec2(0, 0);
 
-	poses[gid] += velos[gid];
+	Positions[gid] += Velocities[gid];
 }
