@@ -5,10 +5,20 @@
 
 	Some notes
 
-	Creatures grow in size the bigger they are (they don't control their radii targets)
+	Creatures grow in size the bigger they are, however this only reflects some ~0.8 percentage of their final radii, the remaining ~0.2 percent - they control!
 	
 	Creatures control hardness target, and have a stick mechanism (either arms or body or some sort of friction side)
 
+	Sigmoid activation can be described as:
+
+	sigmoidActivation(x) =
+		if x == 0.5 then return x
+		if x < 0.5 then return ((2x)^a)/2
+		if x > 0.5 then return -(((2(1-x))^a) / 2) + 1
+
+	for some constant a = 8-ish
+
+	It could also probably be approximated further by dividing into regions and returning linear functions within those regions
 */
 
 
@@ -53,7 +63,7 @@
 			[STRUCTURE HEADER UINTS | A SEQUENCE OF ALL NODES' CURRENT VALUES | A SEQUENCE OF LINKS]
 
 		The structure header is simply a sequence of uints that tells us the structure of the brain.
-			[32, 15, 10, 18, 12] for example means 32 inputs, 3 middle levels (15, 10 and 18 nodes), and 12 outputs.
+			[NUMOFLEVELS = 5, 32, 15, 10, 18, 12] for example means 32 inputs, 3 middle levels (15, 10 and 18 nodes), and 12 outputs.
 
 		The sequence of notes is merely the current values stored at each node. We know that this buffer always starts immediately after
 		the structure header, and is exactly sum(structure values) indices long.
@@ -112,7 +122,7 @@ struct CreatureData
 
 const GLuint brains_MaxNumOfNodes = CREATURE_NUM_OF_INPUTS + CREATURE_MAX_NUM_OF_MIDLEVELS * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL + CREATURE_NUM_OF_OUTPUTS;
 const GLuint brains_MaxNumOfLinks = (CREATURE_NUM_OF_INPUTS + CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL * (CREATURE_MAX_NUM_OF_MIDLEVELS - 1) + CREATURE_NUM_OF_OUTPUTS) * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL;
-const GLuint brains_MaxNumOfStructureIndices = 1 + CREATURE_MAX_NUM_OF_MIDLEVELS + 1;
+const GLuint brains_MaxNumOfStructureIndices = 1 + 1 + CREATURE_MAX_NUM_OF_MIDLEVELS + 1; // [NumOfLevels, NumOfInputs, NumOfMidLevels, NumOfOutputs]
 const GLuint brains_MaxNumOfFloatsInBrain = brains_MaxNumOfNodes + brains_MaxNumOfLinks;
 
 
@@ -636,6 +646,7 @@ void Simulation_Logic()
 	SetUniformUInteger(program, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Lives.ssbo);
 	glDispatchCompute(numOfWorkGroups, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);

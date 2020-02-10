@@ -2,12 +2,17 @@
 
 layout (std430, binding = 0) buffer CreatureBrainsStructures
 {
-	vec2 BrainsStructures[];
+	uint BrainsStructures[];
 };
 
 layout (std430, binding = 1) buffer CreatureBrainsData
 {
-	vec2 BrainsData[];
+	float BrainsData[];
+};
+
+layout (std430, binding = 2) buffer CreatureLives
+{
+	float lives[];
 };
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
@@ -20,6 +25,17 @@ uniform uint uMaxNumOfFloatsInBrain;
 void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
+	uint brainDataStartIndex = gid * uMaxNumOfFloatsInBrain;
+	uint brainStructureStartIndex = gid * uMaxNumOfStructureIndices;
 
-	// Actually push data! :D
+
+	uint numOfLevels = BrainsStructures[brainStructureStartIndex];
+	uint numOfInputs = BrainsStructures[brainStructureStartIndex + 1];
+	
+	// Acquire the input nodes' values range in our brain data, we always assume there's enough room to push our inputs!
+	uint firstInputNodeIndex = brainDataStartIndex;
+	uint firstNonInputNodeIndex = brainDataStartIndex + numOfInputs;
+
+	// For now just push in life
+	BrainsData[firstInputNodeIndex] = lives[gid];
 }
