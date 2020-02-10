@@ -1,9 +1,25 @@
 #version 460 core
 
+layout (std430, binding = 0) buffer CreatureBrainsStructures
+{
+	vec2 BrainsStructures[];
+};
+
+layout (std430, binding = 1) buffer CreatureBrainsData
+{
+	vec2 BrainsData[];
+};
+
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
+
+uniform uint uMaxNumOfNodes;
+uniform uint uMaxNumOfLinks;
+uniform uint uMaxNumOfStructureIndices;
+uniform uint uMaxNumOfFloatsInBrain;
 
 void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
 
+	// Actually push data! :D
 }

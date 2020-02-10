@@ -1,5 +1,17 @@
 #include "Simulation.h"
 
+
+/*
+
+	Some notes
+
+	Creatures grow in size the bigger they are (they don't control their radii targets)
+	
+	Creatures control hardness target, and have a stick mechanism (either arms or body or some sort of friction side)
+
+*/
+
+
 /*
 
 	Approach to brains:
@@ -91,7 +103,6 @@ struct CreatureData
 	vec2 vel;
 	GLfloat rad;
 	GLfloat life;
-	GLuint tile;
 };
 
 
@@ -138,7 +149,7 @@ const GLenum ssbo_usage = GL_STREAM_READ;
 GLuint program_ApplyVelocities;
 GLuint program_BorderPhysics;
 GLuint program_UniformGridBind;
-GLuint program_uniformGridUnbind;
+GLuint program_UniformGridUnBind;
 GLuint program_CreatureCollision;
 GLuint program_BrainPushInputs;
 GLuint program_BrainForwardPropagate;
@@ -146,7 +157,7 @@ GLuint program_BrainPullOutputs;
 
 
 // Render draw call datas
-InstancedDrawCallData circleDrawCallData;
+InstancedDrawCallData drawCallData_Circle;
 
 
 
@@ -450,7 +461,7 @@ GLuint AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_GeneralPurpose, newCreatureIndex, NULL);
 	SetCreatureAttribute(creature_Radii, newCreatureIndex, &newCreatureData.rad);
 	SetCreatureAttribute(creature_Lives, newCreatureIndex, &newCreatureData.life);
-	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, &newCreatureData.tile);
+	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, NULL);
 
 
 	creature_count++;
@@ -520,7 +531,7 @@ void InitLogicPrograms()
 
 	GLenum uniformGridUnBindShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* uniformGridUnBindShaderPaths[] = { "resources/compute shaders/uniform_grid_unbind.computeShader" };
-	program_uniformGridUnbind = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths, &replacers);
+	program_UniformGridUnBind = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths, &replacers);
 
 	GLenum creatureCollisionsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* creatureCollisionsShaderPaths[] = { "resources/compute shaders/creature_collisions.computeShader" };
@@ -552,7 +563,7 @@ void InitDrawingPrograms()
 	};
 	GLuint circleShapeProgram = CreateLinkedShaderProgram(2, shapeShaderTypes, shapeShaderPaths, NULL);
 	vector<vec2> circleBase = CreateCircleBase(10, 1);
-	circleDrawCallData = InitializeInstancedDrawCallData(circleShapeProgram, circleBase, true);
+	drawCallData_Circle = InitializeInstancedDrawCallData(circleShapeProgram, circleBase, true);
 }
 
 void InitUniformGrid()
@@ -592,7 +603,6 @@ void Simulation_Init()
 		data.vel = vec2((random() - 0.5) * 2 * 0.000000001, (random() - 0.5) * 2 * 0.000000001);
 		data.rad = CREATURE_MIN_RADIUS.value;
 		data.life = random() * 0.8 + 0.1;
-		data.tile = -1;
 		AddCreature(data);
 	}
 
@@ -613,6 +623,52 @@ void Simulation_Logic()
 		(creature_count % TECH_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE == 0 ? 0 : 1);
 
 	GLuint program;
+
+
+
+
+	// Push brain inputs
+	program = program_BrainPushInputs;
+	glUseProgram(program);
+	SetUniformUInteger(program, "uMaxNumOfNodes", brains_MaxNumOfNodes);
+	SetUniformUInteger(program, "uMaxNumOfLinks", brains_MaxNumOfLinks);
+	SetUniformUInteger(program, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
+	SetUniformUInteger(program, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
+	glDispatchCompute(numOfWorkGroups, 1, 1);
+
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+
+	// Brain forward propagate
+	program = program_BrainForwardPropagate;
+	glUseProgram(program);
+	SetUniformUInteger(program, "uMaxNumOfNodes", brains_MaxNumOfNodes);
+	SetUniformUInteger(program, "uMaxNumOfLinks", brains_MaxNumOfLinks);
+	SetUniformUInteger(program, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
+	SetUniformUInteger(program, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
+	glDispatchCompute(numOfWorkGroups, 1, 1);
+
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+
+	// Pull brain outputs
+	program = program_BrainPullOutputs;
+	glUseProgram(program);
+	SetUniformUInteger(program, "uMaxNumOfNodes", brains_MaxNumOfNodes);
+	SetUniformUInteger(program, "uMaxNumOfLinks", brains_MaxNumOfLinks);
+	SetUniformUInteger(program, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
+	SetUniformUInteger(program, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
+	glDispatchCompute(numOfWorkGroups, 1, 1);
+
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+
 
 	// Uniform grid bind
 	program = program_UniformGridBind;
@@ -662,7 +718,7 @@ void Simulation_Logic()
 
 	
 	// Uniform grid unbind
-	program = program_uniformGridUnbind;
+	program = program_UniformGridUnBind;
 	glUseProgram(program);
 		SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ugrid_SSBO);
@@ -693,7 +749,7 @@ void Simulation_Render()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
 
-	InstancedDrawCall(circleDrawCallData, creature_count);
+	InstancedDrawCall(drawCallData_Circle, creature_count);
 
 }
 
