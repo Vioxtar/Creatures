@@ -117,6 +117,10 @@ GLuint CreateLinkedShaderProgram(int numOfShaders, GLuint* shaderTypes, const ch
 			}
 		}
 
+		//cout << " _____ NEW SHADER _____" << endl;
+		//cout << shaderSourceString << endl;
+		//cout << " _____ END SHADER _____" << endl << endl;
+
 		GLuint compiledShaderID = CreateAndCompileShader(shaderSourceString, shaderType);
 		compiledShaders.emplace_back(compiledShaderID);
 	}

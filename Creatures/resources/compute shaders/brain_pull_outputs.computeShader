@@ -10,6 +10,16 @@ layout (std430, binding = 1) buffer CreatureBrainsData
 	float BrainsData[];
 };
 
+layout (std430, binding = 2) buffer CreatureColors
+{
+	float Colors[];
+};
+
+layout (std430, binding = 3) buffer CreatureLives
+{
+	float Lives[];
+};
+
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 uniform uint uMaxNumOfNodes;
@@ -19,5 +29,30 @@ uniform uint uMaxNumOfFloatsInBrain;
 
 void main()
 {
+	
+	// EVERYTHING HERE IS HACKY AF
+
 	uint gid = gl_GlobalInvocationID.x;
+	uint colIndex = gid * 3;
+	uint brainDataStartIndex = gid * uMaxNumOfFloatsInBrain;
+	uint brainStructureStartIndex = gid * uMaxNumOfStructureIndices;
+
+	uint numOfLevels = BrainsStructures[brainStructureStartIndex];
+	uint outputLevelIndex = brainStructureStartIndex + numOfLevels;
+	uint numOfOutputs = BrainsStructures[outputLevelIndex];
+
+	// Find first output data index
+	uint firstOutputIndex = brainDataStartIndex;
+	for (uint level = 0; level < numOfLevels; level++)
+	{
+		uint numOfNodesInLevel = BrainsStructures[brainStructureStartIndex + 1 + level];
+		firstOutputIndex += numOfNodesInLevel;
+	}
+	firstOutputIndex -= numOfOutputs;
+
+	Colors[colIndex] = BrainsData[firstOutputIndex];
+	Colors[colIndex + 1] = BrainsData[firstOutputIndex + 1];
+	Colors[colIndex + 2] = BrainsData[firstOutputIndex + 2];
+	Lives[gid] = max(0, min(BrainsData[firstOutputIndex + 3], 1));
+	
 }

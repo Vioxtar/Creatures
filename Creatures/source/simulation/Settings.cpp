@@ -7,7 +7,16 @@
 
 // Technical settings
 extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 500;
-extern const uint16_t TECH_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE = 1024;
+
+extern const uint16_t TECH_DEFAULT_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE = 1024;
+extern const uint16_t TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE = 4;
+extern const uint16_t TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE = 1024;
+extern const uint16_t TECH_BRAIN_PULL_OUTPUTS_WORKGROUP_LOCAL_SIZE = 1024;
+extern const uint16_t TECH_APPLY_VELOCITIES_WORKGROUP_LOCAL_SIZE = 1024;
+extern const uint16_t TECH_BORDER_PHYSICS_WORKGROUP_LOCAL_SIZE = 1024;
+extern const uint16_t TECH_UNIFORM_GRID_BIND_WORKGROUP_LOCAL_SIZE = 1024;
+extern const uint16_t TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE = 1024;
+extern const uint16_t TECH_CREATURE_COLLISION_WORKGROUP_LOCAL_SIZE = 1024;
 
 
 // Camera settings
@@ -24,9 +33,9 @@ extern const float CAMERA_START_ZOOM = 0.035f;
 extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
 extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 1;
 
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 200000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 500, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 50, 1, 300 };
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 120, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 120, 1, 300 };
 
 
 // Creature body settings
@@ -38,8 +47,8 @@ extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS = { 0.1, 0.1, 2.0 };
 // Creature brain settings
 extern const uint16_t CREATURE_NUM_OF_INPUTS = 36;
 extern const uint16_t CREATURE_NUM_OF_OUTPUTS = 12;
-extern const uint16_t CREATURE_MAX_NUM_OF_MIDLEVELS = 4;
-extern const uint16_t CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL = 25;
+extern const uint16_t CREATURE_MAX_NUM_OF_MIDLEVELS = 3;
+extern const uint16_t CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL = 20;
 
 
 

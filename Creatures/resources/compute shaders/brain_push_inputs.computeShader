@@ -12,7 +12,7 @@ layout (std430, binding = 1) buffer CreatureBrainsData
 
 layout (std430, binding = 2) buffer CreatureLives
 {
-	float lives[];
+	float Lives[];
 };
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
@@ -37,5 +37,5 @@ void main()
 	uint firstNonInputNodeIndex = brainDataStartIndex + numOfInputs;
 
 	// For now just push in life
-	BrainsData[firstInputNodeIndex] = lives[gid];
+	BrainsData[firstInputNodeIndex] = Lives[gid];
 }

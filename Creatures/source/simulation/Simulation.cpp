@@ -106,8 +106,8 @@ struct InstancedDrawCallData
 // Just used for passing around creature data arguments more neatly
 struct CreatureData
 {
-	GLfloat* brainData;
-	GLuint* brainStructure;
+	vector<GLfloat> brainData;
+	vector<GLuint> brainStructure;
 	vec3 col;
 	vec2 pos;
 	vec2 vel;
@@ -125,11 +125,38 @@ const GLuint brains_MaxNumOfLinks = (CREATURE_NUM_OF_INPUTS + CREATURE_MAX_NUM_O
 const GLuint brains_MaxNumOfStructureIndices = 1 + 1 + CREATURE_MAX_NUM_OF_MIDLEVELS + 1; // [NumOfLevels, NumOfInputs, NumOfMidLevels, NumOfOutputs]
 const GLuint brains_MaxNumOfFloatsInBrain = brains_MaxNumOfNodes + brains_MaxNumOfLinks;
 
+void InitFirstGenBrain(vector<GLfloat>* brainData, vector<GLuint>* brainStructure)
+{
+	// @TODO: HACKKY AF
+	// Basically fill the brain data with random floats
+	brainData->reserve(brains_MaxNumOfFloatsInBrain);
+	for (int i = 0; i < brains_MaxNumOfFloatsInBrain; i++)
+	{
+		if (i < brains_MaxNumOfNodes)
+		{
+			brainData->emplace_back(random()); // Node
+		}
+		else {
+			brainData->emplace_back(random()); // Link
+		}
+	}
 
+	brainStructure->reserve(brains_MaxNumOfStructureIndices);
+	brainStructure->emplace_back(2 + CREATURE_MAX_NUM_OF_MIDLEVELS); // Number of levels (currently set to max)
+	
+	brainStructure->emplace_back(CREATURE_NUM_OF_INPUTS);
+	for (int i = 0; i < CREATURE_MAX_NUM_OF_MIDLEVELS; i++)
+	{
+		brainStructure->emplace_back(CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL);
+	}
+	brainStructure->emplace_back(CREATURE_NUM_OF_OUTPUTS);
+}
 
 /////////////////////////////
 // -- WORKING VARIABLES -- //
 /////////////////////////////
+
+// Creature Data SSBOs
 
 struct CreatureAttributesSSBOInfo
 {
@@ -137,9 +164,6 @@ struct CreatureAttributesSSBOInfo
 	GLuint attributeBytesSize;
 };
 
-
-
-// Creature Data SSBOs
 CreatureAttributesSSBOInfo creature_BrainsData{ 0, sizeof(GLfloat) * brains_MaxNumOfFloatsInBrain };			// The brains of the creatures
 CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * brains_MaxNumOfStructureIndices };	// The brains of the creatures
 CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };													// The colors of the creatures
@@ -155,15 +179,42 @@ GLuint max_supported_creature_count_by_current_buffers; // The number of creatur
 
 const GLenum ssbo_usage = GL_STREAM_READ;
 
+
 // Logic programs
-GLuint program_ApplyVelocities;
-GLuint program_BorderPhysics;
-GLuint program_UniformGridBind;
-GLuint program_UniformGridUnBind;
-GLuint program_CreatureCollision;
-GLuint program_BrainPushInputs;
-GLuint program_BrainForwardPropagate;
-GLuint program_BrainPullOutputs;
+
+struct ProgramInfo
+{
+	GLuint program;
+	GLuint workGroupsNeeded;
+	const GLuint workGroupLocalSize;
+};
+
+void SetProgramInfoNumOfWorkGroupsNeeded(ProgramInfo& programInfo)
+{
+	int localSize = programInfo.workGroupLocalSize;
+	programInfo.workGroupsNeeded = creature_count / localSize + (creature_count % localSize == 0 ? 0 : 1);
+}
+
+ProgramInfo program_ApplyVelocities{ 0, 0, TECH_APPLY_VELOCITIES_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_BorderPhysics{ 0, 0, TECH_BORDER_PHYSICS_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_UniformGridBind{ 0, 0, TECH_UNIFORM_GRID_BIND_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_UniformGridUnBind{ 0, 0, TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureCollision{ 0, 0, TECH_CREATURE_COLLISION_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_BrainPushInputs{ 0, 0, TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_BrainForwardPropagate{ 0, 0, TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_BrainPullOutputs{ 0, 0, TECH_BRAIN_PULL_OUTPUTS_WORKGROUP_LOCAL_SIZE };
+
+void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
+{
+	SetProgramInfoNumOfWorkGroupsNeeded(program_ApplyVelocities);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_BorderPhysics);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_UniformGridBind);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_UniformGridUnBind);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureCollision);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPushInputs);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainForwardPropagate);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPullOutputs);
+}
 
 
 // Render draw call datas
@@ -463,8 +514,8 @@ GLuint AddCreature(CreatureData newCreatureData)
 
 
 	GLuint newCreatureIndex = creature_count;
-	SetCreatureAttribute(creature_BrainsData, newCreatureIndex, NULL);
-	SetCreatureAttribute(creature_BrainsStructures, newCreatureIndex, NULL);
+	SetCreatureAttribute(creature_BrainsData, newCreatureIndex, newCreatureData.brainData.data());
+	SetCreatureAttribute(creature_BrainsStructures, newCreatureIndex, newCreatureData.brainStructure.data());
 	SetCreatureAttribute(creature_Colors, newCreatureIndex, &newCreatureData.col);
 	SetCreatureAttribute(creature_Positions, newCreatureIndex, &newCreatureData.pos);
 	SetCreatureAttribute(creature_Velocities, newCreatureIndex, &newCreatureData.vel);
@@ -473,8 +524,10 @@ GLuint AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_Lives, newCreatureIndex, &newCreatureData.life);
 	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, NULL);
 
-
 	creature_count++;
+
+	// Recalculate number of workgroups needed for our programs
+	RecalculateAllProgramInfosNumberOfWorkGroupsNeeded();
 
 	return newCreatureIndex;
 }
@@ -495,6 +548,9 @@ void RemoveCreature(GLuint creatureIndex)
 	RemoveCreatureAttribute(creature_UniformGridTiles, creatureIndex);
 
 	creature_count--;
+
+	// Recalculate number of workgroups needed for our programs
+	RecalculateAllProgramInfosNumberOfWorkGroupsNeeded();
 }
 
 
@@ -525,39 +581,55 @@ void InitSSBOs()
 void InitLogicPrograms()
 {
 	vector<pair<string, string>> replacers;
-	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(TECH_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE)));
-	
+
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_ApplyVelocities.workGroupLocalSize)));
 	GLenum applyVelocitiesShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* applyVelocitiesShaderPaths[] = { "resources/compute shaders/apply_velocities.computeShader" };
-	program_ApplyVelocities = CreateLinkedShaderProgram(1, applyVelocitiesShaderTypes, applyVelocitiesShaderPaths, &replacers);
+	program_ApplyVelocities.program = CreateLinkedShaderProgram(1, applyVelocitiesShaderTypes, applyVelocitiesShaderPaths, &replacers);
+	replacers.clear();
 
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_BorderPhysics.workGroupLocalSize)));
 	GLenum borderPhysicsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* borderPhysicsShaderPaths[] = { "resources/compute shaders/border_physics.computeShader" };
-	program_BorderPhysics = CreateLinkedShaderProgram(1, borderPhysicsShaderTypes, borderPhysicsShaderPaths, &replacers);
+	program_BorderPhysics.program = CreateLinkedShaderProgram(1, borderPhysicsShaderTypes, borderPhysicsShaderPaths, &replacers);
+	replacers.clear();
 
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_UniformGridBind.workGroupLocalSize)));
 	GLenum uniformGridBindShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* uniformGridBindShaderPaths[] = { "resources/compute shaders/uniform_grid_bind.computeShader" };
-	program_UniformGridBind = CreateLinkedShaderProgram(1, uniformGridBindShaderTypes, uniformGridBindShaderPaths, &replacers);
+	program_UniformGridBind.program = CreateLinkedShaderProgram(1, uniformGridBindShaderTypes, uniformGridBindShaderPaths, &replacers);
+	replacers.clear();
 
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_UniformGridUnBind.workGroupLocalSize)));
 	GLenum uniformGridUnBindShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* uniformGridUnBindShaderPaths[] = { "resources/compute shaders/uniform_grid_unbind.computeShader" };
-	program_UniformGridUnBind = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths, &replacers);
+	program_UniformGridUnBind.program = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths, &replacers);
+	replacers.clear();
 
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureCollision.workGroupLocalSize)));
 	GLenum creatureCollisionsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* creatureCollisionsShaderPaths[] = { "resources/compute shaders/creature_collisions.computeShader" };
-	program_CreatureCollision = CreateLinkedShaderProgram(1, creatureCollisionsShaderTypes, creatureCollisionsShaderPaths, &replacers);
+	program_CreatureCollision.program = CreateLinkedShaderProgram(1, creatureCollisionsShaderTypes, creatureCollisionsShaderPaths, &replacers);
+	replacers.clear();
 
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_BrainPushInputs.workGroupLocalSize)));
 	GLenum brainPushInputsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* brainPushInputsShaderPaths[] = { "resources/compute shaders/brain_push_inputs.computeShader" };
-	program_BrainPushInputs = CreateLinkedShaderProgram(1, brainPushInputsShaderTypes, brainPushInputsShaderPaths, &replacers);
+	program_BrainPushInputs.program = CreateLinkedShaderProgram(1, brainPushInputsShaderTypes, brainPushInputsShaderPaths, &replacers);
+	replacers.clear();
 
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_BrainForwardPropagate.workGroupLocalSize)));
 	GLenum brainForwardPropagateShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* brainForwardPropagateShaderPaths[] = { "resources/compute shaders/brain_forward_propagate.computeShader" };
-	program_BrainForwardPropagate = CreateLinkedShaderProgram(1, brainForwardPropagateShaderTypes, brainForwardPropagateShaderPaths, &replacers);
+	program_BrainForwardPropagate.program = CreateLinkedShaderProgram(1, brainForwardPropagateShaderTypes, brainForwardPropagateShaderPaths, &replacers);
+	replacers.clear();
 
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_BrainPullOutputs.workGroupLocalSize)));
 	GLenum brainPullOutputsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* brainPullOutputsShaderPaths[] = { "resources/compute shaders/brain_pull_outputs.computeShader" };
-	program_BrainPullOutputs = CreateLinkedShaderProgram(1, brainPullOutputsShaderTypes, brainPullOutputsShaderPaths, &replacers);
+	program_BrainPullOutputs.program = CreateLinkedShaderProgram(1, brainPullOutputsShaderTypes, brainPullOutputsShaderPaths, &replacers);
+	replacers.clear();
+
 }
 
 void InitDrawingPrograms()
@@ -596,6 +668,8 @@ void InitUniformGrid()
 void Simulation_Init()
 {
 
+	cout << "Max number of links (iterations per forward propagate): " << brains_MaxNumOfLinks << endl;
+
 	InitSSBOs();
 	InitLogicPrograms();
 	InitDrawingPrograms();
@@ -604,11 +678,11 @@ void Simulation_Init()
 	// Add some creatures (TEMP)
 	for (int i = 0; i < SIMULATION_NUM_OF_CREATURES_ON_INIT.value; i++)
 	{
-
 		CreatureData data;
-		data.brainData = nullptr;
-		data.brainStructure = nullptr;
-		data.col = vec3(random(), random(), random());
+
+		InitFirstGenBrain(&data.brainData, &data.brainStructure);
+
+		data.col = vec3(0.1, 0.1, 0.1);
 		data.pos = vec2(0, 0);
 		data.vel = vec2((random() - 0.5) * 2 * 0.000000001, (random() - 0.5) * 2 * 0.000000001);
 		data.rad = CREATURE_MIN_RADIUS.value;
@@ -622,6 +696,8 @@ void Simulation_Init()
 // -- SIMULATION UPDATE STEP -- //
 //////////////////////////////////
 
+
+
 void Simulation_Logic()
 {
 
@@ -629,97 +705,100 @@ void Simulation_Logic()
 	The number of work groups that can be dispatched in a single dispatch call is defined
 	by GL_MAX_COMPUTE_WORK_GROUP_COUNT. This must be queried with glGetIntegeri_v.
 	*/
-	int numOfWorkGroups = creature_count / TECH_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE +
-		(creature_count % TECH_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE == 0 ? 0 : 1);
 
-	GLuint program;
-
-
-
+	GLuint programID;
+	GLuint workGroupsNeeded;
 
 	// Push brain inputs
-	program = program_BrainPushInputs;
-	glUseProgram(program);
-	SetUniformUInteger(program, "uMaxNumOfNodes", brains_MaxNumOfNodes);
-	SetUniformUInteger(program, "uMaxNumOfLinks", brains_MaxNumOfLinks);
-	SetUniformUInteger(program, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
-	SetUniformUInteger(program, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Lives.ssbo);
-	glDispatchCompute(numOfWorkGroups, 1, 1);
+	programID = program_BrainPushInputs.program;
+	workGroupsNeeded = program_BrainPushInputs.workGroupsNeeded;
+	glUseProgram(programID);
+		SetUniformUInteger(programID, "uMaxNumOfNodes", brains_MaxNumOfNodes);
+		SetUniformUInteger(programID, "uMaxNumOfLinks", brains_MaxNumOfLinks);
+		SetUniformUInteger(programID, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
+		SetUniformUInteger(programID, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Lives.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
 	// Brain forward propagate
-	program = program_BrainForwardPropagate;
-	glUseProgram(program);
-	SetUniformUInteger(program, "uMaxNumOfNodes", brains_MaxNumOfNodes);
-	SetUniformUInteger(program, "uMaxNumOfLinks", brains_MaxNumOfLinks);
-	SetUniformUInteger(program, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
-	SetUniformUInteger(program, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
-	glDispatchCompute(numOfWorkGroups, 1, 1);
+	programID = program_BrainForwardPropagate.program;
+	workGroupsNeeded = program_BrainForwardPropagate.workGroupsNeeded;
+	glUseProgram(programID);
+		SetUniformUInteger(programID, "uMaxNumOfNodes", brains_MaxNumOfNodes);
+		SetUniformUInteger(programID, "uMaxNumOfLinks", brains_MaxNumOfLinks);
+		SetUniformUInteger(programID, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
+		SetUniformUInteger(programID, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Colors.ssbo);
+		glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
 	// Pull brain outputs
-	program = program_BrainPullOutputs;
-	glUseProgram(program);
-	SetUniformUInteger(program, "uMaxNumOfNodes", brains_MaxNumOfNodes);
-	SetUniformUInteger(program, "uMaxNumOfLinks", brains_MaxNumOfLinks);
-	SetUniformUInteger(program, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
-	SetUniformUInteger(program, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
-	glDispatchCompute(numOfWorkGroups, 1, 1);
+	programID = program_BrainPullOutputs.program;
+	workGroupsNeeded = program_BrainPullOutputs.workGroupsNeeded;
+	glUseProgram(programID);
+		SetUniformUInteger(programID, "uMaxNumOfNodes", brains_MaxNumOfNodes);
+		SetUniformUInteger(programID, "uMaxNumOfLinks", brains_MaxNumOfLinks);
+		SetUniformUInteger(programID, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
+		SetUniformUInteger(programID, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
 
 	// Uniform grid bind
-	program = program_UniformGridBind;
-	glUseProgram(program);
-		SetUniformVector2f(program, "uSimDimensions", vec2(ugrid_SimWidth, ugrid_SimHeight));
-		SetUniformVector2ui(program, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
-		SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
+	programID = program_UniformGridBind.program;
+	workGroupsNeeded = program_UniformGridBind.workGroupsNeeded;
+	glUseProgram(programID);
+		SetUniformVector2f(programID, "uSimDimensions", vec2(ugrid_SimWidth, ugrid_SimHeight));
+		SetUniformVector2ui(programID, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
+		SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ugrid_SSBO);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_UniformGridTiles.ssbo);
-	glDispatchCompute(numOfWorkGroups, 1, 1);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
 
 	// Creature collision
-	program = program_CreatureCollision;
-	glUseProgram(program);
-		SetUniformVector2ui(program, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
-		SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
+	programID = program_CreatureCollision.program;
+	workGroupsNeeded = program_CreatureCollision.workGroupsNeeded;
+	glUseProgram(programID);
+		SetUniformVector2ui(programID, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
+		SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ugrid_SSBO);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_UniformGridTiles.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_GeneralPurpose.ssbo); // Writes physics fix vector for decoupling purposes
-	glDispatchCompute(numOfWorkGroups, 1, 1);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
 
 	// Velocity / physics value application
-	program = program_ApplyVelocities;
-	glUseProgram(program);
+	programID = program_ApplyVelocities.program;
+	workGroupsNeeded = program_ApplyVelocities.workGroupsNeeded;
+	glUseProgram(programID);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurpose.ssbo); // Applies physics fix vector, zerofies
-	glDispatchCompute(numOfWorkGroups, 1, 1);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -729,24 +808,26 @@ void Simulation_Logic()
 
 	
 	// Uniform grid unbind
-	program = program_UniformGridUnBind;
-	glUseProgram(program);
-		SetUniformUInteger(program, "uIndicesInTile", ugrid_IndicesInTile);
+	programID = program_UniformGridUnBind.program;
+	workGroupsNeeded = program_UniformGridUnBind.workGroupsNeeded;
+	glUseProgram(programID);
+		SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ugrid_SSBO);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_UniformGridTiles.ssbo);
-	glDispatchCompute(numOfWorkGroups, 1, 1);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
 	// Border physics
-	program = program_BorderPhysics;
-	glUseProgram(program);
-		SetUniformVector2f(program, "uSimDimensions", vec2(SIMULATION_WIDTH.value, SIMULATION_HEIGHT.value));
+	programID = program_BorderPhysics.program;
+	workGroupsNeeded = program_BorderPhysics.workGroupsNeeded;
+	glUseProgram(programID);
+		SetUniformVector2f(programID, "uSimDimensions", vec2(SIMULATION_WIDTH.value, SIMULATION_HEIGHT.value));
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
-	glDispatchCompute(numOfWorkGroups, 1, 1);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
