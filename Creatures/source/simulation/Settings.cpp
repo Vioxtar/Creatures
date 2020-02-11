@@ -31,11 +31,13 @@ extern const float CAMERA_START_ZOOM = 0.035f;
 
 // Simulation settings
 extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
-extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 1;
+extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 2;
 
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 120, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 120, 1, 300 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 100, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 100, 1, 300 };
+
+extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.5, 0.0, 1.0 };
 
 
 // Creature body settings
@@ -48,7 +50,7 @@ extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS = { 0.1, 0.1, 2.0 };
 extern const uint16_t CREATURE_NUM_OF_INPUTS = 36;
 extern const uint16_t CREATURE_NUM_OF_OUTPUTS = 12;
 extern const uint16_t CREATURE_MAX_NUM_OF_MIDLEVELS = 3;
-extern const uint16_t CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL = 18;
+extern const uint16_t CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL = 20;
 
 
 

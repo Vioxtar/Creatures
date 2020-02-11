@@ -93,19 +93,8 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 
-		// Clear
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Update
-		Simulation_Update();
-		Camera_Update();
-
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-
 		// @DEBUG
-		float currentTime = glfwGetTime();
+		double currentTime = glfwGetTime();
 		frameCount++;
 		if ((currentTime - lastTime) >= 1.0)
 		{
@@ -113,6 +102,20 @@ int main()
 			frameCount = 0;
 			lastTime = currentTime;
 		}
+
+		double timeDiff = currentTime - lastTime;
+
+		// Clear
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Update
+		Simulation_Update();
+		Camera_Update(timeDiff);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+
 	}
 
 	glfwTerminate();

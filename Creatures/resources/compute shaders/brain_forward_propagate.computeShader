@@ -63,7 +63,7 @@ void main()
 			}
 
 			// Set the new node value
-			BrainsNodes[activeNode] = max(0.0, min(sum, 1.0)); // @TODO: Sigmoid function here!
+			BrainsNodes[activeNode] = max(0.0, min(sum, 1.0)); // @TODO: Activation function here!
 
 			activeNode++;
 		}

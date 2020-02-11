@@ -63,6 +63,7 @@ extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT;
 extern TweakableFloatSetting SIMULATION_WIDTH;
 extern TweakableFloatSetting SIMULATION_HEIGHT;
 
+extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION;
 
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS;

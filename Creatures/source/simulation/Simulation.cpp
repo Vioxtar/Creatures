@@ -122,9 +122,19 @@ struct CreatureData
 //////////////////
 
 
-// @TODO: These numbers are only calculated correctly for when CREATURE_MAX_NUM_OF_MIDLEVELS > 0
+// Calculate buffer size constants (used to define the size of each structure/node/link creature attributes)
 const GLuint brains_MaxNumOfNodes = CREATURE_NUM_OF_INPUTS + CREATURE_MAX_NUM_OF_MIDLEVELS * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL + CREATURE_NUM_OF_OUTPUTS;
-const GLuint brains_MaxNumOfLinks = (CREATURE_NUM_OF_INPUTS + CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL * (CREATURE_MAX_NUM_OF_MIDLEVELS - 1) + CREATURE_NUM_OF_OUTPUTS) * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL;
+
+const GLuint brains_MaxNumOfLinks = CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL > 0 ?
+		
+		// We have midlevels in our max structure
+		(CREATURE_NUM_OF_INPUTS * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL +
+		CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL * (CREATURE_MAX_NUM_OF_MIDLEVELS - 1) +
+		CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL * CREATURE_NUM_OF_OUTPUTS)
+	:
+		// We don't have midlevels in our max structure, number of links is just number of inputs * number of outputs
+		(CREATURE_NUM_OF_INPUTS * CREATURE_NUM_OF_OUTPUTS);
+
 const GLuint brains_MaxNumOfStructureIndices = 1 + 1 + CREATURE_MAX_NUM_OF_MIDLEVELS + 1; // [NumOfLevels, NumOfInputs, NumOfMidLevels, NumOfOutputs]
 
 void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<GLfloat>* brainLinks, vector<GLuint>* brainStructure)
@@ -140,7 +150,7 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<GLfloat>* brainLinks,
 	brainLinks->reserve(brains_MaxNumOfLinks);
 	for (int i = 0; i < brains_MaxNumOfLinks; i++)
 	{
-		brainLinks->emplace_back(random() * 0.275);
+		brainLinks->emplace_back(random());
 	}
 
 	// @TODO: First gen is currently getting max structure for performance testing
@@ -154,6 +164,8 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<GLfloat>* brainLinks,
 	brainStructure->emplace_back(CREATURE_NUM_OF_OUTPUTS);
 }
 
+
+
 /////////////////////////////////////////////////////
 // -- CREATURE ATTRIBUTE SSBO WORKING VARIABLES -- //
 /////////////////////////////////////////////////////
@@ -166,16 +178,50 @@ struct CreatureAttributesSSBOInfo
 	GLuint attributeBytesSize;
 };
 
-CreatureAttributesSSBOInfo creature_BrainsLinks{ 0, sizeof(GLfloat) * brains_MaxNumOfLinks };					// The brains' links of the creatures
-CreatureAttributesSSBOInfo creature_BrainsNodes{ 0, sizeof(GLfloat) * brains_MaxNumOfNodes };					// The brains' nodes of the creatures
-CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * brains_MaxNumOfStructureIndices };	// The brains' structures of the creatures
-CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };													// The colors of the creatures
-CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };												// The positions of the creatures
-CreatureAttributesSSBOInfo creature_Velocities{ 0, sizeof(vec2) };												// The position velocities of the creatures
-CreatureAttributesSSBOInfo creature_Radii{ 0, sizeof(GLfloat) };												// The radii of the creatures
-CreatureAttributesSSBOInfo creature_Lives{ 0, sizeof(GLfloat) };												// The health of the creatures
-CreatureAttributesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLuint) };										// Uniform grid tile index keeping
-CreatureAttributesSSBOInfo creature_GeneralPurpose{ 0, sizeof(vec2) };											// A general purpose buffer of vec2's
+CreatureAttributesSSBOInfo creature_BrainsLinks{ 0, sizeof(GLfloat) * brains_MaxNumOfLinks };
+CreatureAttributesSSBOInfo creature_BrainsNodes{ 0, sizeof(GLfloat) * brains_MaxNumOfNodes };
+CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * brains_MaxNumOfStructureIndices };
+CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };
+CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };
+CreatureAttributesSSBOInfo creature_Velocities{ 0, sizeof(vec2) };
+CreatureAttributesSSBOInfo creature_Radii{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_Lives{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_Angles{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_AngleVelocities{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_Energies{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_Meats{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_ForwardThrusts{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_TurnThrusts{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_Harndesses{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_Horninesses{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_Generations{ 0, sizeof(GLuint) };
+CreatureAttributesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLuint) };
+CreatureAttributesSSBOInfo creature_GeneralPurpose{ 0, sizeof(vec2) };
+
+// The sole purpose of this vector is to contain our creature attributes SSBO infos for easier iteration during SSBO manipulations
+vector<CreatureAttributesSSBOInfo*> creatureAttributesSSBOInfosRefs;
+void LoadCreatureAttributeSSBOInfosIntoIterableVector()
+{
+	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsLinks);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsNodes);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsStructures);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Colors);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Positions);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Velocities);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Radii);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Lives);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Angles);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_AngleVelocities);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Energies);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Meats);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_ForwardThrusts);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_TurnThrusts);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Harndesses);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Horninesses);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Generations);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_UniformGridTiles);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurpose);
+}
 
 GLuint creature_count = 0; // The count of active creatures in the simulation
 GLuint max_supported_creature_count_by_current_buffers; // The number of creatures supported by current SSBO buffers
@@ -503,24 +549,19 @@ GLuint AddCreature(CreatureData newCreatureData)
 	{
 		// We're exceeding capacities for all of our SSBOs, expand them
 		GLuint increaseSize = TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
-		ExpandCreatureAttributesSSBO(creature_BrainsLinks, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_BrainsNodes, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_BrainsStructures, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_Colors, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_Positions, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_Velocities, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_GeneralPurpose, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_Radii, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_Lives, increaseSize);
-		ExpandCreatureAttributesSSBO(creature_UniformGridTiles, increaseSize);
 
+		for (auto creatureAttributeSSBOInfoRef : creatureAttributesSSBOInfosRefs)
+		{
+			ExpandCreatureAttributesSSBO(*creatureAttributeSSBOInfoRef, increaseSize);
+		}
 
 		max_supported_creature_count_by_current_buffers += TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
 	}
 
-
+	// Create the new creature by simply setting its attributes
 
 	GLuint newCreatureIndex = creature_count;
+
 	SetCreatureAttribute(creature_BrainsLinks, newCreatureIndex, newCreatureData.brainLinks.data());
 	SetCreatureAttribute(creature_BrainsNodes, newCreatureIndex, newCreatureData.brainNodes.data());
 	SetCreatureAttribute(creature_BrainsStructures, newCreatureIndex, newCreatureData.brainStructure.data());
@@ -545,16 +586,10 @@ void RemoveCreature(GLuint creatureIndex)
 	if (creature_count <= 0)
 		return;
 
-	RemoveCreatureAttribute(creature_BrainsLinks, creatureIndex);
-	RemoveCreatureAttribute(creature_BrainsNodes, creatureIndex);
-	RemoveCreatureAttribute(creature_BrainsStructures, creatureIndex);
-	RemoveCreatureAttribute(creature_Colors, creatureIndex);
-	RemoveCreatureAttribute(creature_Positions, creatureIndex);
-	RemoveCreatureAttribute(creature_Velocities, creatureIndex);
-	RemoveCreatureAttribute(creature_GeneralPurpose, creatureIndex);
-	RemoveCreatureAttribute(creature_Radii, creatureIndex);
-	RemoveCreatureAttribute(creature_Lives, creatureIndex);
-	RemoveCreatureAttribute(creature_UniformGridTiles, creatureIndex);
+	for (auto creatureAttributeSSBOInfoRef : creatureAttributesSSBOInfosRefs)
+	{
+		RemoveCreatureAttribute(*creatureAttributeSSBOInfoRef, creatureIndex);
+	}
 
 	creature_count--;
 
@@ -564,28 +599,24 @@ void RemoveCreature(GLuint creatureIndex)
 
 
 
-
 /////////////////////////////////////
 // -- SIMULATION INITIALIZATION -- //
 /////////////////////////////////////
 
 void InitSSBOs()
 {
+	// Before anything, load all creature attribute SSBO infos into a vector for easy iterations
+	LoadCreatureAttributeSSBOInfosIntoIterableVector();
+
 	const unsigned int numOfCreaturesOnInit = SIMULATION_NUM_OF_CREATURES_ON_INIT.value;
 	
 	creature_count = 0;
 	max_supported_creature_count_by_current_buffers = numOfCreaturesOnInit;
 
-	InitEmptyCreatureAttributesSSBO(creature_BrainsLinks, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_BrainsNodes, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_BrainsStructures, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_Colors, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_Positions, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_Velocities, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_GeneralPurpose, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_Radii, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_Lives, numOfCreaturesOnInit);
-	InitEmptyCreatureAttributesSSBO(creature_UniformGridTiles, numOfCreaturesOnInit);
+	for (auto creatureAttributeSSBOInfoRef : creatureAttributesSSBOInfosRefs)
+	{
+		InitEmptyCreatureAttributesSSBO(*creatureAttributeSSBOInfoRef, numOfCreaturesOnInit);
+	}
 }
 
 void InitLogicPrograms()
@@ -678,8 +709,6 @@ void InitUniformGrid()
 void Simulation_Init()
 {
 
-	cout << "Max number of links (iterations per forward propagate): " << brains_MaxNumOfLinks << endl;
-
 	InitSSBOs();
 	InitLogicPrograms();
 	InitDrawingPrograms();
@@ -706,8 +735,6 @@ void Simulation_Init()
 // -- SIMULATION UPDATE STEP -- //
 //////////////////////////////////
 
-
-
 void Simulation_Logic()
 {
 
@@ -728,6 +755,7 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Lives.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Velocities.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -810,8 +838,6 @@ void Simulation_Logic()
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
-	// Sensors
-
 
 	
 	// Uniform grid unbind
@@ -831,6 +857,7 @@ void Simulation_Logic()
 	workGroupsNeeded = program_BorderPhysics.workGroupsNeeded;
 	glUseProgram(programID);
 		SetUniformVector2f(programID, "uSimDimensions", vec2(SIMULATION_WIDTH.value, SIMULATION_HEIGHT.value));
+		SetUniformFloat(programID, "uBorderRestitution", SIMULATION_BORDER_RESTITUTION.value);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);

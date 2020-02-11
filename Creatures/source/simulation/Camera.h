@@ -9,7 +9,7 @@ using namespace glm;
 using namespace std;
 
 void Camera_Init();
-void Camera_Update();
+void Camera_Update(double frameTime);
 
 void Camera_Move(vec2 offset);
 void Camera_Enable_Glide(bool glide);

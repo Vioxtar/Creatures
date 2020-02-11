@@ -15,6 +15,12 @@ layout (std430, binding = 2) buffer CreatureLives
 	float Lives[];
 };
 
+layout (std430, binding = 1) buffer CreatureVelocities
+{
+	vec2 Velocities[];
+};
+
+
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 uniform uint uMaxNumOfStructureIndices;
@@ -34,6 +40,11 @@ void main()
 	uint firstInputNodeIndex = brainNodesStartIndex;
 	uint firstNonInputNodeIndex = brainNodesStartIndex + numOfInputs;
 
-	// For now just push in life
+	// For now just push in life and colors
+	uint colIndex = gid * 3;
 	BrainsNodes[firstInputNodeIndex] = Lives[gid];
+	BrainsNodes[firstInputNodeIndex + 1] = Velocities[gid].x;
+	BrainsNodes[firstInputNodeIndex + 2] = Velocities[gid].y;
+	BrainsNodes[firstInputNodeIndex + 3] = (Velocities[gid].x + Velocities[gid].y) / 2.0;
+
 }

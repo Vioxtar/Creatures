@@ -20,6 +20,7 @@ layout (std430, binding = 3) buffer CreatureLives
 	float Lives[];
 };
 
+
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 uniform uint uMaxNumOfStructureIndices;
@@ -40,13 +41,7 @@ void main()
 	uint numOfOutputs = BrainsStructures[outputLevelIndex];
 
 	// Find first output data index
-	uint firstOutputIndex = brainNodesStartIndex;
-	for (uint level = 0; level < numOfLevels; level++)
-	{
-		uint numOfNodesInLevel = BrainsStructures[brainStructureStartIndex + 1 + level];
-		firstOutputIndex += numOfNodesInLevel;
-	}
-	firstOutputIndex -= numOfOutputs;
+	uint firstOutputIndex = (gid + 1) * uMaxNumOfNodesInBrain - numOfOutputs;
 
 	Colors[colIndex] = BrainsNodes[firstOutputIndex];
 	Colors[colIndex + 1] = BrainsNodes[firstOutputIndex + 1];

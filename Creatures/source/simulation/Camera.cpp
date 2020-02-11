@@ -9,7 +9,6 @@ float cameraZoomWeight;
 float cameraZoom;
 float cameraZoomTarget;
 
-
 // Camera movement cached settings
 float camVelocityFriction;
 
@@ -18,11 +17,13 @@ vec2 cameraPos = vec2(0, 0);
 vec2 cameraVel = vec2(0, 0);
 bool canGlide = false;
 
-
 // Camera transform
 mat4 simToCamTransform = mat4(1.0f);
 
+// Last frame time for consistent UI responsiveness
+float lastFrameTime;
 
+// @TODO: Consider last frame time for better UI responsiveness!
 void UpdateCameraPlacement()
 {
 	cameraZoom = cameraZoom * cameraZoomWeight + cameraZoomTarget * cameraZoomTargetWeight;
@@ -58,8 +59,9 @@ void Camera_Init()
 	cameraZoomTarget = cameraZoom * 0.5;
 }
 
-void Camera_Update()
+void Camera_Update(double frameTime)
 {
+	lastFrameTime = (float)frameTime;
 	UpdateCameraPlacement();
 }
 
