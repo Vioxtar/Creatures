@@ -53,7 +53,7 @@ extern const float CAMERA_ZOOM_SCROLL_SCALE;
 extern const float CAMERA_ZOOM_MOVE_SCALE;
 extern const float CAMERA_VELOCITY_FRICTION;
 extern const float CAMERA_START_ZOOM;
-
+extern const float CAMERA_START_ZOOM_TARGET;
 
 // Simulation settings
 extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER;
@@ -64,6 +64,8 @@ extern TweakableFloatSetting SIMULATION_WIDTH;
 extern TweakableFloatSetting SIMULATION_HEIGHT;
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION;
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE;
+extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE;
 
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS;

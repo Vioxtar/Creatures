@@ -56,7 +56,7 @@ void Camera_Init()
 	cameraZoomWeight = 1.0f - zoomInterpolationSpeed;
 
 	cameraZoom = CAMERA_START_ZOOM;
-	cameraZoomTarget = cameraZoom * 0.5;
+	cameraZoomTarget = CAMERA_START_ZOOM_TARGET;
 }
 
 void Camera_Update(double frameTime)

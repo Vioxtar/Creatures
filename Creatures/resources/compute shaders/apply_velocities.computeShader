@@ -15,17 +15,53 @@ layout (std430, binding = 2) buffer CreatureGeneralPurpose
 	vec2 PhysicsFixes[];
 };
 
+layout (std430, binding = 3) buffer CreatureAngles
+{
+	float Angles[];
+};
+
+layout (std430, binding = 4) buffer CreatureAngleVelocities
+{
+	float AngleVelocities[];
+};
+
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
+
+uniform float uVelocityDownscale;
+uniform float uAngleVelocityDownscale;
+
+#define M_PI 3.1415926535897932384626433832795
 
 void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
 	
-	// Apply the physics fix from the creature collision program
+	// Acquire (and zerofiy) the physics fix calculated in the creature collision program
 	vec2 physFix = PhysicsFixes[gid];
-	Velocities[gid] += physFix;
-	Positions[gid] += physFix;
 	PhysicsFixes[gid] = vec2(0, 0);
 
-	Positions[gid] += Velocities[gid];
+
+	// Read once
+	vec2 pos = Positions[gid];
+	vec2 vel = Velocities[gid];
+
+	// First update velocity, only then set the position! Otherwise we get fucky collisions
+	vel = vel * uVelocityDownscale + physFix;
+	pos = pos + physFix + vel;
+	
+	// Write once
+	Positions[gid] = pos;
+	Velocities[gid] = vel;
+
+
+	// Read once
+	float ang = Angles[gid];
+	float angVel = AngleVelocities[gid];
+
+	//angVel = angVel * uAngleVelocityDownscale;
+	ang += angVel;
+
+	// Write once
+	Angles[gid] = mod(ang, M_PI);
+	AngleVelocities[gid] = angVel;
 }

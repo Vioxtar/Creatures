@@ -103,8 +103,8 @@ struct InstancedDrawCallData
 	GLuint numOfIndices;
 };
 
-// Just used for passing around creature data arguments more neatly
-struct CreatureData
+// The sole purpose of the CreatureCreationData is to neatly pack creature attribute values upon new creature creation
+struct CreatureCreationData
 {
 	vector<GLfloat> brainLinks;
 	vector<GLfloat> brainNodes;
@@ -114,6 +114,8 @@ struct CreatureData
 	vec2 vel;
 	GLfloat rad;
 	GLfloat life;
+	GLfloat angle;
+	GLfloat angleVel;
 };
 
 
@@ -445,7 +447,7 @@ InstancedDrawCallData InitializeInstancedDrawCallData(GLuint program, vector<vec
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-	// Unbind (unbinding the vertex array essentially stores the currently bound VBO and EBO)
+	// Unbind (unbinding the vertex array essentially links the currently bound VBO and EBO)
 	glBindVertexArray(0);
 
 	return newDrawCallData;
@@ -542,7 +544,7 @@ void RemoveCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creat
 }
 
 // @TODO: At some point in time we'll eventually need to account for the absolute max buffer size supported by our GPU
-GLuint AddCreature(CreatureData newCreatureData)
+GLuint AddCreature(CreatureCreationData newCreatureData)
 {
 	// Check if we're exceeding capacity
 	if (creature_count >= max_supported_creature_count_by_current_buffers)
@@ -555,7 +557,7 @@ GLuint AddCreature(CreatureData newCreatureData)
 			ExpandCreatureAttributesSSBO(*creatureAttributeSSBOInfoRef, increaseSize);
 		}
 
-		max_supported_creature_count_by_current_buffers += TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
+		max_supported_creature_count_by_current_buffers += increaseSize;
 	}
 
 	// Create the new creature by simply setting its attributes
@@ -571,6 +573,8 @@ GLuint AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_GeneralPurpose, newCreatureIndex, NULL);
 	SetCreatureAttribute(creature_Radii, newCreatureIndex, &newCreatureData.rad);
 	SetCreatureAttribute(creature_Lives, newCreatureIndex, &newCreatureData.life);
+	SetCreatureAttribute(creature_Angles, newCreatureIndex, &newCreatureData.angle);
+	SetCreatureAttribute(creature_AngleVelocities, newCreatureIndex, &newCreatureData.angleVel);
 	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, NULL);
 
 	creature_count++;
@@ -685,7 +689,7 @@ void InitDrawingPrograms()
 		"resources/graphical shaders/shape.fragmentShader"
 	};
 	GLuint circleShapeProgram = CreateLinkedShaderProgram(2, shapeShaderTypes, shapeShaderPaths, NULL);
-	vector<vec2> circleBase = CreateCircleBase(10, 1);
+	vector<vec2> circleBase = CreateCircleBase(7, 1);
 	drawCallData_Circle = InitializeInstancedDrawCallData(circleShapeProgram, circleBase, true);
 }
 
@@ -717,15 +721,17 @@ void Simulation_Init()
 	// Add some creatures (TEMP)
 	for (int i = 0; i < SIMULATION_NUM_OF_CREATURES_ON_INIT.value; i++)
 	{
-		CreatureData data;
+		CreatureCreationData data;
 
 		InitFirstGenBrain(&data.brainNodes, &data.brainLinks, &data.brainStructure);
 
 		data.col = vec3(0.1, 0.1, 0.1);
 		data.pos = vec2(0, 0);
-		data.vel = vec2((random() - 0.5) * 2 * 0.000000001, (random() - 0.5) * 2 * 0.000000001);
+		data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
 		data.rad = CREATURE_MIN_RADIUS.value;
 		data.life = random() * 0.8 + 0.1;
+		data.angle = 0.0;
+		data.angleVel = random() * 0.1;
 		AddCreature(data);
 	}
 
@@ -830,9 +836,13 @@ void Simulation_Logic()
 	programID = program_ApplyVelocities.program;
 	workGroupsNeeded = program_ApplyVelocities.workGroupsNeeded;
 	glUseProgram(programID);
+		SetUniformFloat(programID, "uVelocityDownscale", SIMULATION_VELOCITY_DOWNSCALE.value);
+		SetUniformFloat(programID, "uAngleVelocityDownscale", SIMULATION_ANGLE_VELOCITY_DOWNSCALE.value);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurpose.ssbo); // Applies physics fix vector, zerofies
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_AngleVelocities.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -874,6 +884,7 @@ void Simulation_Render()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Positions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Angles.ssbo);
 
 	InstancedDrawCall(drawCallData_Circle, creature_count);
 

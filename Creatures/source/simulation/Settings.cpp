@@ -26,19 +26,20 @@ extern const float CAMERA_ZOOM_INTERPOLATION_SPEED = 0.035f;
 extern const float CAMERA_ZOOM_SCROLL_SCALE = 0.1f;
 extern const float CAMERA_ZOOM_MOVE_SCALE = 0.0002f;
 extern const float CAMERA_VELOCITY_FRICTION = 0.985f;
-extern const float CAMERA_START_ZOOM = 0.035f;
-
+extern const float CAMERA_START_ZOOM = 0.1f;
+extern const float CAMERA_START_ZOOM_TARGET = 0.007f;
 
 // Simulation settings
 extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
 extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 2;
 
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 100, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 100, 1, 300 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 1000, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.5, 0.0, 1.0 };
-
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.995, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.995, 0.0, 1.0 };
 
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.1, 0.1, 0.1 };
