@@ -106,7 +106,8 @@ struct InstancedDrawCallData
 // Just used for passing around creature data arguments more neatly
 struct CreatureData
 {
-	vector<GLfloat> brainData;
+	vector<GLfloat> brainLinks;
+	vector<GLfloat> brainNodes;
 	vector<GLuint> brainStructure;
 	vec3 col;
 	vec2 pos;
@@ -120,30 +121,31 @@ struct CreatureData
 // -- BRAINS -- //
 //////////////////
 
+
+// @TODO: These numbers are only calculated correctly for when CREATURE_MAX_NUM_OF_MIDLEVELS > 0
 const GLuint brains_MaxNumOfNodes = CREATURE_NUM_OF_INPUTS + CREATURE_MAX_NUM_OF_MIDLEVELS * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL + CREATURE_NUM_OF_OUTPUTS;
 const GLuint brains_MaxNumOfLinks = (CREATURE_NUM_OF_INPUTS + CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL * (CREATURE_MAX_NUM_OF_MIDLEVELS - 1) + CREATURE_NUM_OF_OUTPUTS) * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL;
 const GLuint brains_MaxNumOfStructureIndices = 1 + 1 + CREATURE_MAX_NUM_OF_MIDLEVELS + 1; // [NumOfLevels, NumOfInputs, NumOfMidLevels, NumOfOutputs]
-const GLuint brains_MaxNumOfFloatsInBrain = brains_MaxNumOfNodes + brains_MaxNumOfLinks;
 
-void InitFirstGenBrain(vector<GLfloat>* brainData, vector<GLuint>* brainStructure)
+void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<GLfloat>* brainLinks, vector<GLuint>* brainStructure)
 {
-	// @TODO: HACKKY AF
-	// Basically fill the brain data with random floats
-	brainData->reserve(brains_MaxNumOfFloatsInBrain);
-	for (int i = 0; i < brains_MaxNumOfFloatsInBrain; i++)
+	// Fill nodes with zeros
+	brainNodes->reserve(brains_MaxNumOfNodes);
+	for (int i = 0; i < brains_MaxNumOfNodes; i++)
 	{
-		if (i < brains_MaxNumOfNodes)
-		{
-			brainData->emplace_back(random()); // Node
-		}
-		else {
-			brainData->emplace_back(random()); // Link
-		}
+		brainNodes->emplace_back(0.0);
 	}
 
+	// Fill links with random values in [0, 1)
+	brainLinks->reserve(brains_MaxNumOfLinks);
+	for (int i = 0; i < brains_MaxNumOfLinks; i++)
+	{
+		brainLinks->emplace_back(random() * 0.275);
+	}
+
+	// @TODO: First gen is currently getting max structure for performance testing
 	brainStructure->reserve(brains_MaxNumOfStructureIndices);
 	brainStructure->emplace_back(2 + CREATURE_MAX_NUM_OF_MIDLEVELS); // Number of levels (currently set to max)
-	
 	brainStructure->emplace_back(CREATURE_NUM_OF_INPUTS);
 	for (int i = 0; i < CREATURE_MAX_NUM_OF_MIDLEVELS; i++)
 	{
@@ -152,9 +154,9 @@ void InitFirstGenBrain(vector<GLfloat>* brainData, vector<GLuint>* brainStructur
 	brainStructure->emplace_back(CREATURE_NUM_OF_OUTPUTS);
 }
 
-/////////////////////////////
-// -- WORKING VARIABLES -- //
-/////////////////////////////
+/////////////////////////////////////////////////////
+// -- CREATURE ATTRIBUTE SSBO WORKING VARIABLES -- //
+/////////////////////////////////////////////////////
 
 // Creature Data SSBOs
 
@@ -164,8 +166,9 @@ struct CreatureAttributesSSBOInfo
 	GLuint attributeBytesSize;
 };
 
-CreatureAttributesSSBOInfo creature_BrainsData{ 0, sizeof(GLfloat) * brains_MaxNumOfFloatsInBrain };			// The brains of the creatures
-CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * brains_MaxNumOfStructureIndices };	// The brains of the creatures
+CreatureAttributesSSBOInfo creature_BrainsLinks{ 0, sizeof(GLfloat) * brains_MaxNumOfLinks };					// The brains' links of the creatures
+CreatureAttributesSSBOInfo creature_BrainsNodes{ 0, sizeof(GLfloat) * brains_MaxNumOfNodes };					// The brains' nodes of the creatures
+CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * brains_MaxNumOfStructureIndices };	// The brains' structures of the creatures
 CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };													// The colors of the creatures
 CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };												// The positions of the creatures
 CreatureAttributesSSBOInfo creature_Velocities{ 0, sizeof(vec2) };												// The position velocities of the creatures
@@ -180,7 +183,10 @@ GLuint max_supported_creature_count_by_current_buffers; // The number of creatur
 const GLenum ssbo_usage = GL_STREAM_READ;
 
 
-// Logic programs
+////////////////////////////////////////////
+// -- LOGIC PROGRAMS WORKING VARIABLES -- //
+////////////////////////////////////////////
+
 
 struct ProgramInfo
 {
@@ -497,7 +503,8 @@ GLuint AddCreature(CreatureData newCreatureData)
 	{
 		// We're exceeding capacities for all of our SSBOs, expand them
 		GLuint increaseSize = TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
-		ExpandCreatureAttributesSSBO(creature_BrainsData, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_BrainsLinks, increaseSize);
+		ExpandCreatureAttributesSSBO(creature_BrainsNodes, increaseSize);
 		ExpandCreatureAttributesSSBO(creature_BrainsStructures, increaseSize);
 		ExpandCreatureAttributesSSBO(creature_Colors, increaseSize);
 		ExpandCreatureAttributesSSBO(creature_Positions, increaseSize);
@@ -514,7 +521,8 @@ GLuint AddCreature(CreatureData newCreatureData)
 
 
 	GLuint newCreatureIndex = creature_count;
-	SetCreatureAttribute(creature_BrainsData, newCreatureIndex, newCreatureData.brainData.data());
+	SetCreatureAttribute(creature_BrainsLinks, newCreatureIndex, newCreatureData.brainLinks.data());
+	SetCreatureAttribute(creature_BrainsNodes, newCreatureIndex, newCreatureData.brainNodes.data());
 	SetCreatureAttribute(creature_BrainsStructures, newCreatureIndex, newCreatureData.brainStructure.data());
 	SetCreatureAttribute(creature_Colors, newCreatureIndex, &newCreatureData.col);
 	SetCreatureAttribute(creature_Positions, newCreatureIndex, &newCreatureData.pos);
@@ -537,7 +545,8 @@ void RemoveCreature(GLuint creatureIndex)
 	if (creature_count <= 0)
 		return;
 
-	RemoveCreatureAttribute(creature_BrainsData, creatureIndex);
+	RemoveCreatureAttribute(creature_BrainsLinks, creatureIndex);
+	RemoveCreatureAttribute(creature_BrainsNodes, creatureIndex);
 	RemoveCreatureAttribute(creature_BrainsStructures, creatureIndex);
 	RemoveCreatureAttribute(creature_Colors, creatureIndex);
 	RemoveCreatureAttribute(creature_Positions, creatureIndex);
@@ -567,7 +576,8 @@ void InitSSBOs()
 	creature_count = 0;
 	max_supported_creature_count_by_current_buffers = numOfCreaturesOnInit;
 
-	InitEmptyCreatureAttributesSSBO(creature_BrainsData, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_BrainsLinks, numOfCreaturesOnInit);
+	InitEmptyCreatureAttributesSSBO(creature_BrainsNodes, numOfCreaturesOnInit);
 	InitEmptyCreatureAttributesSSBO(creature_BrainsStructures, numOfCreaturesOnInit);
 	InitEmptyCreatureAttributesSSBO(creature_Colors, numOfCreaturesOnInit);
 	InitEmptyCreatureAttributesSSBO(creature_Positions, numOfCreaturesOnInit);
@@ -680,7 +690,7 @@ void Simulation_Init()
 	{
 		CreatureData data;
 
-		InitFirstGenBrain(&data.brainData, &data.brainStructure);
+		InitFirstGenBrain(&data.brainNodes, &data.brainLinks, &data.brainStructure);
 
 		data.col = vec3(0.1, 0.1, 0.1);
 		data.pos = vec2(0, 0);
@@ -713,12 +723,10 @@ void Simulation_Logic()
 	programID = program_BrainPushInputs.program;
 	workGroupsNeeded = program_BrainPushInputs.workGroupsNeeded;
 	glUseProgram(programID);
-		SetUniformUInteger(programID, "uMaxNumOfNodes", brains_MaxNumOfNodes);
-		SetUniformUInteger(programID, "uMaxNumOfLinks", brains_MaxNumOfLinks);
 		SetUniformUInteger(programID, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
-		SetUniformUInteger(programID, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
+		SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", brains_MaxNumOfNodes);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Lives.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
@@ -729,14 +737,13 @@ void Simulation_Logic()
 	programID = program_BrainForwardPropagate.program;
 	workGroupsNeeded = program_BrainForwardPropagate.workGroupsNeeded;
 	glUseProgram(programID);
-		SetUniformUInteger(programID, "uMaxNumOfNodes", brains_MaxNumOfNodes);
-		SetUniformUInteger(programID, "uMaxNumOfLinks", brains_MaxNumOfLinks);
 		SetUniformUInteger(programID, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
-		SetUniformUInteger(programID, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
+		SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", brains_MaxNumOfNodes);
+		SetUniformUInteger(programID, "uMaxNumOfLinksInBrain", brains_MaxNumOfLinks);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Colors.ssbo);
-		glDispatchCompute(workGroupsNeeded, 1, 1);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsLinks.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -745,12 +752,12 @@ void Simulation_Logic()
 	programID = program_BrainPullOutputs.program;
 	workGroupsNeeded = program_BrainPullOutputs.workGroupsNeeded;
 	glUseProgram(programID);
-		SetUniformUInteger(programID, "uMaxNumOfNodes", brains_MaxNumOfNodes);
-		SetUniformUInteger(programID, "uMaxNumOfLinks", brains_MaxNumOfLinks);
 		SetUniformUInteger(programID, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
-		SetUniformUInteger(programID, "uMaxNumOfFloatsInBrain", brains_MaxNumOfFloatsInBrain);
+		SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", brains_MaxNumOfNodes);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsData.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Colors.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);

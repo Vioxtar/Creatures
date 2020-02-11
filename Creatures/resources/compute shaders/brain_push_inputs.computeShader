@@ -5,9 +5,9 @@ layout (std430, binding = 0) buffer CreatureBrainsStructures
 	uint BrainsStructures[];
 };
 
-layout (std430, binding = 1) buffer CreatureBrainsData
+layout (std430, binding = 1) buffer CreatureBrainsNodes
 {
-	float BrainsData[];
+	float BrainsNodes[];
 };
 
 layout (std430, binding = 2) buffer CreatureLives
@@ -17,15 +17,13 @@ layout (std430, binding = 2) buffer CreatureLives
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
-uniform uint uMaxNumOfNodes;
-uniform uint uMaxNumOfLinks;
 uniform uint uMaxNumOfStructureIndices;
-uniform uint uMaxNumOfFloatsInBrain;
+uniform uint uMaxNumOfNodesInBrain;
 
 void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
-	uint brainDataStartIndex = gid * uMaxNumOfFloatsInBrain;
+	uint brainNodesStartIndex = gid * uMaxNumOfNodesInBrain;
 	uint brainStructureStartIndex = gid * uMaxNumOfStructureIndices;
 
 
@@ -33,9 +31,9 @@ void main()
 	uint numOfInputs = BrainsStructures[brainStructureStartIndex + 1];
 	
 	// Acquire the input nodes' values range in our brain data, we always assume there's enough room to push our inputs!
-	uint firstInputNodeIndex = brainDataStartIndex;
-	uint firstNonInputNodeIndex = brainDataStartIndex + numOfInputs;
+	uint firstInputNodeIndex = brainNodesStartIndex;
+	uint firstNonInputNodeIndex = brainNodesStartIndex + numOfInputs;
 
 	// For now just push in life
-	BrainsData[firstInputNodeIndex] = Lives[gid];
+	BrainsNodes[firstInputNodeIndex] = Lives[gid];
 }
