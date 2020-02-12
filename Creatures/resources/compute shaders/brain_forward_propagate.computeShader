@@ -10,16 +10,44 @@ layout (std430, binding = 1) buffer CreatureBrainsNodes
 	float BrainsNodes[];
 };
 
-layout (std430, binding = 2) buffer CreatureBrainsLinks
+layout (std430, binding = 2) buffer CreatureBrainBiases
+{
+	float BrainsBiases[];
+};
+
+layout (std430, binding = 3) buffer CreatureBrainsLinks
 {
 	float BrainsLinks[];
+};
+
+layout (std430, binding = 4) buffer CreatureBrainsActivationExponents
+{
+	float BrainsActivationExponents[];
 };
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 uniform uint uMaxNumOfStructureIndices;
 uniform uint uMaxNumOfNodesInBrain;
+uniform uint uMaxNumOfBiasesInBrain;
 uniform uint uMaxNumOfLinksInBrain;
+
+float ActivationFunction(float x, float exponent)
+{
+	if (x == 0.5)
+	{
+		return x;
+	}
+	if (x < 0.5)
+	{
+		return pow(2.0 * x, exponent) / 2.0;
+	}
+	else // x > 0.5
+	{
+		return 1.0 - pow(2.0 * (1.0 - x), exponent) / 2.0;
+	}
+}
+
 
 void main()
 {
@@ -28,13 +56,15 @@ void main()
 	
 	uint brainStructureStartIndex = gid * uMaxNumOfStructureIndices;
 	uint nodesStartIndex = gid * uMaxNumOfNodesInBrain;
+	uint biasesStartIndex = gid * uMaxNumOfBiasesInBrain;
 	uint linksStartIndex = gid * uMaxNumOfLinksInBrain;
-
 
 	uint numOfLevels = BrainsStructures[brainStructureStartIndex];
 	uint numOfInputs = BrainsStructures[brainStructureStartIndex + 1];
 
 	// Start forward propagation
+
+	float activationExponent = BrainsActivationExponents[gid];
 	
 	// Indices used to comfortably iterate the previous level's nodes' values
 	uint prevLevelNodeStart = nodesStartIndex;
@@ -43,6 +73,7 @@ void main()
 	// The active level/node/link being processed
 	uint activeLevel = brainStructureStartIndex + 2; // + 2 and not + 1 to skip inputs level
 	uint activeNode = nodesStartIndex + numOfInputs;
+	uint activeBias = biasesStartIndex;
 	uint activeLink = linksStartIndex;
 
 	// Iterate levels (we don't actually use the level variable.. for now)
@@ -63,9 +94,10 @@ void main()
 			}
 
 			// Set the new node value
-			BrainsNodes[activeNode] = max(0.0, min(sum, 1.0)); // @TODO: Activation function here!
+			BrainsNodes[activeNode] = ActivationFunction(max(0.0, min(sum + BrainsBiases[activeBias], 1.0)), activationExponent);
 
 			activeNode++;
+			activeBias++;
 		}
 
 		// Set the start/end node indices of the previous level for convenient iteration on the next level

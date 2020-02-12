@@ -43,9 +43,9 @@ void main()
 	// Find first output data index
 	uint firstOutputIndex = (gid + 1) * uMaxNumOfNodesInBrain - numOfOutputs;
 
-	Colors[colIndex] = BrainsNodes[firstOutputIndex];
-	Colors[colIndex + 1] = BrainsNodes[firstOutputIndex + 1];
-	Colors[colIndex + 2] = BrainsNodes[firstOutputIndex + 2];
-	Lives[gid] = max(0.1, min(BrainsNodes[firstOutputIndex + 3], 1));
+	//Colors[colIndex] = BrainsNodes[firstOutputIndex];
+	//Colors[colIndex + 1] = BrainsNodes[firstOutputIndex + 1];
+	//Colors[colIndex + 2] = BrainsNodes[firstOutputIndex + 2];
+	//Lives[gid] = max(0.1, min(BrainsNodes[firstOutputIndex + 3], 1));
 	
 }

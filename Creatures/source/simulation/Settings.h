@@ -75,7 +75,8 @@ extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS;
 
 
 // Creature brain settings
-extern const uint16_t CREATURE_NUM_OF_INPUTS;
-extern const uint16_t CREATURE_NUM_OF_OUTPUTS;
-extern const uint16_t CREATURE_MAX_NUM_OF_MIDLEVELS;
-extern const uint16_t CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL;
+extern const uint16_t CREATURE_BRAIN_NUM_OF_INPUTS;
+extern const uint16_t CREATURE_BRAIN_NUM_OF_OUTPUTS;
+extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS;
+extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL;
+extern const float CREATURE_BRAIN_ACTIVATION_EXPONENT;

@@ -7,6 +7,9 @@
 
 	Creatures grow in size the bigger they are, however this only reflects some ~0.8 percentage of their final radii, the remaining ~0.2 percent - they control!
 	
+	saturation belongs to family
+	life reflected by fill
+
 	Creatures control hardness target, and have a stick mechanism (either arms or body or some sort of friction side)
 
 	Sigmoid activation can be described as:
@@ -108,7 +111,9 @@ struct CreatureCreationData
 {
 	vector<GLfloat> brainLinks;
 	vector<GLfloat> brainNodes;
+	vector<GLfloat> brainBiases;
 	vector<GLuint> brainStructure;
+	GLfloat brainActivationExponent;
 	vec3 col;
 	vec2 pos;
 	vec2 vel;
@@ -126,27 +131,40 @@ struct CreatureCreationData
 
 
 // Calculate buffer size constants (used to define the size of each structure/node/link creature attributes)
-const GLuint brains_MaxNumOfNodes = CREATURE_NUM_OF_INPUTS + CREATURE_MAX_NUM_OF_MIDLEVELS * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL + CREATURE_NUM_OF_OUTPUTS;
+const GLuint brains_MaxNumOfNodes = CREATURE_BRAIN_NUM_OF_INPUTS + CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS * CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL + CREATURE_BRAIN_NUM_OF_OUTPUTS;
 
-const GLuint brains_MaxNumOfLinks = CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL > 0 ?
+const GLuint brains_MaxNumOfLinks = CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL > 0 ?
 		
 		// We have midlevels in our max structure
-		(CREATURE_NUM_OF_INPUTS * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL +
-		CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL * CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL * (CREATURE_MAX_NUM_OF_MIDLEVELS - 1) +
-		CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL * CREATURE_NUM_OF_OUTPUTS)
+		(CREATURE_BRAIN_NUM_OF_INPUTS * CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL +
+		CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL * CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL * (CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS - 1) +
+		CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL * CREATURE_BRAIN_NUM_OF_OUTPUTS)
 	:
 		// We don't have midlevels in our max structure, number of links is just number of inputs * number of outputs
-		(CREATURE_NUM_OF_INPUTS * CREATURE_NUM_OF_OUTPUTS);
+		(CREATURE_BRAIN_NUM_OF_INPUTS * CREATURE_BRAIN_NUM_OF_OUTPUTS);
 
-const GLuint brains_MaxNumOfStructureIndices = 1 + 1 + CREATURE_MAX_NUM_OF_MIDLEVELS + 1; // [NumOfLevels, NumOfInputs, NumOfMidLevels, NumOfOutputs]
+const GLuint brains_MaxNumOfBiases = brains_MaxNumOfNodes - CREATURE_BRAIN_NUM_OF_INPUTS;
 
-void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<GLfloat>* brainLinks, vector<GLuint>* brainStructure)
+const GLuint brains_MaxNumOfStructureIndices = 1 + 1 + CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS + 1; // [NumOfLevels, NumOfInputs, NumOfMidLevels, NumOfOutputs]
+
+void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<GLfloat>* brainBiases, vector<GLfloat>* brainLinks, vector<GLuint>* brainStructure, GLfloat& brainActivationExponent)
 {
+
+	// WE CURRENTLY FILL THE ENTIRE BRAIN WITH DATA! NO PARTIAL BRAINS JUST YET!
+
 	// Fill nodes with zeros
 	brainNodes->reserve(brains_MaxNumOfNodes);
 	for (int i = 0; i < brains_MaxNumOfNodes; i++)
 	{
 		brainNodes->emplace_back(0.0);
+	}
+
+	// Fill biases with some values between [-1, 1] for now
+	// @TODO: Actually find what's a reasonable starting biases size 
+	brainBiases->reserve(brains_MaxNumOfBiases);
+	for (int i = 0; i < brains_MaxNumOfBiases; i++)
+	{
+		brainBiases->emplace_back(0.0);
 	}
 
 	// Fill links with random values in [0, 1)
@@ -158,13 +176,17 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<GLfloat>* brainLinks,
 
 	// @TODO: First gen is currently getting max structure for performance testing
 	brainStructure->reserve(brains_MaxNumOfStructureIndices);
-	brainStructure->emplace_back(2 + CREATURE_MAX_NUM_OF_MIDLEVELS); // Number of levels (currently set to max)
-	brainStructure->emplace_back(CREATURE_NUM_OF_INPUTS);
-	for (int i = 0; i < CREATURE_MAX_NUM_OF_MIDLEVELS; i++)
+	brainStructure->emplace_back(2 + CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS); // Number of levels (currently set to max)
+	brainStructure->emplace_back(CREATURE_BRAIN_NUM_OF_INPUTS);
+	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS; i++)
 	{
-		brainStructure->emplace_back(CREATURE_MAX_NUM_OF_NODES_IN_MIDLEVEL);
+		brainStructure->emplace_back(CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL);
 	}
-	brainStructure->emplace_back(CREATURE_NUM_OF_OUTPUTS);
+	brainStructure->emplace_back(CREATURE_BRAIN_NUM_OF_OUTPUTS);
+
+	// Set the activation exponent
+	// @TODO: Actually randomize properly with min/max values
+	brainActivationExponent = random() * CREATURE_BRAIN_ACTIVATION_EXPONENT;
 }
 
 
@@ -183,7 +205,9 @@ struct CreatureAttributesSSBOInfo
 
 CreatureAttributesSSBOInfo creature_BrainsLinks{ 0, sizeof(GLfloat) * brains_MaxNumOfLinks };
 CreatureAttributesSSBOInfo creature_BrainsNodes{ 0, sizeof(GLfloat) * brains_MaxNumOfNodes };
+CreatureAttributesSSBOInfo creature_BrainsBiases{ 0, sizeof(GLfloat) * brains_MaxNumOfBiases };
 CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * brains_MaxNumOfStructureIndices };
+CreatureAttributesSSBOInfo creature_BrainsActivationExponents{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };
 CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };
 CreatureAttributesSSBOInfo creature_Velocities{ 0, sizeof(vec2) };
@@ -208,7 +232,9 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 {
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsLinks);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsNodes);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsBiases);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsStructures);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsActivationExponents);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Colors);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Positions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Velocities);
@@ -572,7 +598,9 @@ GLuint AddCreature(CreatureCreationData newCreatureData)
 
 	SetCreatureAttribute(creature_BrainsLinks, newCreatureIndex, newCreatureData.brainLinks.data());
 	SetCreatureAttribute(creature_BrainsNodes, newCreatureIndex, newCreatureData.brainNodes.data());
+	SetCreatureAttribute(creature_BrainsNodes, newCreatureIndex, newCreatureData.brainBiases.data());
 	SetCreatureAttribute(creature_BrainsStructures, newCreatureIndex, newCreatureData.brainStructure.data());
+	SetCreatureAttribute(creature_BrainsActivationExponents, newCreatureIndex, &newCreatureData.brainActivationExponent);
 	SetCreatureAttribute(creature_Colors, newCreatureIndex, &newCreatureData.col);
 	SetCreatureAttribute(creature_Positions, newCreatureIndex, &newCreatureData.pos);
 	SetCreatureAttribute(creature_Velocities, newCreatureIndex, &newCreatureData.vel);
@@ -708,7 +736,7 @@ void InitDrawingPrograms()
 	
 	vector<vec2> strawBase;
 	strawBase.push_back(vec2(0, 0));
-	strawBase.push_back(vec2(0, 2));
+	strawBase.push_back(vec2(1, 1.25));
 	drawCallData_Straw = InitializeInstancedDrawCallData(shapeProgram, strawBase, false);
 }
 
@@ -742,16 +770,16 @@ void Simulation_Init()
 	{
 		CreatureCreationData data;
 
-		InitFirstGenBrain(&data.brainNodes, &data.brainLinks, &data.brainStructure);
+		InitFirstGenBrain(&data.brainNodes, &data.brainBiases, &data.brainLinks, &data.brainStructure, data.brainActivationExponent);
 
-		data.col = vec3(0.1, 0.1, 0.1);
+		data.col = vec3(random(), random(), random());
 		data.pos = vec2(0, 0);
 		data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
 		data.rad = CREATURE_MIN_RADIUS.value;
 		data.life = random() * 0.8 + 0.1;
 		data.angle = 0.0;
 		data.angleVel = random() - 0.5;
-		data.forwardThrust = random() * 0.01;
+		data.forwardThrust = random() * 0.003;
 		AddCreature(data);
 	}
 
@@ -793,10 +821,13 @@ void Simulation_Logic()
 	glUseProgram(programID);
 		SetUniformUInteger(programID, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
 		SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", brains_MaxNumOfNodes);
+		SetUniformUInteger(programID, "uMaxNumOfBiasesInBrain", brains_MaxNumOfBiases);
 		SetUniformUInteger(programID, "uMaxNumOfLinksInBrain", brains_MaxNumOfLinks);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsLinks.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsBiases.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_BrainsLinks.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_BrainsActivationExponents.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
