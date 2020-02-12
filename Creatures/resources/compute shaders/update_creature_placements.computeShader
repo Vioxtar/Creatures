@@ -25,6 +25,12 @@ layout (std430, binding = 4) buffer CreatureAngleVelocities
 	float AngleVelocities[];
 };
 
+layout (std430, binding = 5) buffer CreatureForwardDirections
+{
+	vec2 ForwardDirections[];
+};
+
+
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 uniform float uVelocityDownscale;
@@ -36,10 +42,11 @@ void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
 	
+	// Position and velocity
+
 	// Acquire (and zerofiy) the physics fix calculated in the creature collision program
 	vec2 physFix = PhysicsFixes[gid];
 	PhysicsFixes[gid] = vec2(0, 0);
-
 
 	// Read once
 	vec2 pos = Positions[gid];
@@ -53,6 +60,7 @@ void main()
 	Positions[gid] = pos;
 	Velocities[gid] = vel;
 
+	// Angle and angle velocity
 
 	// Read once
 	float ang = Angles[gid];
@@ -62,6 +70,10 @@ void main()
 	ang += angVel;
 
 	// Write once
-	Angles[gid] = mod(ang, M_PI);
+	Angles[gid] = mod(ang, M_PI * 2);
 	AngleVelocities[gid] = angVel;
+
+	// Forward direction
+	ForwardDirections[gid] = vec2(-sin(ang), cos(ang));
+	
 }

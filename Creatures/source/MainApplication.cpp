@@ -35,8 +35,8 @@ int main()
 #endif
 
 	// Starting width and height parameters
-	const int startingWidth = 800;
-	const int startingHeight = 800;
+	const int startingWidth = 1200;
+	const int startingHeight = 1200;
 
 	// Create window object
 	GLFWwindow* window = glfwCreateWindow(startingWidth, startingHeight, "Creatures", NULL, NULL);

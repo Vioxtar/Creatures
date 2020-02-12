@@ -114,8 +114,9 @@ struct CreatureCreationData
 	vec2 vel;
 	GLfloat rad;
 	GLfloat life;
-	GLfloat angle;
-	GLfloat angleVel;
+	GLfloat angle; // Maybe temp
+	GLfloat angleVel; // Temp
+	GLfloat forwardThrust; // Temp
 };
 
 
@@ -186,6 +187,7 @@ CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * brains
 CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };
 CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };
 CreatureAttributesSSBOInfo creature_Velocities{ 0, sizeof(vec2) };
+CreatureAttributesSSBOInfo creature_ForwardDirections{ 0, sizeof(vec2) };
 CreatureAttributesSSBOInfo creature_Radii{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_Lives{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_Angles{ 0, sizeof(GLfloat) };
@@ -210,6 +212,7 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Colors);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Positions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Velocities);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_ForwardDirections);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Radii);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Lives);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Angles);
@@ -249,7 +252,7 @@ void SetProgramInfoNumOfWorkGroupsNeeded(ProgramInfo& programInfo)
 	programInfo.workGroupsNeeded = creature_count / localSize + (creature_count % localSize == 0 ? 0 : 1);
 }
 
-ProgramInfo program_ApplyVelocities{ 0, 0, TECH_APPLY_VELOCITIES_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_UpdateCreaturePlacements{ 0, 0, TECH_UPDATE_CREATURE_PLACEMENTS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BorderPhysics{ 0, 0, TECH_BORDER_PHYSICS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_UniformGridBind{ 0, 0, TECH_UNIFORM_GRID_BIND_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_UniformGridUnBind{ 0, 0, TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE };
@@ -257,10 +260,11 @@ ProgramInfo program_CreatureCollision{ 0, 0, TECH_CREATURE_COLLISION_WORKGROUP_L
 ProgramInfo program_BrainPushInputs{ 0, 0, TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainForwardPropagate{ 0, 0, TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainPullOutputs{ 0, 0, TECH_BRAIN_PULL_OUTPUTS_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureActuations{ 0, 0, TECH_CREATURE_ACTUATIONS_WORKGROUP_LOCAL_SIZE };
 
 void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 {
-	SetProgramInfoNumOfWorkGroupsNeeded(program_ApplyVelocities);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_UpdateCreaturePlacements);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BorderPhysics);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_UniformGridBind);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_UniformGridUnBind);
@@ -268,11 +272,13 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPushInputs);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainForwardPropagate);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPullOutputs);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureActuations);
 }
 
 
 // Render draw call datas
-InstancedDrawCallData drawCallData_Circle;
+InstancedDrawCallData drawCallData_Body;
+InstancedDrawCallData drawCallData_Straw;
 
 
 
@@ -575,6 +581,7 @@ GLuint AddCreature(CreatureCreationData newCreatureData)
 	SetCreatureAttribute(creature_Lives, newCreatureIndex, &newCreatureData.life);
 	SetCreatureAttribute(creature_Angles, newCreatureIndex, &newCreatureData.angle);
 	SetCreatureAttribute(creature_AngleVelocities, newCreatureIndex, &newCreatureData.angleVel);
+	SetCreatureAttribute(creature_ForwardThrusts, newCreatureIndex, &newCreatureData.forwardThrust);
 	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, NULL);
 
 	creature_count++;
@@ -627,10 +634,16 @@ void InitLogicPrograms()
 {
 	vector<pair<string, string>> replacers;
 
-	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_ApplyVelocities.workGroupLocalSize)));
-	GLenum applyVelocitiesShaderTypes[] = { GL_COMPUTE_SHADER };
-	const char* applyVelocitiesShaderPaths[] = { "resources/compute shaders/apply_velocities.computeShader" };
-	program_ApplyVelocities.program = CreateLinkedShaderProgram(1, applyVelocitiesShaderTypes, applyVelocitiesShaderPaths, &replacers);
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureActuations.workGroupLocalSize)));
+	GLenum creatureActuationsShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* creatureActuationsShaderPaths[] = { "resources/compute shaders/creature_actuations.computeShader" };
+	program_CreatureActuations.program = CreateLinkedShaderProgram(1, creatureActuationsShaderTypes, creatureActuationsShaderPaths, &replacers);
+	replacers.clear();
+
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_UpdateCreaturePlacements.workGroupLocalSize)));
+	GLenum updateCreaturePlacementsShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* updateCreaturePlacementsShaderPaths[] = { "resources/compute shaders/update_creature_placements.computeShader" };
+	program_UpdateCreaturePlacements.program = CreateLinkedShaderProgram(1, updateCreaturePlacementsShaderTypes, updateCreaturePlacementsShaderPaths, &replacers);
 	replacers.clear();
 
 	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_BorderPhysics.workGroupLocalSize)));
@@ -688,9 +701,15 @@ void InitDrawingPrograms()
 		"resources/graphical shaders/shape.vertexShader",
 		"resources/graphical shaders/shape.fragmentShader"
 	};
-	GLuint circleShapeProgram = CreateLinkedShaderProgram(2, shapeShaderTypes, shapeShaderPaths, NULL);
-	vector<vec2> circleBase = CreateCircleBase(7, 1);
-	drawCallData_Circle = InitializeInstancedDrawCallData(circleShapeProgram, circleBase, true);
+	GLuint shapeProgram = CreateLinkedShaderProgram(2, shapeShaderTypes, shapeShaderPaths, NULL);
+	
+	vector<vec2> bodyBase = CreateCircleBase(7, 1);
+	drawCallData_Body = InitializeInstancedDrawCallData(shapeProgram, bodyBase, true);
+	
+	vector<vec2> strawBase;
+	strawBase.push_back(vec2(0, 0));
+	strawBase.push_back(vec2(0, 2));
+	drawCallData_Straw = InitializeInstancedDrawCallData(shapeProgram, strawBase, false);
 }
 
 void InitUniformGrid()
@@ -731,7 +750,8 @@ void Simulation_Init()
 		data.rad = CREATURE_MIN_RADIUS.value;
 		data.life = random() * 0.8 + 0.1;
 		data.angle = 0.0;
-		data.angleVel = random() * 0.1;
+		data.angleVel = random() - 0.5;
+		data.forwardThrust = random() * 0.01;
 		AddCreature(data);
 	}
 
@@ -831,10 +851,23 @@ void Simulation_Logic()
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
+	// Creature actuations
+	programID = program_CreatureActuations.program;
+	workGroupsNeeded = program_CreatureActuations.workGroupsNeeded;
+	glUseProgram(programID);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Velocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_AngleVelocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_ForwardDirections.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_ForwardThrusts.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_TurnThrusts.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
 
-	// Velocity / physics value application
-	programID = program_ApplyVelocities.program;
-	workGroupsNeeded = program_ApplyVelocities.workGroupsNeeded;
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+
+	// Update body placements
+	programID = program_UpdateCreaturePlacements.program;
+	workGroupsNeeded = program_UpdateCreaturePlacements.workGroupsNeeded;
 	glUseProgram(programID);
 		SetUniformFloat(programID, "uVelocityDownscale", SIMULATION_VELOCITY_DOWNSCALE.value);
 		SetUniformFloat(programID, "uAngleVelocityDownscale", SIMULATION_ANGLE_VELOCITY_DOWNSCALE.value);
@@ -843,13 +876,12 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurpose.ssbo); // Applies physics fix vector, zerofies
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_AngleVelocities.ssbo);
-	glDispatchCompute(workGroupsNeeded, 1, 1);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.ssbo);
+		glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
-
-	
 	// Uniform grid unbind
 	programID = program_UniformGridUnBind.program;
 	workGroupsNeeded = program_UniformGridUnBind.workGroupsNeeded;
@@ -886,8 +918,8 @@ void Simulation_Render()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Angles.ssbo);
 
-	InstancedDrawCall(drawCallData_Circle, creature_count);
-
+	InstancedDrawCall(drawCallData_Body, creature_count);
+	InstancedDrawCall(drawCallData_Straw, creature_count);
 }
 
 void Simulation_Update()

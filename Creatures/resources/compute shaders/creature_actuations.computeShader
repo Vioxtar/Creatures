@@ -1,0 +1,37 @@
+#version 460 core
+
+layout (std430, binding = 0) buffer CreatureVelocities
+{
+	vec2 Velocities[];
+};
+
+layout (std430, binding = 1) buffer CreatureAngleVelocities
+{
+	float AngleVelocities[];
+};
+
+layout (std430, binding = 2) buffer CreatureForwardDirections
+{
+	vec2 ForwardDirections[];
+};
+
+layout (std430, binding = 3) buffer CreatureForwardThrusts
+{
+	float ForwardThrusts[];
+};
+
+layout (std430, binding = 4) buffer CreatureTurnThrusts
+{
+	float TurnThrusts[];
+};
+
+
+layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
+
+void main()
+{
+	uint gid = gl_GlobalInvocationID.x;
+
+	AngleVelocities[gid] += TurnThrusts[gid];
+	Velocities[gid] += ForwardDirections[gid] * ForwardThrusts[gid];
+}
