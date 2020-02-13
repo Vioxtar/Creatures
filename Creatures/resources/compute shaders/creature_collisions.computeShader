@@ -15,17 +15,22 @@ layout (std430, binding = 2) buffer CreatureRadii
 	float Radii[];
 };
 
-layout (std430, binding = 3) buffer UniformGrid
+layout (std430, binding = 3) buffer CreatureHardnesses
+{
+	float Hardnesses[];
+};
+
+layout (std430, binding = 4) buffer UniformGrid
 {
 	uint UGrid[];
 };
 
-layout (std430, binding = 4) buffer CreatureTiles
+layout (std430, binding = 5) buffer CreatureTiles
 {
 	uint Tiles[];
 };
 
-layout (std430, binding = 5) buffer CreatureGeneralPurpose
+layout (std430, binding = 6) buffer CreatureGeneralPurpose
 {
 	vec2 PhysicsFixes[];
 };
@@ -64,7 +69,11 @@ void main()
 
 	// Cache our own values, we don't need to access them every iteration
 	vec2 aPos = Positions[gid];
+	vec2 aVel = Velocities[gid];
+	vec2 aOldPos = aPos - aVel;
 	float aRad = Radii[gid];
+	float aHardness = Hardnesses[gid];
+
 
 	// Iterate on the uniform grid throughout start/end x,y indices
 	for (uint x = xStart; x <= xEnd; x++)
@@ -107,10 +116,29 @@ void main()
 				float RadiiSum = aRad + bRad;
 				if (distSquared < RadiiSum * RadiiSum)
 				{
+					// Note on gliders: for easier computations, we don't check if creatures passed through each other (happens when
+					// their velocities are bigger in magnitude than their radii). This is fine, however what we're not willing to have
+					// are gliders: creature A is a glider when A passes through creature B, places itself on the OTHER side of creature B,
+					// and gets a boost from it instead of slowing down, allowing A to glide through entire masses of creatures if it gets a
+					// lucky placement. To midigate this, we perform a cheap solution:
+					vec2 bVel = Velocities[bGID];
+					vec2 bOldPos = bPos - bVel;
+					vec2 c1c2OldPosDiff = bOldPos - aOldPos;
+					if (dot(c1c2OldPosDiff, c1c2PosDiff) < 0.0) // Are we on the other side (did we pass the center point?)
+					{
+						// We over-penetrated (old positions placed each creature on each others' other side), fix to old position difference
+						c1c2PosDiff = c1c2OldPosDiff;
+					}
+					
+					// Continue as usual...
+
 					float dist = sqrt(distSquared);
 
+					float bHardness = Hardnesses[bGID];
+					float hardnessFactor = max(aHardness, bHardness);
+
 					float violation = RadiiSum - dist;
-					float push = violation / RadiiSum;
+					float push = hardnessFactor * violation / RadiiSum;
 					float m1 = 1;
 					float m2 = 1;
 					float m1Frac = m1 / (m1 + m2);

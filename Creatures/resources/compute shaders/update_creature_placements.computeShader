@@ -41,6 +41,7 @@ uniform float uAngleVelocityDownscale;
 void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
+
 	
 	// Position and velocity
 
@@ -55,9 +56,9 @@ void main()
 	vel = vel * uVelocityDownscale + physFix;
 	pos = pos + physFix + vel;
 	
+	
 	Positions[gid] = pos;
 	Velocities[gid] = vel;
-
 
 
 	// Angle and angle velocity
@@ -65,7 +66,7 @@ void main()
 	float ang = Angles[gid];
 	float angVel = AngleVelocities[gid];
 
-	//angVel = angVel * uAngleVelocityDownscale;
+	angVel = angVel * uAngleVelocityDownscale;
 	ang += angVel;
 
 	Angles[gid] = mod(ang, M_PI * 2);

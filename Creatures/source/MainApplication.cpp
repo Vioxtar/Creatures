@@ -83,6 +83,13 @@ int main()
 	// Try and disable microstutters with V-Sync off
 	glfwSwapInterval(0);
 
+	GLint maxWorkGroups;
+	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &maxWorkGroups);
+	cout << "Max number of workgroups: " << maxWorkGroups << endl;
+
+	GLint maxWorkGroupInvocations;
+	glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &maxWorkGroupInvocations);
+	cout << "Max number of workgroup invocations: " << maxWorkGroupInvocations << endl;
 
 
 	// @DEBUG

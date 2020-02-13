@@ -22,10 +22,12 @@ uniform float uBorderRestitution;
 
 void main()
 {
+	
 	uint gid = gl_GlobalInvocationID.x;
 
 	float violation;
 	vec2 pos = Positions[gid];
+	vec2 vel = Velocities[gid];
 	float rad = Radii[gid];
 
 
@@ -33,28 +35,48 @@ void main()
 	float leftBorder = -rightBorder;
 	float upBorder = uSimDimensions.y / 2.0;
 	float downBorder = -upBorder;
-	vec2 fix = vec2(0, 0);
+	
+
 
 	// Right border
 	violation = max(0, pos.x + rad - rightBorder);
-	fix.x -= violation;
-	fix.x -= violation;
-	
+	if (violation > 0.0)
+	{
+		pos.x -= violation;
+		pos.x -= violation;
+		vel.x *= -uBorderRestitution;
+	}
+
 	// Left border
 	violation = min(0, pos.x - rad - leftBorder);
-	fix.x -= violation;
-	fix.x -= violation;
+	if (violation < 0.0)
+	{
+		pos.x -= violation;
+		pos.x -= violation;
+		vel.x *= -uBorderRestitution;
+	}
+
 
 	// Up border
 	violation = max(0, pos.y + rad - upBorder);
-	fix.y -= violation;
-	fix.y -= violation;
+	if (violation > 0.0)
+	{
+		pos.y -= violation;
+		pos.y -= violation;
+		vel.y *= -uBorderRestitution;
+	}
+
 	
 	// Down border
 	violation = min(0, pos.y - rad - downBorder);
-	fix.y -= violation;
-	fix.y -= violation;
+	if (violation < 0.0)
+	{
+		pos.y -= violation;
+		pos.y -= violation;
+		vel.y *= -uBorderRestitution;
+	}
 
-	Positions[gid] += fix;
-	Velocities[gid] += fix * (0.5 + uBorderRestitution * 0.5);
+
+	Positions[gid] = pos;
+	Velocities[gid] = vel;
 }

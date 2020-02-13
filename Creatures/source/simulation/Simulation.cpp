@@ -1,97 +1,6 @@
 #include "Simulation.h"
 
 
-/*
-
-	Some notes
-
-	Creatures grow in size the bigger they are, however this only reflects some ~0.8 percentage of their final radii, the remaining ~0.2 percent - they control!
-	
-	saturation belongs to family
-	life reflected by fill
-
-	Creatures control hardness target, and have a stick mechanism (either arms or body or some sort of friction side)
-
-	Sigmoid activation can be described as:
-
-	sigmoidActivation(x) =
-		if x == 0.5 then return x
-		if x < 0.5 then return ((2x)^a)/2
-		if x > 0.5 then return -(((2(1-x))^a) / 2) + 1
-
-	for some constant a = 8-ish
-
-	It could also probably be approximated further by dividing into regions and returning linear functions within those regions
-*/
-
-
-/*
-
-	Approach to brains:
-	We wish to minimize memory complexity of brains with minimal time complexity tradeoffs.
-	
-	Assume that:
-	1. We have about 2 GB of usage space for brains
-	2. We want to support up to 100,000 creatures at once
-
-	Some numbers:
-		1 GB =~ 250,000,000 floats
-		250,000,000 / 100,000 = 2500 floats per creature
-		However we about just about 2 GB available, so that's 500,000,000 floats / 100,000 creatures = 5000 floats per creature.
-		Going by that number, that gives us just about 4500 floats per brain, leaving us with 500*4 bytes for other attributes.
-		
-
-	Some more numbers:
-		If we would have 40 nodes in a level, and up to 5 levels, then every link level would have 40^2 = 1600 links, meaning 1600*5 = 8000 total links in the brain. If every link has a scalar float and a bias float, then that's 16000 floats per brain!
-		A more feasible scenario is have 60 input nodes, 10 nodes in every hidden level, and 5 levels, that means: 60*10 + 10*10*4 = 1000 links in the entire brain! 2 floats in a link implies 2000 floats, and were we to consider node values, then that's 110 more floats = 2110 floats per brain.
-	
-		If a sensor each has:
-			1. Activation
-			2. Hue
-			3. Lightness
-			4. Saturation
-		
-		And we have 8 sensors, then that's 4*8 = 32 inputs. 
-
-	To minimize memory complexity we can take several approaches:
-
-		a. Instead of merely defining # of nodes per level (which is always a very big number since inputs is about 40-50 nodes), define # of nodes per hidden level and # of nodes per input level, this will drastically decrease size!
-		b. Instead of having every node connect to every other node in the previous layer, have it only connect to X nodes
-		c. Don't use biases! Just scalars...
-
-	The overall approach for brains:
-
-		A single brain buffer would contain:
-
-			[STRUCTURE HEADER UINTS | A SEQUENCE OF ALL NODES' CURRENT VALUES | A SEQUENCE OF LINKS]
-
-		The structure header is simply a sequence of uints that tells us the structure of the brain.
-			[NUMOFLEVELS = 5, 32, 15, 10, 18, 12] for example means 32 inputs, 3 middle levels (15, 10 and 18 nodes), and 12 outputs.
-
-		The sequence of notes is merely the current values stored at each node. We know that this buffer always starts immediately after
-		the structure header, and is exactly sum(structure values) indices long.
-
-		Afterwards, a sequence of links: the length of this buffer is exactly 32*15 + 15*10 + 10*18 + 18*12 indices long.
-
-	We can use this layout to cleverly iterate our brains and perform forward propagations.
-	While this layout is borderline dynamic, we must make each total brain size fixed for proper SSBO indexing.
-	We can choose one of two data layout approaches:
-		
-		[FIXED STRUCTURE | DYNAMIC NODES | DYNAMIC LINKS, empty space]
-		(gives us more flexibility in how we forward propagate, less convenient for mutation logic)
-	
-	Or this:
-
-		[FIXED STRUCTURE | FIXED NODES, empty space | FIXED LINKS, empty space]
-		(gives us more comfort in mutation handling, less in forward propagations)
-
-	We'll choose the first, since it may prove more flexible to changes in the future (no hard-coding of sub-buffer sizes)
-
-	Finally we wish for a straight forward method to provide an upper bound on memory complexity of brains.
-	
-*/
-
-
 ///////////////////
 // -- STRUCTS -- //
 ///////////////////
@@ -122,6 +31,8 @@ struct CreatureCreationData
 	GLfloat angle; // Maybe temp
 	GLfloat angleVel; // Temp
 	GLfloat forwardThrust; // Temp
+	GLfloat turnThrust; // Temp
+	GLfloat hardness; // Temp
 };
 
 
@@ -257,7 +168,7 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 GLuint creature_count = 0; // The count of active creatures in the simulation
 GLuint max_supported_creature_count_by_current_buffers; // The number of creatures supported by current SSBO buffers
 
-const GLenum ssbo_usage = GL_STREAM_READ;
+const GLenum ssbo_usage = GL_STREAM_DRAW;
 
 
 ////////////////////////////////////////////
@@ -610,6 +521,8 @@ GLuint AddCreature(CreatureCreationData newCreatureData)
 	SetCreatureAttribute(creature_Angles, newCreatureIndex, &newCreatureData.angle);
 	SetCreatureAttribute(creature_AngleVelocities, newCreatureIndex, &newCreatureData.angleVel);
 	SetCreatureAttribute(creature_ForwardThrusts, newCreatureIndex, &newCreatureData.forwardThrust);
+	SetCreatureAttribute(creature_TurnThrusts, newCreatureIndex, &newCreatureData.turnThrust);
+	SetCreatureAttribute(creature_Harndesses, newCreatureIndex, &newCreatureData.hardness);
 	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, NULL);
 
 	creature_count++;
@@ -735,8 +648,8 @@ void InitDrawingPrograms()
 	drawCallData_Body = InitializeInstancedDrawCallData(shapeProgram, bodyBase, true);
 	
 	vector<vec2> strawBase;
-	strawBase.push_back(vec2(0, 0));
-	strawBase.push_back(vec2(1, 1.25));
+	strawBase.push_back(vec2(0, 1));
+	strawBase.push_back(vec2(0, 1.5));
 	drawCallData_Straw = InitializeInstancedDrawCallData(shapeProgram, strawBase, false);
 }
 
@@ -778,8 +691,10 @@ void Simulation_Init()
 		data.rad = CREATURE_MIN_RADIUS.value;
 		data.life = random() * 0.8 + 0.1;
 		data.angle = 0.0;
-		data.angleVel = random() - 0.5;
+		data.angleVel = (random() - 0.5) * 0.01;
 		data.forwardThrust = random() * 0.003;
+		data.turnThrust = 0.0;
+		data.hardness = 1.0;
 		AddCreature(data);
 	}
 
@@ -812,7 +727,7 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Velocities.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
 	// Brain forward propagate
@@ -830,9 +745,9 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_BrainsActivationExponents.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-
+	
 	// Pull brain outputs
 	programID = program_BrainPullOutputs.program;
 	workGroupsNeeded = program_BrainPullOutputs.workGroupsNeeded;
@@ -845,7 +760,7 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
 
@@ -861,7 +776,7 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_UniformGridTiles.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
 
@@ -874,26 +789,14 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ugrid_SSBO);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_UniformGridTiles.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_GeneralPurpose.ssbo); // Writes physics fix vector for decoupling purposes
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Harndesses.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, ugrid_SSBO);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_UniformGridTiles.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_GeneralPurpose.ssbo); // Writes physics fix vector for decoupling purposes
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-
-	// Creature actuations
-	programID = program_CreatureActuations.program;
-	workGroupsNeeded = program_CreatureActuations.workGroupsNeeded;
-	glUseProgram(programID);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Velocities.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_AngleVelocities.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_ForwardDirections.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_ForwardThrusts.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_TurnThrusts.ssbo);
-	glDispatchCompute(workGroupsNeeded, 1, 1);
-
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 
 	// Update body placements
@@ -910,7 +813,22 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.ssbo);
 		glDispatchCompute(workGroupsNeeded, 1, 1);
 
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+
+	
+	// Creature actuations
+	programID = program_CreatureActuations.program;
+	workGroupsNeeded = program_CreatureActuations.workGroupsNeeded;
+	glUseProgram(programID);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Velocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_AngleVelocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_ForwardDirections.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_ForwardThrusts.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_TurnThrusts.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
 	// Uniform grid unbind
@@ -922,7 +840,7 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_UniformGridTiles.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
 	// Border physics
@@ -936,8 +854,8 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	
 }
 
 void Simulation_Render()
