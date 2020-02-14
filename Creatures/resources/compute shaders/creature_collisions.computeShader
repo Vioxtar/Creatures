@@ -121,11 +121,13 @@ void main()
 				float RadiiSum = aRad + bRad;
 				if (distSquared < RadiiSum * RadiiSum)
 				{
+					
 					// Note on gliders: for easier computations, we don't check if creatures passed through each other (happens when
 					// their velocities are bigger in magnitude than their radii). This is fine, however what we're not willing to have
 					// are gliders: creature A is a glider when A passes through creature B, places itself on the OTHER side of creature B,
 					// and gets a boost from it instead of slowing down, allowing A to glide through entire masses of creatures if it gets a
 					// lucky placement. To midigate this, we perform a cheap solution:
+					
 					vec2 bVel = Velocities[bGID];
 					vec2 bOldPos = bPos - bVel;
 					vec2 c1c2OldPosDiff = bOldPos - aOldPos;
@@ -135,31 +137,23 @@ void main()
 						c1c2PosDiff = c1c2OldPosDiff;
 					}
 					
-					// Continue as usual...
-
+					// Proceed as usual...
+				
 					float dist = sqrt(distSquared);
-
+					float violation = RadiiSum - dist;
+					
 					float bHardness = Hardnesses[bGID];
 					float hardnessFactor = max(aHardness, bHardness);
+					float push = hardnessFactor * violation;
 
-					float velCollideFactor = max(-dot(bVel, aVel), 0) / 2.0;
-
-					float violation = RadiiSum - dist;
-					float push = (velCollideFactor + violation / (dist)) * hardnessFactor;
 					float m1 = 1;
 					float m2 = 1;
 					float m1Frac = m1 / (m1 + m2);
 					float m2Frac = m2 / (m1 + m2);
 
-					vec2 c1PosSub = -c1c2PosDiff;
-					vec2 c2PosSub = c1c2PosDiff;
-
-					c1PosSub = c1PosSub * push;
-					c2PosSub = c2PosSub * push;
-
-					c1PosSub = c1PosSub * m2Frac;
-					c2PosSub = c2PosSub * m1Frac;
-				
+					vec2 c1PosSub = -c1c2PosDiff * push * m2Frac;
+					vec2 c2PosSub = c1c2PosDiff * push * m1Frac;
+					
 					// Register the fix
 					PhysicsFixes[gid] += c1PosSub;
 					PhysicsFixes[bGID] += c2PosSub;

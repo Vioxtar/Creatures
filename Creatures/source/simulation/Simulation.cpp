@@ -134,7 +134,7 @@ CreatureAttributesSSBOInfo creature_TurnThrusts{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_Harndesses{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_Horninesses{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_Generations{ 0, sizeof(GLuint) };
-CreatureAttributesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLuint) };
+CreatureAttributesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLint) };
 CreatureAttributesSSBOInfo creature_GeneralPurpose{ 0, sizeof(vec2) };
 
 // The sole purpose of this vector is to contain our creature attributes SSBO infos for easier iteration during SSBO manipulations
@@ -799,25 +799,6 @@ void Simulation_Logic()
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
-
-	// Update body placements
-	programID = program_UpdateCreaturePlacements.program;
-	workGroupsNeeded = program_UpdateCreaturePlacements.workGroupsNeeded;
-	glUseProgram(programID);
-		SetUniformFloat(programID, "uVelocityDownscale", SIMULATION_VELOCITY_DOWNSCALE.value);
-		SetUniformFloat(programID, "uAngleVelocityDownscale", SIMULATION_ANGLE_VELOCITY_DOWNSCALE.value);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurpose.ssbo); // Applies physics fix vector, zerofies
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_AngleVelocities.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.ssbo);
-		glDispatchCompute(workGroupsNeeded, 1, 1);
-
-	glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-
-	
 	// Creature actuations
 	programID = program_CreatureActuations.program;
 	workGroupsNeeded = program_CreatureActuations.workGroupsNeeded;
@@ -844,6 +825,24 @@ void Simulation_Logic()
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
+
+	// Update body placements
+	programID = program_UpdateCreaturePlacements.program;
+	workGroupsNeeded = program_UpdateCreaturePlacements.workGroupsNeeded;
+	glUseProgram(programID);
+		SetUniformFloat(programID, "uVelocityDownscale", SIMULATION_VELOCITY_DOWNSCALE.value);
+		SetUniformFloat(programID, "uAngleVelocityDownscale", SIMULATION_ANGLE_VELOCITY_DOWNSCALE.value);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurpose.ssbo); // Applies physics fix vector, zerofies
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_AngleVelocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+
 	// Border physics
 	programID = program_BorderPhysics.program;
 	workGroupsNeeded = program_BorderPhysics.workGroupsNeeded;
@@ -856,7 +855,8 @@ void Simulation_Logic()
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
-	
+
+
 }
 
 void Simulation_Render()

@@ -7,7 +7,7 @@ layout (std430, binding = 0) buffer UniformGrid
 
 layout (std430, binding = 1) buffer CreatureTiles
 {
-	uint Tiles[];
+	int Tiles[];
 };
 
 
@@ -22,12 +22,16 @@ void main()
 	uint gid = gl_GlobalInvocationID.x;
 
 	// Get the index of the tile we were mapped to
-	uint tileIndex = Tiles[gid];
+	int tileIndex = Tiles[gid];
+	if (tileIndex == -1)
+	{
+		// We weren't mapped to a tile (we were out of bounds)
+		return;
+	}
 
-	// Forget our last tile (disabled, we may not even need this...)
-	//Tiles[gid] = -1;
+	// We were mapped to a tile, meaning we're either in it or we didn't have room
 
-	// Reset the creature counter of the tile
+	// Reset the creature counter of the tile anyways
 	uint tileCreaturesCountIndex = tileIndex * uIndicesInTile;
 	UGrid[tileCreaturesCountIndex] = 0;
 }

@@ -12,7 +12,7 @@ layout (std430, binding = 1) buffer UniformGrid
 
 layout (std430, binding = 2) buffer CreatureTiles
 {
-	uint tiles[];
+	int Tiles[];
 };
 
 
@@ -48,12 +48,18 @@ void main()
 	uint xTileIndex = uint(floor(remappedXPos * gridXDim / simWidth));
 	uint yTileIndex = uint(floor(remappedYPos * gridYDim / simHeight));
 
-	if (xTileIndex < 0 || xTileIndex >= gridXDim || xTileIndex < 0 || xTileIndex >= gridYDim)
+	if (xTileIndex < 0 || xTileIndex >= gridXDim || yTileIndex < 0 || yTileIndex >= gridYDim)
 	{
-		return; // We're out of bounds (for some reason), safely bail
+		// We're out of bounds (for some reason), safely bail
+		Tiles[gid] = -1;
+		return;
 	}
+	
+	int tileIndex = int(xTileIndex) + int(gridXDim) * int(yTileIndex);
 
-	uint tileIndex = xTileIndex + gridXDim * yTileIndex;
+	// Regardless of whether or not we make it in a tile, store the tile to index so that we can unbind all tiles afterwards
+	Tiles[gid] = tileIndex;
+
 
 	// Find if we have room inside the tile
 	uint tileCreaturesCountIndex = tileIndex * uIndicesInTile;
@@ -72,8 +78,5 @@ void main()
 		atomicAdd(UGrid[tileCreaturesCountIndex], -1);
 
 	}
-
-	// Regardless, store the tile to index so that we can unbind all tiles afterwards
-	tiles[gid] = tileIndex;		
 
 }

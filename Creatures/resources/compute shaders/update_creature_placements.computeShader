@@ -54,7 +54,7 @@ void main()
 
 	// First update velocity, only then set the position! Otherwise we get fucky collisions
 	vel = vel * uVelocityDownscale + physFix;
-	pos = pos + physFix + vel;
+	pos = pos + vel + physFix;
 	
 	
 	Positions[gid] = pos;

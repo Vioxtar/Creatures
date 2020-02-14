@@ -76,6 +76,9 @@ void main()
 		vel.y *= -uBorderRestitution;
 	}
 
+	// Finally clamp - we don't want a border fix to throw (for any reason) a creature past the OPPOSITE border...
+	pos.x = max(leftBorder + rad, min(pos.x, rightBorder - rad));
+	pos.y = max(downBorder + rad, min(pos.y, upBorder - rad));
 
 	Positions[gid] = pos;
 	Velocities[gid] = vel;

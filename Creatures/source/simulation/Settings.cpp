@@ -33,20 +33,20 @@ extern const float CAMERA_START_ZOOM_TARGET = 0.01f;
 
 // Simulation settings
 extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
-extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 4;
+extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 3;
 
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 100, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 100, 1, 300 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 305, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 305, 1, 300 };
 
-extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.75, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 1.0, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 1.0, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 1.0, 0.0, 1.0 };
 
 // Creature body settings
-extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.1, 0.1, 0.1 };
-extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.1, 0.1, 0.1 };
-extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS = { 0.1, 0.1, 2.0 };
+extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.3, 0.3, 0.3 };
+extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.3, 0.3, 0.3 };
+extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS = { 0.3, 0.1, 2.0 };
 
 
 // Creature brain settings
