@@ -144,7 +144,8 @@ void main()
 					
 					float bHardness = Hardnesses[bGID];
 					float hardnessFactor = max(aHardness, bHardness);
-					float push = hardnessFactor * violation;
+					float penetrationPercentage = violation / RadiiSum;
+					float push = pow(hardnessFactor, 1.0 - penetrationPercentage) * violation;
 
 					float m1 = 1;
 					float m2 = 1;
