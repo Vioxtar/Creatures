@@ -45,7 +45,7 @@ void main()
 		pos.x -= violation;
 		pos.x -= violation;
 		vel.x *= -uBorderRestitution;
-	}
+	} else
 
 	// Left border
 	violation = min(0, pos.x - rad - leftBorder);
@@ -64,7 +64,7 @@ void main()
 		pos.y -= violation;
 		pos.y -= violation;
 		vel.y *= -uBorderRestitution;
-	}
+	} else
 
 	
 	// Down border

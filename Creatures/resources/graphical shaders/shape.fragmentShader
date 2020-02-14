@@ -1,9 +1,13 @@
 #version 460 core
 
 in vec4 oVertexColor;
+in float oVertexDepth;
+
 out vec4 FragColor;
+out float gl_FragDepth;
 
 void main()
 {
     FragColor = oVertexColor;
+    gl_FragDepth = oVertexDepth;
 }

@@ -92,6 +92,12 @@ int main()
 	cout << "Max number of workgroup invocations: " << maxWorkGroupInvocations << endl;
 
 
+	// Temporary placement
+	glEnable(GL_DEPTH_TEST);
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glEnable(GL_MULTISAMPLE);
+
+
 	// @DEBUG
 	double lastTime = 0;
 	int frameCount = 0;

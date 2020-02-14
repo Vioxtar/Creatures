@@ -40,9 +40,11 @@ layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 uniform uvec2 uGridDimensions;
 uniform uint uIndicesInTile;
+uniform vec2 uRandom;
 
 void main()
 {
+
 	uint gid = gl_GlobalInvocationID.x;
 
 	uint gridXDim = uGridDimensions.x;
@@ -110,6 +112,9 @@ void main()
 
 				if (distSquared <= 0)
 				{
+					// Both creatures are inside each other, give each other a small push...
+					PhysicsFixes[gid] += uRandom * aRad;
+					PhysicsFixes[bGID] -= uRandom * bRad;
 					continue;
 				}
 
@@ -137,8 +142,10 @@ void main()
 					float bHardness = Hardnesses[bGID];
 					float hardnessFactor = max(aHardness, bHardness);
 
+					float velCollideFactor = max(-dot(bVel, aVel), 0) / 2.0;
+
 					float violation = RadiiSum - dist;
-					float push = hardnessFactor * violation / RadiiSum;
+					float push = (velCollideFactor + violation / (dist)) * hardnessFactor;
 					float m1 = 1;
 					float m2 = 1;
 					float m1Frac = m1 / (m1 + m2);

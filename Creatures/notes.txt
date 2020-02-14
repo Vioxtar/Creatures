@@ -8,8 +8,11 @@
 	Refactor simulation.cpp by splitting up code (programs, creature SSBOs, etc, just like camera is split up)
 	Settings pretty names
 	DearImgui integration and UI
-	Redo drawing!
+		F11 to fullscreen
+	Redo drawing! For voronoi patterns: Use a fragment shader and simply fill the depth with the distance fraction (or its reverse), then depth test will result in voronoi patterns naturally!
+	Add WINDOW settings in settings file?
 	Spikes and shields and stick mechanisms
+	Fix window misalignment
 
 
 	Some notes

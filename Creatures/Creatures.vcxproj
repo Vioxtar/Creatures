@@ -180,6 +180,8 @@
     <None Include="resources\compute shaders\uniform_grid_bind.computeShader" />
     <None Include="resources\compute shaders\uniform_grid_unbind.computeShader" />
     <None Include="resources\compute shaders\update_creature_placements.computeShader" />
+    <None Include="resources\graphical shaders\e.fragmentShader" />
+    <None Include="resources\graphical shaders\e.vertexShader" />
     <None Include="resources\graphical shaders\shape.fragmentShader" />
     <None Include="resources\graphical shaders\shape.vertexShader" />
   </ItemGroup>

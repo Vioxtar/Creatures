@@ -55,6 +55,8 @@
     <None Include="resources\compute shaders\brain_pull_outputs.computeShader" />
     <None Include="resources\compute shaders\update_creature_placements.computeShader" />
     <None Include="resources\compute shaders\creature_actuations.computeShader" />
+    <None Include="resources\graphical shaders\e.vertexShader" />
+    <None Include="resources\graphical shaders\e.fragmentShader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\OpenGLErrorDebugger.h">

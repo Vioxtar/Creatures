@@ -39,7 +39,7 @@ extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0
 extern TweakableFloatSetting SIMULATION_WIDTH = { 100, 1, 300 };
 extern TweakableFloatSetting SIMULATION_HEIGHT = { 100, 1, 300 };
 
-extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.5, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.75, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 1.0, 0.0, 1.0 };
 

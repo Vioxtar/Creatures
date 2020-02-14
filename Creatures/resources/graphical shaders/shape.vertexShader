@@ -29,6 +29,8 @@ layout (std430, binding = 4) buffer CreatureAngles
 };
 
 out vec4 oVertexColor;
+out float oVertexDepth;
+
 uniform mat4 uTransform;
 
 void main()
@@ -52,6 +54,11 @@ void main()
 
 	// Vec3's are not supported by the std430 format, so we have to do this:
 	uint colIndex = gl_InstanceID * 3;
-	vec3 col = vec3(Colors[colIndex], Colors[colIndex + 1], Colors[colIndex + 2]);
+	float r = Colors[colIndex];
+	float g = Colors[colIndex + 1];
+	float b = Colors[colIndex + 2];
+	vec3 col = vec3(r, g, b);
 	oVertexColor = vec4(col.xyz, 1.0);
+
+	oVertexDepth = dot(toRotate, toRotate);
 }

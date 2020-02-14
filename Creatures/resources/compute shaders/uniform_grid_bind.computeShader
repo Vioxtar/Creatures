@@ -48,6 +48,11 @@ void main()
 	uint xTileIndex = uint(floor(remappedXPos * gridXDim / simWidth));
 	uint yTileIndex = uint(floor(remappedYPos * gridYDim / simHeight));
 
+	if (xTileIndex < 0 || xTileIndex >= gridXDim || xTileIndex < 0 || xTileIndex >= gridYDim)
+	{
+		return; // We're out of bounds (for some reason), safely bail
+	}
+
 	uint tileIndex = xTileIndex + gridXDim * yTileIndex;
 
 	// Find if we have room inside the tile

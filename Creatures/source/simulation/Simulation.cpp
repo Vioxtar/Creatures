@@ -689,12 +689,12 @@ void Simulation_Init()
 		data.pos = vec2(0, 0);
 		data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
 		data.rad = CREATURE_MIN_RADIUS.value;
-		data.life = random() * 0.8 + 0.1;
-		data.angle = 0.0;
+		data.life = 1.0;// random() * 0.8 + 0.1;
+		data.angle = random() * 7;
 		data.angleVel = (random() - 0.5) * 0.01;
 		data.forwardThrust = random() * 0.003;
 		data.turnThrust = 0.0;
-		data.hardness = 1.0;
+		data.hardness = 0.25;
 		AddCreature(data);
 	}
 
@@ -786,6 +786,7 @@ void Simulation_Logic()
 	glUseProgram(programID);
 		SetUniformVector2ui(programID, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
 		SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
+		SetUniformVector2f(programID, "uRandom", vec2(random() - 0.5, random() - 0.5)); // Used to resolve creatures absolutely clipped in each other
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
