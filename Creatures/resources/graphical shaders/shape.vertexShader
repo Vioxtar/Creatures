@@ -58,7 +58,7 @@ void main()
 	float g = Colors[colIndex + 1];
 	float b = Colors[colIndex + 2];
 	vec3 col = vec3(r, g, b);
-	oVertexColor = vec4(col.xyz, 1.0);
-
+	
 	oVertexDepth = dot(toRotate, toRotate);
+	oVertexColor = vec4(col.xyz, 1.0);
 }

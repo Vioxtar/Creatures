@@ -4,15 +4,24 @@
 	Sensors
 	Energy + life + actuation system
 	Reproduction and mutation system
-	Fix the weird driver-crashing bug
+	Fix the weird driver-crashing bug (is it still there?)
 	Refactor simulation.cpp by splitting up code (programs, creature SSBOs, etc, just like camera is split up)
 	Settings pretty names
 	DearImgui integration and UI
 		F11 to fullscreen
-	Redo drawing! For voronoi patterns: Use a fragment shader and simply fill the depth with the distance fraction (or its reverse), then depth test will result in voronoi patterns naturally!
+
+	Creature drawing improvements:
+		if a creature's fragments are potentially affected by its colliders, I can maybe keep a buffer of previous colliders for that creature, holding their ID indices
+		this way each creature acts like a cluster, letting me iterate its colliders and check if I should offset the distance to later be used to draw the stroke effect
+
 	Add WINDOW settings in settings file?
 	Spikes and shields and stick mechanisms
 	Fix window misalignment
+
+
+
+
+
 
 
 	Some notes
@@ -21,6 +30,8 @@
 	
 	saturation belongs to family
 	life reflected by fill
+
+	make stickyness global to creature's body, make A not stick to B if A deflects B with shield or if B deflects A with shield..?
 
 	Creatures control hardness target, and have a stick mechanism (either arms or body or some sort of friction side)
 

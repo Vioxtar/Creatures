@@ -689,12 +689,12 @@ void Simulation_Init()
 		data.pos = vec2(0, 0);
 		data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
 		data.rad = CREATURE_MIN_RADIUS.value;
-		data.life = random() * 0.8 + 0.1;
+		data.life = 1.0;
 		data.angle = random() * 7;
 		data.angleVel = (random() - 0.5) * 0.01;
 		data.forwardThrust = random() * 0.003;
 		data.turnThrust = 0.0;
-		data.hardness = 1.0;
+		data.hardness = random();
 		AddCreature(data);
 	}
 
