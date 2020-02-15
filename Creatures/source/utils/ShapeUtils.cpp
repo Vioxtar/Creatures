@@ -26,7 +26,7 @@ vector<vec2> createGLetterBase()
 	};
 }
 
-vector <vec2> CreateCircleBase(unsigned int numOfPoints, float circleFraction)
+vector<vec2> CreateCircleBase(unsigned int numOfPoints, float circleFraction)
 {
 	double betaStart = -M_PI + (1 - circleFraction) * M_PI;
 	double betaEnd = -betaStart;
@@ -45,12 +45,21 @@ vector <vec2> CreateCircleBase(unsigned int numOfPoints, float circleFraction)
 	return circleBase;
 }
 
+
+void AppendCircleBase(vector<vec2>* appendTarget, unsigned int numOfPoints, float circleFraction)
+{
+	vector<vec2> circleBase = CreateCircleBase(numOfPoints, circleFraction);
+	appendTarget->reserve(appendTarget->size() + circleBase.size());
+	appendTarget->insert(appendTarget->end(), circleBase.begin(), circleBase.end());
+}
+
+
 ///////////////////////////////////
 // -- STROKE VERTICES COMPUTE -- //
 ///////////////////////////////////
 
 
-ShapeData CreateStrokeVertices(vector<vec2>& shapeBase, bool loop)
+IndexedVertices CreateStrokeVertices(vector<vec2>& shapeBase, bool loop)
 {
 	vector<float> vertices;
 	vector<unsigned int> indices;
@@ -134,7 +143,7 @@ ShapeData CreateStrokeVertices(vector<vec2>& shapeBase, bool loop)
 	}
 
 	// Load into a shape data and return
-	return ShapeData({
+	return IndexedVertices({
 		vertices,
 		indices
 		});
@@ -237,7 +246,7 @@ public:
 	{
 		shapeProgramID = shapeProgram;
 
-		ShapeData shapeData = CreateStrokeVertices(shapeBase, loop);
+		IndexedVertices shapeData = CreateStrokeVertices(shapeBase, loop);
 
 		indices = shapeData.indices;
 		shapeNumOfIndices = shapeData.indices.size();

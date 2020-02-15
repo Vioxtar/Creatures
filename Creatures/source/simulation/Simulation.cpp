@@ -214,9 +214,7 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 
 
 // Render draw call datas
-InstancedDrawCallData drawCallData_Body;
-InstancedDrawCallData drawCallData_Straw;
-
+InstancedDrawCallData drawCallData_CreatureBody;
 
 
 ////////////////////////
@@ -359,42 +357,6 @@ void BuildUniformGrid()
 // -- DRAW UTILS -- //
 //////////////////////
 
-
-InstancedDrawCallData InitializeInstancedDrawCallData(GLuint program, vector<vec2> shapeBase, bool loop)
-{
-	InstancedDrawCallData newDrawCallData;
-
-	newDrawCallData.program = program;
-
-	ShapeData shapeData = CreateStrokeVertices(shapeBase, loop);
-	newDrawCallData.numOfIndices = shapeData.indices.size();
-	
-	glGenVertexArrays(1, &newDrawCallData.VAO);
-	glBindVertexArray(newDrawCallData.VAO);
-
-	// Create vertices buffer
-	glGenBuffers(1, &newDrawCallData.VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, newDrawCallData.VBO);
-	glBufferData(GL_ARRAY_BUFFER, shapeData.vertices.size() * sizeof(GLfloat), shapeData.vertices.data(), GL_STATIC_DRAW);
-
-	// Create elements buffer
-	glGenBuffers(1, &newDrawCallData.EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, newDrawCallData.EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, shapeData.indices.size() * sizeof(GLuint), shapeData.indices.data(), GL_STATIC_DRAW);
-
-	// Vertex Positions
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-
-	// Vertex Normals
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-	// Unbind (unbinding the vertex array essentially links the currently bound VBO and EBO)
-	glBindVertexArray(0);
-
-	return newDrawCallData;
-}
 
 void InstancedDrawCall(InstancedDrawCallData data, GLuint numOfInstances)
 {
@@ -633,24 +595,53 @@ void InitLogicPrograms()
 
 void InitDrawingPrograms()
 {
-	// Initialize drawing programs
-	GLenum shapeShaderTypes[] = {
-		GL_VERTEX_SHADER,
-		GL_FRAGMENT_SHADER
-	};
-	const char* shapeShaderPaths[] = {
-		"resources/graphical shaders/shape.vertexShader",
-		"resources/graphical shaders/shape.fragmentShader"
-	};
-	GLuint shapeProgram = CreateLinkedShaderProgram(2, shapeShaderTypes, shapeShaderPaths, NULL);
+
+	// Creature body
+	{
+		vector<vec2> creatureBodyVerts;
+		creatureBodyVerts.push_back(vec2(0, 0));
+		AppendCircleBase(&creatureBodyVerts, RENDER_NUM_OF_CREATURE_BODY_VERTICES, 1.0);
+
+		vector<uvec3> creatureBodyElementIndices;
+		for (int i = 1; i <= RENDER_NUM_OF_CREATURE_BODY_VERTICES; i++)
+		{
+			creatureBodyElementIndices.push_back(uvec3(0, i, i % RENDER_NUM_OF_CREATURE_BODY_VERTICES + 1));
+		}
+
+		GLenum creatureBodyShaderTypes[] = {
+			GL_VERTEX_SHADER,
+			GL_FRAGMENT_SHADER
+		};
+		const char* creatureBodyShaderPaths[] = {
+			"resources/graphical shaders/creature_body.vertexShader",
+			"resources/graphical shaders/creature_body.fragmentShader"
+		};
+		GLuint creatureBodyProgram = CreateLinkedShaderProgram(2, creatureBodyShaderTypes, creatureBodyShaderPaths, NULL);
+
+		drawCallData_CreatureBody.program = creatureBodyProgram;
+		drawCallData_CreatureBody.numOfIndices = creatureBodyElementIndices.size() * 3;
+
+		glGenVertexArrays(1, &drawCallData_CreatureBody.VAO);
+		glBindVertexArray(drawCallData_CreatureBody.VAO);
+
+			// Create vertices buffer
+			glGenBuffers(1, &drawCallData_CreatureBody.VBO);
+			glBindBuffer(GL_ARRAY_BUFFER, drawCallData_CreatureBody.VBO);
+			glBufferData(GL_ARRAY_BUFFER, creatureBodyVerts.size() * sizeof(vec2), creatureBodyVerts.data(), GL_STATIC_DRAW);
+
+			// Create elements buffer
+			glGenBuffers(1, &drawCallData_CreatureBody.EBO);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawCallData_CreatureBody.EBO);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, creatureBodyElementIndices.size() * sizeof(uvec3), creatureBodyElementIndices.data(), GL_STATIC_DRAW);
+
+			// Vertex positions
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vec2), (void*)0);
+
+		// Unbind (unbinding the vertex array essentially links the currently bound VBO and EBO)
+		glBindVertexArray(0);
+	}
 	
-	vector<vec2> bodyBase = CreateCircleBase(7, 1);
-	drawCallData_Body = InitializeInstancedDrawCallData(shapeProgram, bodyBase, true);
-	
-	vector<vec2> strawBase;
-	strawBase.push_back(vec2(0, 1));
-	strawBase.push_back(vec2(0, 1.5));
-	drawCallData_Straw = InitializeInstancedDrawCallData(shapeProgram, strawBase, false);
 }
 
 void InitUniformGrid()
@@ -694,7 +685,7 @@ void Simulation_Init()
 		data.angleVel = (random() - 0.5) * 0.01;
 		data.forwardThrust = random() * 0.003;
 		data.turnThrust = 0.0;
-		data.hardness = random();
+		data.hardness = random() * random() * random();
 		AddCreature(data);
 	}
 
@@ -865,11 +856,8 @@ void Simulation_Render()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Colors.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Positions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Angles.ssbo);
 
-	InstancedDrawCall(drawCallData_Body, creature_count);
-	InstancedDrawCall(drawCallData_Straw, creature_count);
+	InstancedDrawCall(drawCallData_CreatureBody, creature_count);
 }
 
 void Simulation_Update()

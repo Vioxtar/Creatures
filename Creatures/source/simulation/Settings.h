@@ -68,6 +68,9 @@ extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION;
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE;
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE;
 
+// Render settings
+extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES;
+
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS;
 extern TweakableFloatSetting CREATURE_MIN_RADIUS;

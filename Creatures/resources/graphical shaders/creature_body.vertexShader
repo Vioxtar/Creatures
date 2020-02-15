@@ -1,0 +1,38 @@
+#version 460 core
+layout (location = 0) in vec2 aPos;
+
+layout (std430, binding = 0) buffer CreatureColors
+{
+	float Colors[];
+};
+
+layout (std430, binding = 1) buffer CreaturePositions
+{
+	vec2 Positions[];
+};
+
+layout (std430, binding = 2) buffer CreatureRadii
+{
+	float Radii[];
+};
+
+out vec4 oVertexColor;
+out float oVertexDepth;
+
+uniform mat4 uTransform;
+
+void main()
+{
+	vec2 pos = Positions[gl_InstanceID];
+	float rad = Radii[gl_InstanceID];
+
+	vec2 offset = pos + aPos * rad;
+	vec4 camTransformed = uTransform * vec4(offset.xy, 0.0, 1.0);
+	gl_Position = camTransformed;
+
+	// Vec3's are not supported by the std430 format, so we have to do this:
+	uint colIndex = gl_InstanceID * 3;
+	oVertexColor = vec4(Colors[colIndex], Colors[colIndex + 1], Colors[colIndex + 2], 1.0);
+
+	oVertexDepth = dot(aPos, aPos);
+}

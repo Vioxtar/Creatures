@@ -21,12 +21,18 @@ void BatchDrawAllShapes();
 
 void DrawCircle(vec3 color, vec2 position, float radius, float fillPercentage);
 
-struct ShapeData
+struct IndexedVertices
 {
 	vector<float> vertices; // Shape vertices, including positions and normals
 	vector<unsigned int> indices; // Correspoding
 };
 
+struct VectorizedIndexedVertices
+{
+	vector<vec2> vertices;
+	vector<uvec3> indices;
+};
 
 vector <vec2> CreateCircleBase(unsigned int numOfPoints, float circleFraction);
-ShapeData CreateStrokeVertices(vector<vec2>& shapeBase, bool loop);
+void AppendCircleBase(vector<vec2>* appendTarget, unsigned int numOfPoints, float circleFraction);
+IndexedVertices CreateStrokeVertices(vector<vec2>& shapeBase, bool loop);

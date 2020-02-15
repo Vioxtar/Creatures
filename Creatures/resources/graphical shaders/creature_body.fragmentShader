@@ -8,6 +8,6 @@ out float gl_FragDepth;
 
 void main()
 {
-    FragColor = oVertexColor;
+    FragColor = oVertexColor * pow(1.0 - oVertexDepth, 0.25);
     gl_FragDepth = oVertexDepth;
 }
