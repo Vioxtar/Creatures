@@ -36,8 +36,8 @@ extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
 extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 3;
 
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 305, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 305, 1, 300 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 200, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 200, 1, 300 };
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.5, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.995, 0.0, 1.0 };

@@ -72,11 +72,6 @@ void main()
 		uint placementIndex = tileCreaturesCountIndex + numOfCreaturesAlreadyAssigned + 1;
 		UGrid[placementIndex] = gid;
 	
-	} else {
-
-		// The tile is already full (creatures assigned >= tileCreatureCapacity), lower the counter again, we didn't enter
-		atomicAdd(UGrid[tileCreaturesCountIndex], -1);
-
 	}
 
 }

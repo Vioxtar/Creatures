@@ -47,6 +47,8 @@ void main()
 
 	uint gid = gl_GlobalInvocationID.x;
 
+	uint tileCreatureCapacity = uIndicesInTile - 1;
+
 	uint gridXDim = uGridDimensions.x;
 	uint gridYDim = uGridDimensions.y;	
 
@@ -75,8 +77,7 @@ void main()
 	vec2 aOldPos = aPos - aVel;
 	float aRad = Radii[gid];
 	float aHardness = Hardnesses[gid];
-
-
+	
 	// Iterate on the uniform grid throughout start/end x,y indices
 	for (uint x = xStart; x <= xEnd; x++)
 	{
@@ -84,20 +85,17 @@ void main()
 		{
 			// Find the 1D tile again
 			uint tile = x + gridXDim * y;
-			uint tileCountIndex = tile * uIndicesInTile;
 			
-			// It's ensured that creaturesInTile will not be above creature capacity since we don't
-			// increase the creature counter of our tile if we don't enter it.
-			// It's also probably still best to double check this here. Otherwise lastPopulatedIndex
-			// will overstep its boundary and cause a memory miss, which is terrible for performance!
-			uint creaturesInTile = UGrid[tileCountIndex];
-
+			// Iterate all other creatures currently in the tile
+			uint tileCountIndex = tile * uIndicesInTile;
+			uint creaturesInTile = min(UGrid[tileCountIndex], tileCreatureCapacity);
 			uint lastPopulatedIndex = tileCountIndex + creaturesInTile;
-				
+							
 			for (uint b = tileCountIndex + 1; b <= lastPopulatedIndex; b++)
 			{
+
 				uint bGID = UGrid[b];
-				
+			
 				// Only the creature with the lesser GID performs the calculations
 				if (bGID <= gid)
 				{
