@@ -193,7 +193,7 @@ ProgramInfo program_UpdateCreaturePlacements{ 0, 0, TECH_UPDATE_CREATURE_PLACEME
 ProgramInfo program_BorderPhysics{ 0, 0, TECH_BORDER_PHYSICS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_UniformGridBind{ 0, 0, TECH_UNIFORM_GRID_BIND_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_UniformGridUnBind{ 0, 0, TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureCollision{ 0, 0, TECH_CREATURE_COLLISION_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureInteractions{ 0, 0, TECH_CREATURE_INTERACTIONS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainPushInputs{ 0, 0, TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainForwardPropagate{ 0, 0, TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainPullOutputs{ 0, 0, TECH_BRAIN_PULL_OUTPUTS_WORKGROUP_LOCAL_SIZE };
@@ -205,7 +205,7 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BorderPhysics);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_UniformGridBind);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_UniformGridUnBind);
-	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureCollision);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureInteractions);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPushInputs);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainForwardPropagate);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPullOutputs);
@@ -567,10 +567,10 @@ void InitLogicPrograms()
 	program_UniformGridUnBind.program = CreateLinkedShaderProgram(1, uniformGridUnBindShaderTypes, uniformGridUnBindShaderPaths, &replacers);
 	replacers.clear();
 
-	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureCollision.workGroupLocalSize)));
-	GLenum creatureCollisionsShaderTypes[] = { GL_COMPUTE_SHADER };
-	const char* creatureCollisionsShaderPaths[] = { "resources/compute shaders/creature_collisions.computeShader" };
-	program_CreatureCollision.program = CreateLinkedShaderProgram(1, creatureCollisionsShaderTypes, creatureCollisionsShaderPaths, &replacers);
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureInteractions.workGroupLocalSize)));
+	GLenum creatureInteractionsShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* creatureInteractionsShaderPaths[] = { "resources/compute shaders/creature_interactions.computeShader" };
+	program_CreatureInteractions.program = CreateLinkedShaderProgram(1, creatureInteractionsShaderTypes, creatureInteractionsShaderPaths, &replacers);
 	replacers.clear();
 
 	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_BrainPushInputs.workGroupLocalSize)));
@@ -679,8 +679,8 @@ void Simulation_Init()
 		data.col = vec3(random(), random(), random());
 		data.pos = vec2(0, 0);
 		data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
-		data.rad = CREATURE_MIN_RADIUS.value;
-		data.life = 1.0;
+		data.rad = CREATURE_MIN_RADIUS.value + random() * 0.2;
+		data.life = random();
 		data.angle = random() * 7;
 		data.angleVel = (random() - 0.5) * 0.01;
 		data.forwardThrust = random() * 0.003;
@@ -734,7 +734,7 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsBiases.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_BrainsLinks.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_BrainsActivationExponents.ssbo);
-	glDispatchCompute(workGroupsNeeded, 1, 1);
+	//glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
@@ -771,9 +771,9 @@ void Simulation_Logic()
 
 
 
-	// Creature collision
-	programID = program_CreatureCollision.program;
-	workGroupsNeeded = program_CreatureCollision.workGroupsNeeded;
+	// Creature interactions (including collisions, sensing and whatever else creature to creature interaction envelopes)
+	programID = program_CreatureInteractions.program;
+	workGroupsNeeded = program_CreatureInteractions.workGroupsNeeded;
 	glUseProgram(programID);
 		SetUniformVector2ui(programID, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
 		SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
@@ -856,6 +856,7 @@ void Simulation_Render()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Colors.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Positions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
 
 	InstancedDrawCall(drawCallData_CreatureBody, creature_count);
 }

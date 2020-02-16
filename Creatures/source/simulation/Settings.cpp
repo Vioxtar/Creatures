@@ -17,7 +17,7 @@ extern const uint16_t TECH_UPDATE_CREATURE_PLACEMENTS_WORKGROUP_LOCAL_SIZE = 153
 extern const uint16_t TECH_BORDER_PHYSICS_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_UNIFORM_GRID_BIND_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE = 1536;
-extern const uint16_t TECH_CREATURE_COLLISION_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_CREATURE_INTERACTIONS_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_CREATURE_ACTUATIONS_WORKGROUP_LOCAL_SIZE = 1536;
 
 
@@ -44,13 +44,13 @@ extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.995, 0.0, 1.0 }
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 1.0, 0.0, 1.0 };
 
 // Render settings
-extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES = 20;
+extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES = 50;
 
 // Window settings
 
 // Creature body settings
-extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.3, 0.3, 0.3 };
-extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.3, 0.3, 0.3 };
+extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.4, 0.4, 0.4 };
+extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.2, 0.2, 0.2 };
 extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS = { 0.3, 0.1, 2.0 };
 
 

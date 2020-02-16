@@ -1,4 +1,21 @@
 
+UPDATE:
+
+	Dont draw anything outside of the creature body! We can draw spikes, shields, and whatever else in the fragment shader!
+	To make this feasible... you're going to have to deform vertices! So some stuff to make this more elegant:
+		Figure out which creatures are visible (can be directly compared to camera regions...?)
+		Keep a 'creature_BodySquishes' buffer for every creature: a float for every vertex!
+
+		In the creature collision program (which you should change to creature_interact program):
+			if the creature is visible, use c1c2PosDiff to manipulate those squishes...
+			then in the vertex shader, if the creature is visible.. actually bother to move them by those squish amounts...
+			Something you'll have to do is: use an atomic operation to change the max squish amount for every vertex!
+
+
+
+
+
+
 
 	TODO:
 	Sensors
