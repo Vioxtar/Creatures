@@ -48,4 +48,9 @@ void main()
 	//Colors[colIndex + 2] = BrainsNodes[firstOutputIndex + 2];
 	//Lives[gid] = max(0.1, min(BrainsNodes[firstOutputIndex + 3], 1));
 	
+	//Lives[gid] -= Colors[colIndex] * 0.001;
+	if (Lives[gid] < 0.0)
+	{
+		Lives[gid] = 1.0;
+	}
 }

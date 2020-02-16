@@ -9,17 +9,10 @@ out float gl_FragDepth;
 
 void main()
 {
-    
-    float noLifeMul = 0.75;
-    float lifeMul = 1.0;
+    FragColor = oVertexColor;
 
-    FragColor = oVertexSquaredDistance <= oLife ?
-            oVertexColor * lifeMul
-        :
-            oVertexColor * noLifeMul;
-
-    FragColor *= pow(1.0 - oVertexSquaredDistance, 0.25);
+    FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oLife) * 2.0), oLife);
+    FragColor.a *= 0.975; // Still make everything ever so slightly transparent
 
     gl_FragDepth = oVertexSquaredDistance;
-
 }
