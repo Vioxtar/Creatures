@@ -33,6 +33,7 @@ struct CreatureCreationData
 	GLfloat forwardThrust; // Temp
 	GLfloat turnThrust; // Temp
 	GLfloat hardness; // Temp
+	vec2 skin; // Temp
 };
 
 
@@ -136,6 +137,7 @@ CreatureAttributesSSBOInfo creature_Horninesses{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_Generations{ 0, sizeof(GLuint) };
 CreatureAttributesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLint) };
 CreatureAttributesSSBOInfo creature_GeneralPurpose{ 0, sizeof(vec2) };
+CreatureAttributesSSBOInfo creature_SkinPatterns{ 0, sizeof(vec2) };
 
 // The sole purpose of this vector is to contain our creature attributes SSBO infos for easier iteration during SSBO manipulations
 vector<CreatureAttributesSSBOInfo*> creatureAttributesSSBOInfosRefs;
@@ -163,6 +165,7 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Generations);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_UniformGridTiles);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurpose);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinPatterns);
 }
 
 GLuint creature_count = 0; // The count of active creatures in the simulation
@@ -486,6 +489,7 @@ GLuint AddCreature(CreatureCreationData newCreatureData)
 	SetCreatureAttribute(creature_TurnThrusts, newCreatureIndex, &newCreatureData.turnThrust);
 	SetCreatureAttribute(creature_Harndesses, newCreatureIndex, &newCreatureData.hardness);
 	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, NULL);
+	SetCreatureAttribute(creature_SkinPatterns, newCreatureIndex, &newCreatureData.skin);
 
 	creature_count++;
 
@@ -686,6 +690,7 @@ void Simulation_Init()
 		data.forwardThrust = random() * 0.003;
 		data.turnThrust = 0.0;
 		data.hardness = random() * random() * random();
+		data.skin = vec2(random(), random());
 		AddCreature(data);
 	}
 
@@ -857,6 +862,7 @@ void Simulation_Render()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Positions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_SkinPatterns.ssbo);
 
 	InstancedDrawCall(drawCallData_CreatureBody, creature_count);
 }

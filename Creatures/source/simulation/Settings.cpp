@@ -40,7 +40,7 @@ extern TweakableFloatSetting SIMULATION_WIDTH = { 200, 1, 300 };
 extern TweakableFloatSetting SIMULATION_HEIGHT = { 200, 1, 300 };
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.5, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.965, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.975, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 1.0, 0.0, 1.0 };
 
 // Render settings
