@@ -9,6 +9,7 @@
 extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 500;
 
 // @TODO: Query the maximum local size
+extern const uint16_t TECH_INIT_NEW_FRAME_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_DEFAULT_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE = 4;
 extern const uint16_t TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE = 1536;
@@ -40,18 +41,18 @@ extern TweakableFloatSetting SIMULATION_WIDTH = { 200, 1, 300 };
 extern TweakableFloatSetting SIMULATION_HEIGHT = { 200, 1, 300 };
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.5, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.975, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.9985, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 1.0, 0.0, 1.0 };
 
 // Render settings
-extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES = 50;
+extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES = 30;
 
 // Window settings
 
 // Creature body settings
-extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.4, 0.4, 0.4 };
-extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.2, 0.2, 0.2 };
-extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS = { 0.3, 0.1, 2.0 };
+extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.4, 0.3, 0.5 };
+extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.2, 0.1, 0.3 };
+extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS = { 2.0, 0.1, 2.0 };
 
 
 // Creature brain settings

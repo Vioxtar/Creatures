@@ -26,12 +26,28 @@ layout (std430, binding = 4) buffer CreatureSkinPatterns
 	vec2 SkinPatterns[];
 };
 
+layout (std430, binding = 5) buffer CreatureColliderPositions
+{
+	vec2 ColliderPositions[];
+};
+
+layout (std430, binding = 6) buffer CreatureColliderRadii
+{
+	float ColliderRadii[];
+};
+
+layout (std430, binding = 7) buffer CreatureColliderCounts
+{
+	uint ColliderCounts[];
+};
+
 out vec4 oVertexColor;
 out float oVertexSquaredDistance;
 out float oLife;
 out vec2 oSkinPattern;
 
 uniform mat4 uTransform;
+uniform uint uMaxNuMOfColliders;
 
 void main()
 {
@@ -40,8 +56,38 @@ void main()
 	float life = Lives[gl_InstanceID];
 	vec2 skin = SkinPatterns[gl_InstanceID];
 
-	vec2 offset = pos + aPos * rad;
-	vec4 camTransformed = uTransform * vec4(offset.xy, 0.0, 1.0);
+
+
+
+	vec2 vertPos = pos + aPos * rad;
+	
+	// @TODO: Avoid using length every iteration, cull calculations if we're off screen
+
+	// Iterate colliders to deform the mesh
+	float pushBack = 0.0;
+	uint collidersCount = min(ColliderCounts[gl_InstanceID], uMaxNuMOfColliders);
+	uint collidersStartIndex = gl_InstanceID * uMaxNuMOfColliders;
+	for (uint collider = 0; collider < collidersCount; collider++)	{
+		
+		uint colliderIndex = collidersStartIndex + collider;
+
+		vec2 colliderPos = ColliderPositions[colliderIndex];
+		float colliderRad = ColliderRadii[colliderIndex];
+
+		vec2 colliderPosToVert = vertPos - colliderPos;
+		float distToColliderPos = length(colliderPosToVert);
+
+		// What is our violation?
+		float violation = max(colliderRad - distToColliderPos, 0);
+		pushBack = max(pushBack, violation * 0.5);
+	}
+
+	vertPos = pos + aPos * (rad - pushBack);
+
+
+
+
+	vec4 camTransformed = uTransform * vec4(vertPos.xy, 0.0, 1.0);
 	gl_Position = camTransformed;
 
 	// Vec3's are not supported by the std430 format, so we have to do this:

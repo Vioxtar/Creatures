@@ -1,9 +1,9 @@
 #include "Simulation.h"
 
 
-///////////////////
-// -- STRUCTS -- //
-///////////////////
+///////////////////////////////
+// -- STRUCTS & CONSTANTS -- //
+///////////////////////////////
 
 // Drawing related structs
 struct InstancedDrawCallData
@@ -102,7 +102,6 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<GLfloat>* brainBiases
 }
 
 
-
 /////////////////////////////////////////////////////
 // -- CREATURE ATTRIBUTE SSBO WORKING VARIABLES -- //
 /////////////////////////////////////////////////////
@@ -138,6 +137,10 @@ CreatureAttributesSSBOInfo creature_Generations{ 0, sizeof(GLuint) };
 CreatureAttributesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLint) };
 CreatureAttributesSSBOInfo creature_GeneralPurpose{ 0, sizeof(vec2) };
 CreatureAttributesSSBOInfo creature_SkinPatterns{ 0, sizeof(vec2) };
+const GLuint colliders_MaxNumOfColliders = floor(M_PI / asin(CREATURE_MIN_RADIUS.min / (CREATURE_MAX_RADIUS.max + CREATURE_MIN_RADIUS.min)));
+CreatureAttributesSSBOInfo creature_ColliderPositions{ 0, sizeof(vec2) * colliders_MaxNumOfColliders };
+CreatureAttributesSSBOInfo creature_ColliderRadii{ 0, sizeof(GLfloat) * colliders_MaxNumOfColliders };
+CreatureAttributesSSBOInfo creature_ColliderCounts{ 0, sizeof(GLuint) };
 
 // The sole purpose of this vector is to contain our creature attributes SSBO infos for easier iteration during SSBO manipulations
 vector<CreatureAttributesSSBOInfo*> creatureAttributesSSBOInfosRefs;
@@ -166,6 +169,9 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_UniformGridTiles);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurpose);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinPatterns);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_ColliderPositions);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_ColliderRadii);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_ColliderCounts);
 }
 
 GLuint creature_count = 0; // The count of active creatures in the simulation
@@ -201,6 +207,7 @@ ProgramInfo program_BrainPushInputs{ 0, 0, TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCA
 ProgramInfo program_BrainForwardPropagate{ 0, 0, TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainPullOutputs{ 0, 0, TECH_BRAIN_PULL_OUTPUTS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_CreatureActuations{ 0, 0, TECH_CREATURE_ACTUATIONS_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_InitNewFrame{ 0, 0, TECH_INIT_NEW_FRAME_WORKGROUP_LOCAL_SIZE };
 
 void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 {
@@ -213,6 +220,7 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainForwardPropagate);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPullOutputs);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureActuations);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_InitNewFrame);
 }
 
 
@@ -355,22 +363,6 @@ void BuildUniformGrid()
 	ugrid_LastInteractDist = newInteractDist;
 }
 
-
-//////////////////////
-// -- DRAW UTILS -- //
-//////////////////////
-
-
-void InstancedDrawCall(InstancedDrawCallData data, GLuint numOfInstances)
-{
-	glBindVertexArray(data.VAO);
-
-	glUseProgram(data.program);
-	SetUniformMatrix4(data.program, "uTransform", GetSimSpaceToCameraTransform());
-	glDrawElementsInstanced(GL_TRIANGLES, data.numOfIndices, GL_UNSIGNED_INT, 0, numOfInstances);
-
-	glBindVertexArray(0);
-}
 
 
 ///////////////////////////////
@@ -541,6 +533,12 @@ void InitLogicPrograms()
 {
 	vector<pair<string, string>> replacers;
 
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_InitNewFrame.workGroupLocalSize)));
+	GLenum initNewFrameShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* initNewFrameShaderPaths[] = { "resources/compute shaders/init_new_frame.computeShader" };
+	program_InitNewFrame.program = CreateLinkedShaderProgram(1, initNewFrameShaderTypes, initNewFrameShaderPaths, &replacers);
+	replacers.clear();
+
 	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureActuations.workGroupLocalSize)));
 	GLenum creatureActuationsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* creatureActuationsShaderPaths[] = { "resources/compute shaders/creature_actuations.computeShader" };
@@ -689,7 +687,7 @@ void Simulation_Init()
 		data.angleVel = (random() - 0.5) * 0.01;
 		data.forwardThrust = random() * 0.003;
 		data.turnThrust = 0.0;
-		data.hardness = random() * random() * random();
+		data.hardness = random() * random() * random() * random();
 		data.skin = vec2(random(), random());
 		AddCreature(data);
 	}
@@ -710,6 +708,18 @@ void Simulation_Logic()
 
 	GLuint programID;
 	GLuint workGroupsNeeded;
+
+
+	// Init new frame
+	programID = program_InitNewFrame.program;
+	workGroupsNeeded = program_InitNewFrame.workGroupsNeeded;
+	glUseProgram(programID);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_ColliderCounts.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+		
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+
 
 	// Push brain inputs
 	programID = program_BrainPushInputs.program;
@@ -759,6 +769,36 @@ void Simulation_Logic()
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
+	// Update body placements
+	programID = program_UpdateCreaturePlacements.program;
+	workGroupsNeeded = program_UpdateCreaturePlacements.workGroupsNeeded;
+	glUseProgram(programID);
+		SetUniformFloat(programID, "uVelocityDownscale", SIMULATION_VELOCITY_DOWNSCALE.value);
+		SetUniformFloat(programID, "uAngleVelocityDownscale", SIMULATION_ANGLE_VELOCITY_DOWNSCALE.value);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurpose.ssbo); // Applies physics fix vector, zerofies
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_AngleVelocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+
+	// Border physics
+	programID = program_BorderPhysics.program;
+	workGroupsNeeded = program_BorderPhysics.workGroupsNeeded;
+	glUseProgram(programID);
+		SetUniformVector2f(programID, "uSimDimensions", vec2(SIMULATION_WIDTH.value, SIMULATION_HEIGHT.value));
+		SetUniformFloat(programID, "uBorderRestitution", SIMULATION_BORDER_RESTITUTION.value);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
 
 	// Uniform grid bind
 	programID = program_UniformGridBind.program;
@@ -783,6 +823,7 @@ void Simulation_Logic()
 		SetUniformVector2ui(programID, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
 		SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
 		SetUniformVector2f(programID, "uRandom", vec2(random() - 0.5, random() - 0.5)); // Used to resolve creatures absolutely clipped in each other
+		SetUniformUInteger(programID, "uMaxNuMOfColliders", colliders_MaxNumOfColliders);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
@@ -790,6 +831,9 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, ugrid_SSBO);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_UniformGridTiles.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_GeneralPurpose.ssbo); // Writes physics fix vector for decoupling purposes
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_ColliderPositions.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_ColliderRadii.ssbo);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_ColliderCounts.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -822,35 +866,7 @@ void Simulation_Logic()
 
 
 
-	// Update body placements
-	programID = program_UpdateCreaturePlacements.program;
-	workGroupsNeeded = program_UpdateCreaturePlacements.workGroupsNeeded;
-	glUseProgram(programID);
-		SetUniformFloat(programID, "uVelocityDownscale", SIMULATION_VELOCITY_DOWNSCALE.value);
-		SetUniformFloat(programID, "uAngleVelocityDownscale", SIMULATION_ANGLE_VELOCITY_DOWNSCALE.value);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurpose.ssbo); // Applies physics fix vector, zerofies
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_AngleVelocities.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.ssbo);
-	glDispatchCompute(workGroupsNeeded, 1, 1);
 
-	glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-
-	// Border physics
-	programID = program_BorderPhysics.program;
-	workGroupsNeeded = program_BorderPhysics.workGroupsNeeded;
-	glUseProgram(programID);
-		SetUniformVector2f(programID, "uSimDimensions", vec2(SIMULATION_WIDTH.value, SIMULATION_HEIGHT.value));
-		SetUniformFloat(programID, "uBorderRestitution", SIMULATION_BORDER_RESTITUTION.value);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
-	glDispatchCompute(workGroupsNeeded, 1, 1);
-
-	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
 }
@@ -858,13 +874,25 @@ void Simulation_Logic()
 void Simulation_Render()
 {
 
+	uint numOfInstances = creature_count;
+
+	// Creature bodies
+
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Colors.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Positions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_SkinPatterns.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ColliderPositions.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_ColliderRadii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_ColliderCounts.ssbo);
 
-	InstancedDrawCall(drawCallData_CreatureBody, creature_count);
+	glBindVertexArray(drawCallData_CreatureBody.VAO);
+		glUseProgram(drawCallData_CreatureBody.program);
+		SetUniformMatrix4(drawCallData_CreatureBody.program, "uTransform", GetSimSpaceToCameraTransform());
+		SetUniformUInteger(drawCallData_CreatureBody.program, "uMaxNuMOfColliders", colliders_MaxNumOfColliders);
+		glDrawElementsInstanced(GL_TRIANGLES, drawCallData_CreatureBody.numOfIndices, GL_UNSIGNED_INT, 0, numOfInstances);
+	glBindVertexArray(0);
 }
 
 void Simulation_Update()

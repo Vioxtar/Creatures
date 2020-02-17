@@ -35,12 +35,29 @@ layout (std430, binding = 6) buffer CreatureGeneralPurpose
 	vec2 PhysicsFixes[];
 };
 
+layout (std430, binding = 7) buffer CreatureColliderPositions
+{
+	vec2 ColliderPositions[];
+};
+
+layout (std430, binding = 8) buffer CreatureColliderRadii
+{
+	float ColliderRadii[];
+};
+
+layout (std430, binding = 9) buffer CreatureColliderCounts
+{
+	uint ColliderCounts[];
+};
+
+
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 
 uniform uvec2 uGridDimensions;
 uniform uint uIndicesInTile;
 uniform vec2 uRandom;
+uniform uint uMaxNuMOfColliders;
 
 void main()
 {
@@ -78,6 +95,8 @@ void main()
 	float aRad = Radii[gid];
 	float aHardness = Hardnesses[gid];
 	
+	uint aCollidersStartIndex = gid * uMaxNuMOfColliders;
+	
 	// Iterate on the uniform grid throughout start/end x,y indices
 	for (uint x = xStart; x <= xEnd; x++)
 	{
@@ -107,6 +126,14 @@ void main()
 
 				vec2 c1c2PosDiff = bPos - aPos;
 				float distSquared = dot(c1c2PosDiff, c1c2PosDiff);
+
+
+
+
+
+				//////////////////////
+				// -- COLLISIONS -- //
+				//////////////////////
 
 				if (distSquared <= 0)
 				{
@@ -153,9 +180,33 @@ void main()
 					vec2 c1PosSub = -c1c2PosDiff * push * m2Frac;
 					vec2 c2PosSub = c1c2PosDiff * push * m1Frac;
 					
-					// Register the fix
+					// Register the physics collision fix
 					PhysicsFixes[gid] += c1PosSub;
 					PhysicsFixes[bGID] += c2PosSub;
+
+
+					// Register colliders
+
+
+					uint aCurrentCollidersCount = atomicAdd(ColliderCounts[gid], 1);
+					if (aCurrentCollidersCount < uMaxNuMOfColliders)
+					{
+						// We have enough room, add b to a
+						uint colliderPlacementIndex = aCollidersStartIndex + aCurrentCollidersCount;
+						ColliderPositions[colliderPlacementIndex] = bPos;
+						ColliderRadii[colliderPlacementIndex] = bRad;
+					}
+
+
+					uint bCollidersStartIndex = bGID * uMaxNuMOfColliders;
+					uint bCurrentCollidersCount = atomicAdd(ColliderCounts[bGID], 1);
+					if (bCurrentCollidersCount < uMaxNuMOfColliders)
+					{
+						// We have enough room, add a to b
+						uint colliderPlacementIndex = bCollidersStartIndex + bCurrentCollidersCount;
+						ColliderPositions[colliderPlacementIndex] = aPos;
+						ColliderRadii[colliderPlacementIndex] = aRad;
+					}
 				}
 			}
 		}

@@ -12,7 +12,7 @@ void main()
 {
     FragColor = oVertexColor * (mod(oVertexSquaredDistance, oSkinPattern.x) > oSkinPattern.y ? 1.1 : 1.0);
 
-    FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oLife) * 2.0), oLife);
+    FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oLife) * 5.0), oLife + 0.1);
     FragColor.a *= 0.975; // Still make everything ever so slightly transparent
 
     gl_FragDepth = oVertexSquaredDistance;

@@ -55,6 +55,7 @@
     <None Include="resources\graphical shaders\creature_body.fragmentShader" />
     <None Include="resources\graphical shaders\creature_body.vertexShader" />
     <None Include="resources\compute shaders\creature_interactions.computeShader" />
+    <None Include="resources\compute shaders\init_new_frame.computeShader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\OpenGLErrorDebugger.h">

@@ -12,15 +12,15 @@ using namespace mathutils;
 struct TweakableIntegerSetting
 {
 	int value;
-	int min;
-	int max;
+	const int min;
+	const int max;
 };
 
 struct TweakableFloatSetting
 {
 	float value;
-	float min;
-	float max;
+	const float min;
+	const float max;
 };
 
 void SimulationSettings_SetInt(TweakableIntegerSetting& setting, int value);
@@ -35,6 +35,7 @@ SimSettingsChangedSubscriber SimulationSettingsChangedSubscribe(SimSettingsChang
 // Technical settings
 extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
 
+extern const uint16_t TECH_INIT_NEW_FRAME_WORKGROUP_LOCAL_SIZE;
 extern const uint16_t TECH_DEFAULT_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE;
 extern const uint16_t TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE;
 extern const uint16_t TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE;
