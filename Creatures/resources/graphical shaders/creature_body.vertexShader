@@ -1,5 +1,5 @@
 #version 460 core
-layout (location = 0) in vec2 aPos;
+layout (location = 0) in vec2 aVertexLocalPos;
 
 layout (std430, binding = 0) buffer CreatureColors
 {
@@ -11,58 +11,74 @@ layout (std430, binding = 1) buffer CreaturePositions
 	vec2 Positions[];
 };
 
-layout (std430, binding = 2) buffer CreatureRadii
+layout (std430, binding = 2) buffer CreatureForwardDirections
+{
+	vec2 ForwardDirections[];
+};
+
+layout (std430, binding = 3) buffer CreatureRadii
 {
 	float Radii[];
 };
 
-layout (std430, binding = 3) buffer CreatureLives
+layout (std430, binding = 4) buffer CreatureLives
 {
 	float Lives[];
 };
 
-layout (std430, binding = 4) buffer CreatureSkinPatterns
+layout (std430, binding = 5) buffer CreatureSkinPatterns
 {
 	vec2 SkinPatterns[];
 };
 
-layout (std430, binding = 5) buffer CreatureDeformerPositions
+layout (std430, binding = 6) buffer CreatureDeformerPositions
 {
 	vec2 DeformerPositions[];
 };
 
-layout (std430, binding = 6) buffer CreatureDeformerRadii
+layout (std430, binding = 7) buffer CreatureDeformerRadii
 {
 	float DeformerRadii[];
 };
 
-layout (std430, binding = 7) buffer CreatureDeformerCounts
+layout (std430, binding = 8) buffer CreatureDeformerCounts
 {
 	uint DeformerCounts[];
 };
 
-out vec4 oVertexColor;
+
+// Per vertex values
 out float oVertexSquaredDistance;
-out float oLife;
+out float oForwardDirectionDot;
+
+// Per instance values
+// @TODO: Find if there's a way to pass these to the fragment shader actually per instance
+out vec4 oVertexColor;
 out vec2 oSkinPattern;
+out float oLife;
 
 uniform mat4 uTransform;
 uniform uint uMaxNumOfDeformers;
 
-
 void main()
 {
-	vec2 pos = Positions[gl_InstanceID];
-	float rad = Radii[gl_InstanceID];
-	float life = Lives[gl_InstanceID];
-	vec2 skin = SkinPatterns[gl_InstanceID];
+	uint colIndex = gl_InstanceID * 3;
+
+	// Collect data
+	vec2 creatureCenterPos = Positions[gl_InstanceID];
+	float creatureRadius = Radii[gl_InstanceID];
+	float creatureLife = Lives[gl_InstanceID];
+	vec2 creatureSkinPattern = SkinPatterns[gl_InstanceID];
+	vec2 creatureForwardDir = ForwardDirections[gl_InstanceID];
+	vec3 creatureColor = vec3(Colors[colIndex], Colors[colIndex + 1], Colors[colIndex + 2]);
 
 
 
+	// Body deformations
 
-	vec2 vertPos = pos + aPos * rad;
+	vec2 vertPos = creatureCenterPos + aVertexLocalPos * creatureRadius;
 	
-	// @TODO: Avoid using length every iteration, cull calculations if we're off screen
+	// @TODO: Cull calculations if we're off screen
 
 	// Iterate deformers to deform the mesh
 	float pushBack = 0.0;
@@ -72,37 +88,43 @@ void main()
 		
 		uint deformerIndex = deformersStartIndex + deformer;
 		
+		// Find our deformer's position and radius
 		vec2 deformerPos = DeformerPositions[deformerIndex];
 		float deformerRad = DeformerRadii[deformerIndex];
 
 		vec2 deformerPosToVert = vertPos - deformerPos;
 		float deformerPosToVertDistance = length(deformerPosToVert);
-
-		vec2 posDiff = deformerPos - pos;
+		vec2 creaturesPosDiff = deformerPos - creatureCenterPos;
 		
-		// What is our violation?
-		float violation = max(deformerRad - deformerPosToVertDistance, 0);
+		// Find the vertex violation
+		float vertViolation = max(deformerRad - deformerPosToVertDistance, 0);
 		
-		float posDiffLength = deformerRad + rad - violation;
+		// Find the length of the creatures' position difference, used for normalization without sqrt
+		float creaturesPosDiffLength = deformerRad + creatureRadius - vertViolation;
 
-		// The new pushback value is the violation, multiplied by a dot factor; the closer we are to the posDiff direction,
+		// The new pushback value is the violation, multiplied by a dot factor; the closer we are to the creaturesPosDiff direction,
 		// the less we need be pushed back. This is a linear device used to approximate the result of an otherwise non-linear function
-		float newPushback = violation * (1.0 - 0.5 * dot(posDiff / posDiffLength, aPos));
+		float newPushback = vertViolation * (1.0 - 0.5 * dot(creaturesPosDiff / creaturesPosDiffLength, aVertexLocalPos));
 		pushBack = max(pushBack, newPushback);
 	}
 
-	vertPos -= aPos * pushBack;
+	// Finalize this vertex's deformation
+	vertPos -= aVertexLocalPos * pushBack;
 
 
 
+	// Output values
+
+	// Transform our vertex to camera space
 	vec4 camTransformed = uTransform * vec4(vertPos.xy, 0.0, 1.0);
 	gl_Position = camTransformed;
 
-	// Vec3's are not supported by the std430 format, so we have to do this:
-	uint colIndex = gl_InstanceID * 3;
-	oVertexColor = vec4(Colors[colIndex], Colors[colIndex + 1], Colors[colIndex + 2], 1.0);
+	// Per instance
+	oVertexColor = vec4(creatureColor.xyz, 1.0);
+	oSkinPattern = creatureSkinPattern;
+	oLife = creatureLife;
 
-	oVertexSquaredDistance = dot(aPos, aPos);
-	oSkinPattern = skin;
-	oLife = life;
+	// Per vertex
+	oVertexSquaredDistance = dot(aVertexLocalPos, aVertexLocalPos);
+	oForwardDirectionDot = dot(aVertexLocalPos, creatureForwardDir);
 }

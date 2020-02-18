@@ -899,12 +899,13 @@ void Simulation_Render()
 
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Colors.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Positions.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_SkinPatterns.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_DeformerPositions.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_DeformerRadii.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_DeformerCounts.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_ForwardDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Radii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Lives.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_SkinPatterns.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_DeformerPositions.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_DeformerRadii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_DeformerCounts.ssbo);
 
 	glBindVertexArray(drawCallData_CreatureBody.VAO);
 	glUseProgram(drawCallData_CreatureBody.program);

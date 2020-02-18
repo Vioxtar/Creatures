@@ -1,9 +1,14 @@
 #version 460 core
 
-in vec4 oVertexColor;
+// Per vertex values
 in float oVertexSquaredDistance;
-in float oLife;
+in float oForwardDirectionDot;
+
+// Per instance values
+// @TODO: Find if there's a way to pass these to the fragment shader actually per instance
+in vec4 oVertexColor;
 in vec2 oSkinPattern;
+in float oLife;
 
 out vec4 FragColor;
 out float gl_FragDepth;
@@ -14,7 +19,7 @@ void main()
     float shading = pow(1.0 - oVertexSquaredDistance, 0.25);
 
     // Apply a skin pattern
-    float skinPattern = (mod(oVertexSquaredDistance, oSkinPattern.x) > oSkinPattern.y ? 1.1 : 1.0);
+    float skinPattern = (mod(oVertexSquaredDistance, oSkinPattern.x) > oSkinPattern.y ? 1.1 : 1.0) * oForwardDirectionDot;
    
     // Set final color
     FragColor = oVertexColor * shading * skinPattern;

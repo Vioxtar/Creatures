@@ -3,6 +3,7 @@
 
 
 	TODO:
+	Find if theres a way to pass non-interpolated data to the fragment shader by creature instance
 	Implement 'visibilities' SSBO, every frame update each creature's 'LOD' value: false is offscreen, true is visible
 	Sensors
 	Energy + life + actuation system
