@@ -749,7 +749,7 @@ void Simulation_Logic()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsBiases.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_BrainsLinks.ssbo);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_BrainsActivationExponents.ssbo);
-	glDispatchCompute(workGroupsNeeded, 1, 1);
+	//glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
