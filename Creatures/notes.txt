@@ -22,7 +22,7 @@ Try 2 approaches to rendering today:
 	Add WINDOW settings in settings file?
 	Spikes and shields and stick mechanisms
 	Fix window misalignment
-
+	FIX THE WEIRD GHOST BALL AT 0, 0
 
 
 

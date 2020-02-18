@@ -171,8 +171,6 @@ void main()
 					float hardnessFactor = max(aHardness, bHardness);
 					float penetrationPercentage = violation / RadiiSum;
 					
-					
-					// Untested velocity collide factor
 					vec2 velDiff = aVel - bVel;
 					float velCollideFactor = pow(dot(velDiff, velDiff), 0.25);
 					float push = pow(hardnessFactor * velCollideFactor, 1.0 - penetrationPercentage) * violation;

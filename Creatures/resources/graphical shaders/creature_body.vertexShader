@@ -49,6 +49,7 @@ out vec2 oSkinPattern;
 uniform mat4 uTransform;
 uniform uint uMaxNuMOfColliders;
 
+
 void main()
 {
 	vec2 pos = Positions[gl_InstanceID];
@@ -70,20 +71,27 @@ void main()
 	for (uint collider = 0; collider < collidersCount; collider++)	{
 		
 		uint colliderIndex = collidersStartIndex + collider;
-
+		
 		vec2 colliderPos = ColliderPositions[colliderIndex];
 		float colliderRad = ColliderRadii[colliderIndex];
 
 		vec2 colliderPosToVert = vertPos - colliderPos;
-		float distToColliderPos = length(colliderPosToVert);
+		float colliderPosToVertDistance = length(colliderPosToVert);
 
+		vec2 posDiff = colliderPos - pos;
+		
 		// What is our violation?
-		float violation = max(colliderRad - distToColliderPos, 0);
-		pushBack = max(pushBack, violation * 0.5);
+		float violation = max(colliderRad - colliderPosToVertDistance, 0);
+		
+		float posDiffLength = colliderRad + rad - violation;
+
+		// The new pushback value is the violation, multiplied by a dot factor; the closer we are to the posDiff direction,
+		// the less we need be pushed back. This is a linear device used to approximate the result of an otherwise non-linear function
+		float newPushback = violation * (1.0 - 0.5 * dot(posDiff / posDiffLength, aPos));
+		pushBack = max(pushBack, newPushback);
 	}
 
-	vertPos = pos + aPos * (rad - pushBack);
-
+	vertPos -= aPos * pushBack;
 
 
 
