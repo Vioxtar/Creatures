@@ -10,10 +10,19 @@ out float gl_FragDepth;
 
 void main()
 {
-    FragColor = oVertexColor * (mod(oVertexSquaredDistance, oSkinPattern.x) > oSkinPattern.y ? 1.1 : 1.0);
+    // Slight shading towards the edges
+    float shading = pow(1.0 - oVertexSquaredDistance, 0.25);
 
+    // Apply a skin pattern
+    float skinPattern = (mod(oVertexSquaredDistance, oSkinPattern.x) > oSkinPattern.y ? 1.1 : 1.0);
+   
+    // Set final color
+    FragColor = oVertexColor * shading * skinPattern;
+
+    // Opaqueness reflects life
     FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oLife) * 5.0), oLife + 0.1);
     FragColor.a *= 0.975; // Still make everything ever so slightly transparent
 
+    // May not be needed
     gl_FragDepth = oVertexSquaredDistance;
 }
