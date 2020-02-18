@@ -687,7 +687,7 @@ void Simulation_Init()
 		data.angleVel = (random() - 0.5) * 0.01;
 		data.forwardThrust = random() * 0.003;
 		data.turnThrust = 0.0;
-		data.hardness = random() * random() * random() * random();
+		data.hardness = 1.0;
 		data.skin = vec2(random(), random());
 		AddCreature(data);
 	}
