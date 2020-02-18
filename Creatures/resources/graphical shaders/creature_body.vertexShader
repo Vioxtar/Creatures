@@ -26,19 +26,19 @@ layout (std430, binding = 4) buffer CreatureSkinPatterns
 	vec2 SkinPatterns[];
 };
 
-layout (std430, binding = 5) buffer CreatureColliderPositions
+layout (std430, binding = 5) buffer CreatureDeformerPositions
 {
-	vec2 ColliderPositions[];
+	vec2 DeformerPositions[];
 };
 
-layout (std430, binding = 6) buffer CreatureColliderRadii
+layout (std430, binding = 6) buffer CreatureDeformerRadii
 {
-	float ColliderRadii[];
+	float DeformerRadii[];
 };
 
-layout (std430, binding = 7) buffer CreatureColliderCounts
+layout (std430, binding = 7) buffer CreatureDeformerCounts
 {
-	uint ColliderCounts[];
+	uint DeformerCounts[];
 };
 
 out vec4 oVertexColor;
@@ -47,7 +47,7 @@ out float oLife;
 out vec2 oSkinPattern;
 
 uniform mat4 uTransform;
-uniform uint uMaxNuMOfColliders;
+uniform uint uMaxNumOfDeformers;
 
 
 void main()
@@ -64,26 +64,26 @@ void main()
 	
 	// @TODO: Avoid using length every iteration, cull calculations if we're off screen
 
-	// Iterate colliders to deform the mesh
+	// Iterate deformers to deform the mesh
 	float pushBack = 0.0;
-	uint collidersCount = min(ColliderCounts[gl_InstanceID], uMaxNuMOfColliders);
-	uint collidersStartIndex = gl_InstanceID * uMaxNuMOfColliders;
-	for (uint collider = 0; collider < collidersCount; collider++)	{
+	uint deformersCount = min(DeformerCounts[gl_InstanceID], uMaxNumOfDeformers);
+	uint deformersStartIndex = gl_InstanceID * uMaxNumOfDeformers;
+	for (uint deformer = 0; deformer < deformersCount; deformer++)	{
 		
-		uint colliderIndex = collidersStartIndex + collider;
+		uint deformerIndex = deformersStartIndex + deformer;
 		
-		vec2 colliderPos = ColliderPositions[colliderIndex];
-		float colliderRad = ColliderRadii[colliderIndex];
+		vec2 deformerPos = DeformerPositions[deformerIndex];
+		float deformerRad = DeformerRadii[deformerIndex];
 
-		vec2 colliderPosToVert = vertPos - colliderPos;
-		float colliderPosToVertDistance = length(colliderPosToVert);
+		vec2 deformerPosToVert = vertPos - deformerPos;
+		float deformerPosToVertDistance = length(deformerPosToVert);
 
-		vec2 posDiff = colliderPos - pos;
+		vec2 posDiff = deformerPos - pos;
 		
 		// What is our violation?
-		float violation = max(colliderRad - colliderPosToVertDistance, 0);
+		float violation = max(deformerRad - deformerPosToVertDistance, 0);
 		
-		float posDiffLength = colliderRad + rad - violation;
+		float posDiffLength = deformerRad + rad - violation;
 
 		// The new pushback value is the violation, multiplied by a dot factor; the closer we are to the posDiff direction,
 		// the less we need be pushed back. This is a linear device used to approximate the result of an otherwise non-linear function

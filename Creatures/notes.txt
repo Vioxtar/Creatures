@@ -1,23 +1,17 @@
 
-Try 2 approaches to rendering today:
 
-	1. Keep a colliders forces buffer of vec2s (allocated per min/max radius) and deform our meshes
-	2. Blending without sorting technique
 
 
 	TODO:
+	Implement 'visibilities' SSBO, every frame update each creature's 'LOD' value: false is offscreen, true is visible
 	Sensors
 	Energy + life + actuation system
 	Reproduction and mutation system
-	Fix the weird driver-crashing bug (is it still there?)
-	Refactor simulation.cpp by splitting up code (programs, creature SSBOs, etc, just like camera is split up)
+	(Optional) Refactor simulation.cpp by splitting up code (programs, creature SSBOs, etc, just like camera is split up)
 	Settings pretty names
 	DearImgui integration and UI
 		F11 to fullscreen
 
-	Creature drawing improvements:
-		if a creature's fragments are potentially affected by its colliders, I can maybe keep a buffer of previous colliders for that creature, holding their ID indices
-		this way each creature acts like a cluster, letting me iterate its colliders and check if I should offset the distance to later be used to draw the stroke effect
 
 	Add WINDOW settings in settings file?
 	Spikes and shields and stick mechanisms

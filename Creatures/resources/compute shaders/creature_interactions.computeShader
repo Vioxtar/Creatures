@@ -35,19 +35,19 @@ layout (std430, binding = 6) buffer CreatureGeneralPurpose
 	vec2 PhysicsFixes[];
 };
 
-layout (std430, binding = 7) buffer CreatureColliderPositions
+layout (std430, binding = 7) buffer CreatureDeformerPositions
 {
-	vec2 ColliderPositions[];
+	vec2 DeformerPositions[];
 };
 
-layout (std430, binding = 8) buffer CreatureColliderRadii
+layout (std430, binding = 8) buffer CreatureDeformerRadii
 {
-	float ColliderRadii[];
+	float DeformerRadii[];
 };
 
-layout (std430, binding = 9) buffer CreatureColliderCounts
+layout (std430, binding = 9) buffer CreatureDeformerCounts
 {
-	uint ColliderCounts[];
+	uint DeformerCounts[];
 };
 
 
@@ -57,7 +57,7 @@ layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 uniform uvec2 uGridDimensions;
 uniform uint uIndicesInTile;
 uniform vec2 uRandom;
-uniform uint uMaxNuMOfColliders;
+uniform uint uMaxNumOfDeformers;
 
 void main()
 {
@@ -95,7 +95,7 @@ void main()
 	float aRad = Radii[gid];
 	float aHardness = Hardnesses[gid];
 	
-	uint aCollidersStartIndex = gid * uMaxNuMOfColliders;
+	uint aDeformersStartIndex = gid * uMaxNumOfDeformers;
 	
 	// Iterate on the uniform grid throughout start/end x,y indices
 	for (uint x = xStart; x <= xEnd; x++)
@@ -189,27 +189,27 @@ void main()
 					PhysicsFixes[bGID] += c2PosSub;
 
 
-					// Register colliders
+					// Register deformers
 
 
-					uint aCurrentCollidersCount = atomicAdd(ColliderCounts[gid], 1);
-					if (aCurrentCollidersCount < uMaxNuMOfColliders)
+					uint aCurrentDeformersCount = atomicAdd(DeformerCounts[gid], 1);
+					if (aCurrentDeformersCount < uMaxNumOfDeformers)
 					{
 						// We have enough room, add b to a
-						uint colliderPlacementIndex = aCollidersStartIndex + aCurrentCollidersCount;
-						ColliderPositions[colliderPlacementIndex] = bPos;
-						ColliderRadii[colliderPlacementIndex] = bRad;
+						uint deformerPlacementIndex = aDeformersStartIndex + aCurrentDeformersCount;
+						DeformerPositions[deformerPlacementIndex] = bPos;
+						DeformerRadii[deformerPlacementIndex] = bRad;
 					}
 
 
-					uint bCollidersStartIndex = bGID * uMaxNuMOfColliders;
-					uint bCurrentCollidersCount = atomicAdd(ColliderCounts[bGID], 1);
-					if (bCurrentCollidersCount < uMaxNuMOfColliders)
+					uint bDeformersStartIndex = bGID * uMaxNumOfDeformers;
+					uint bCurrentDeformersCount = atomicAdd(DeformerCounts[bGID], 1);
+					if (bCurrentDeformersCount < uMaxNumOfDeformers)
 					{
 						// We have enough room, add a to b
-						uint colliderPlacementIndex = bCollidersStartIndex + bCurrentCollidersCount;
-						ColliderPositions[colliderPlacementIndex] = aPos;
-						ColliderRadii[colliderPlacementIndex] = aRad;
+						uint deformerPlacementIndex = bDeformersStartIndex + bCurrentDeformersCount;
+						DeformerPositions[deformerPlacementIndex] = aPos;
+						DeformerRadii[deformerPlacementIndex] = aRad;
 					}
 				}
 			}

@@ -92,14 +92,6 @@ int main()
 	cout << "Max number of workgroup invocations: " << maxWorkGroupInvocations << endl;
 
 
-	// Set some blending/depth settings
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Clean looking
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA); // Eye candy clipping but dark cores
-	//glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_ALPHA); // Saturated, eye-candy look
-
-
 	// @DEBUG
 	double lastTime = 0;
 	int frameCount = 0;
@@ -120,13 +112,9 @@ int main()
 
 		double timeDiff = currentTime - lastTime;
 
-		// Clear
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		// Update
-		Simulation_Update();
 		Camera_Update(timeDiff);
+		Simulation_Update();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
