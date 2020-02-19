@@ -19,10 +19,13 @@ void main()
     float shading = pow(1.0 - oVertexSquaredDistance, 0.25);
 
     // Apply a skin pattern
-    float skinPattern = (mod(oVertexSquaredDistance, oSkinPattern.x) > oSkinPattern.y ? 1.1 : 1.0) * oForwardDirectionDot;
+    float skinPattern = (mod(oVertexSquaredDistance, oSkinPattern.x) > oSkinPattern.y ? 1.1 : 1.0);
+
+    // Display forward direction
+    float forwardDir = oForwardDirectionDot / oVertexSquaredDistance > 0.995 && oVertexSquaredDistance > 0.65 ? 1.25 : 1.0;
    
     // Set final color
-    FragColor = oVertexColor * shading * skinPattern;
+    FragColor = oVertexColor * shading * skinPattern * forwardDir;
 
     // Opaqueness reflects life
     FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oLife) * 5.0), oLife + 0.1);

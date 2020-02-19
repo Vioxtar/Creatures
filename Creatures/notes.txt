@@ -25,9 +25,9 @@
 
 
 	Some notes
-
-	Creatures grow in size the bigger they are, however this only reflects some ~0.8 percentage of their final radii, the remaining ~0.2 percent - they control!
 	
+		RadiusPercentage = 0.3 * LifePercentage + 0.5 * EnergyPercentage + 0.2 * ControlPercentage
+
 	saturation belongs to family
 	life reflected by fill
 

@@ -114,33 +114,62 @@ struct CreatureAttributesSSBOInfo
 	GLuint attributeBytesSize;
 };
 
+// Brains
 CreatureAttributesSSBOInfo creature_BrainsLinks{ 0, sizeof(GLfloat) * brains_MaxNumOfLinks };
 CreatureAttributesSSBOInfo creature_BrainsNodes{ 0, sizeof(GLfloat) * brains_MaxNumOfNodes };
 CreatureAttributesSSBOInfo creature_BrainsBiases{ 0, sizeof(GLfloat) * brains_MaxNumOfBiases };
 CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * brains_MaxNumOfStructureIndices };
 CreatureAttributesSSBOInfo creature_BrainsActivationExponents{ 0, sizeof(GLfloat) };
-CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };
+
+// Physics
 CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };
 CreatureAttributesSSBOInfo creature_Velocities{ 0, sizeof(vec2) };
-CreatureAttributesSSBOInfo creature_ForwardDirections{ 0, sizeof(vec2) };
-CreatureAttributesSSBOInfo creature_Radii{ 0, sizeof(GLfloat) };
-CreatureAttributesSSBOInfo creature_Lives{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_Angles{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_AngleVelocities{ 0, sizeof(GLfloat) };
-CreatureAttributesSSBOInfo creature_Energies{ 0, sizeof(GLfloat) };
-CreatureAttributesSSBOInfo creature_Meats{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_ForwardDirections{ 0, sizeof(vec2) };
+
+// Movement
 CreatureAttributesSSBOInfo creature_ForwardThrusts{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_TurnThrusts{ 0, sizeof(GLfloat) };
+
+// Body parameters
+CreatureAttributesSSBOInfo creature_Radii{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_Lives{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_Energies{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_Meats{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_Harndesses{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_Horninesses{ 0, sizeof(GLfloat) };
+
+// Creature misc
 CreatureAttributesSSBOInfo creature_Generations{ 0, sizeof(GLuint) };
 CreatureAttributesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLint) };
 CreatureAttributesSSBOInfo creature_GeneralPurpose{ 0, sizeof(vec2) };
+
+// Appearances
+CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };
 CreatureAttributesSSBOInfo creature_SkinPatterns{ 0, sizeof(vec2) };
+
+// Creature-localized devices (straws, shields, sensors)
+CreatureAttributesSSBOInfo creature_StrawStates{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_StrawLocalAngles{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_StrawDirections{ 0, sizeof(vec2) };
+
+CreatureAttributesSSBOInfo creature_ShieldStates{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_ShieldLocalAngles{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_ShieldDirections{ 0, sizeof(vec2) };
+
+		// @TODO: actually implement this placeholder
+CreatureAttributesSSBOInfo creature_SensorsStates{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_SensorsLocalAngles{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_SensorsDirections{ 0, sizeof(vec2) };
+
+// Deformations
 const GLuint deformers_MaxNumOfDeformers = floor(M_PI / asin(CREATURE_MIN_RADIUS.min / (CREATURE_MAX_RADIUS.max + CREATURE_MIN_RADIUS.min)));
 CreatureAttributesSSBOInfo creature_DeformerPositions{ 0, sizeof(vec2) * deformers_MaxNumOfDeformers };
 CreatureAttributesSSBOInfo creature_DeformerRadii{ 0, sizeof(GLfloat) * deformers_MaxNumOfDeformers };
 CreatureAttributesSSBOInfo creature_DeformerCounts{ 0, sizeof(GLuint) };
+
+
 
 // The sole purpose of this vector is to contain our creature attributes SSBO infos for easier iteration during SSBO manipulations
 vector<CreatureAttributesSSBOInfo*> creatureAttributesSSBOInfosRefs;
@@ -151,24 +180,33 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsBiases);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsStructures);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsActivationExponents);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_Colors);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Positions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Velocities);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_ForwardDirections);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_Radii);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_Lives);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Angles);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_AngleVelocities);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_Energies);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_Meats);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_ForwardDirections);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ForwardThrusts);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_TurnThrusts);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Radii);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Lives);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Energies);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Meats);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Harndesses);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Horninesses);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Generations);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_UniformGridTiles);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurpose);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Colors);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinPatterns);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_StrawStates);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_StrawLocalAngles);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_StrawDirections);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldStates);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldLocalAngles);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldDirections);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsStates);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsLocalAngles);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsDirections);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_DeformerPositions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_DeformerRadii);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_DeformerCounts);
@@ -176,7 +214,6 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 
 GLuint creature_count = 0; // The count of active creatures in the simulation
 GLuint max_supported_creature_count_by_current_buffers; // The number of creatures supported by current SSBO buffers
-
 const GLenum ssbo_usage = GL_STREAM_DRAW;
 
 
@@ -698,10 +735,10 @@ void Simulation_Init()
 		data.rad = CREATURE_MIN_RADIUS.value + random() * 0.2;
 		data.life = random();
 		data.angle = random() * 7;
-		data.angleVel = (random() - 0.5) * 0.01;
-		data.forwardThrust = random() * 0.003;
+		data.angleVel = (random() - 0.5) * 0.03;
+		data.forwardThrust = random() * random() * 0.01;
 		data.turnThrust = 0.0;
-		data.hardness = 1.0;// random()* random()* random();
+		data.hardness = random();
 		data.skin = vec2(random(), random());
 		AddCreature(data);
 	}
@@ -900,12 +937,13 @@ void Simulation_Render()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Colors.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Positions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_ForwardDirections.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Radii.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Lives.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_SkinPatterns.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_DeformerPositions.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_DeformerRadii.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_DeformerCounts.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Radii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Lives.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_SkinPatterns.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_DeformerPositions.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_DeformerRadii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_DeformerCounts.ssbo);
 
 	glBindVertexArray(drawCallData_CreatureBody.VAO);
 	glUseProgram(drawCallData_CreatureBody.program);

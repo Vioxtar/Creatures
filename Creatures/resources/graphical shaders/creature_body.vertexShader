@@ -16,32 +16,37 @@ layout (std430, binding = 2) buffer CreatureForwardDirections
 	vec2 ForwardDirections[];
 };
 
-layout (std430, binding = 3) buffer CreatureRadii
+layout (std430, binding = 3) buffer CreatureAngles
+{
+	float Angles[];
+};
+
+layout (std430, binding = 4) buffer CreatureRadii
 {
 	float Radii[];
 };
 
-layout (std430, binding = 4) buffer CreatureLives
+layout (std430, binding = 5) buffer CreatureLives
 {
 	float Lives[];
 };
 
-layout (std430, binding = 5) buffer CreatureSkinPatterns
+layout (std430, binding = 6) buffer CreatureSkinPatterns
 {
 	vec2 SkinPatterns[];
 };
 
-layout (std430, binding = 6) buffer CreatureDeformerPositions
+layout (std430, binding = 7) buffer CreatureDeformerPositions
 {
 	vec2 DeformerPositions[];
 };
 
-layout (std430, binding = 7) buffer CreatureDeformerRadii
+layout (std430, binding = 8) buffer CreatureDeformerRadii
 {
 	float DeformerRadii[];
 };
 
-layout (std430, binding = 8) buffer CreatureDeformerCounts
+layout (std430, binding = 9) buffer CreatureDeformerCounts
 {
 	uint DeformerCounts[];
 };
@@ -67,16 +72,25 @@ void main()
 	// Collect data
 	vec2 creatureCenterPos = Positions[gl_InstanceID];
 	float creatureRadius = Radii[gl_InstanceID];
+	float creatureAngle = Angles[gl_InstanceID];
 	float creatureLife = Lives[gl_InstanceID];
 	vec2 creatureSkinPattern = SkinPatterns[gl_InstanceID];
 	vec2 creatureForwardDir = ForwardDirections[gl_InstanceID];
 	vec3 creatureColor = vec3(Colors[colIndex], Colors[colIndex + 1], Colors[colIndex + 2]);
 
+	// Rotate by angle
+	float cosAng = cos(creatureAngle);
+	float sinAng = sin(creatureAngle);
+	vec2 rotatedLocalVertPos = vec2(
+		cosAng * aVertexLocalPos.x - sinAng * aVertexLocalPos.y,
+		sinAng * aVertexLocalPos.x + cosAng * aVertexLocalPos.y
+	);
+
 
 
 	// Body deformations
 
-	vec2 vertPos = creatureCenterPos + aVertexLocalPos * creatureRadius;
+	vec2 vertPos = creatureCenterPos + rotatedLocalVertPos * creatureRadius;
 	
 	// @TODO: Cull calculations if we're off screen
 
@@ -104,12 +118,12 @@ void main()
 
 		// The new pushback value is the violation, multiplied by a dot factor; the closer we are to the creaturesPosDiff direction,
 		// the less we need be pushed back. This is a linear device used to approximate the result of an otherwise non-linear function
-		float newPushback = vertViolation * (1.0 - 0.5 * dot(creaturesPosDiff / creaturesPosDiffLength, aVertexLocalPos));
+		float newPushback = vertViolation * (1.0 - 0.5 * dot(creaturesPosDiff / creaturesPosDiffLength, rotatedLocalVertPos));
 		pushBack = max(pushBack, newPushback);
 	}
 
 	// Finalize this vertex's deformation
-	vertPos -= aVertexLocalPos * pushBack;
+	vertPos -= rotatedLocalVertPos * pushBack;
 
 
 
@@ -125,6 +139,6 @@ void main()
 	oLife = creatureLife;
 
 	// Per vertex
-	oVertexSquaredDistance = dot(aVertexLocalPos, aVertexLocalPos);
-	oForwardDirectionDot = dot(aVertexLocalPos, creatureForwardDir);
+	oVertexSquaredDistance = dot(rotatedLocalVertPos, rotatedLocalVertPos);
+	oForwardDirectionDot = dot(rotatedLocalVertPos, creatureForwardDir);
 }
