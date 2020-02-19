@@ -29,8 +29,8 @@ extern const float CAMERA_ZOOM_INTERPOLATION_SPEED = 0.035f;
 extern const float CAMERA_ZOOM_SCROLL_SCALE = 0.1f;
 extern const float CAMERA_ZOOM_MOVE_SCALE = 0.0002f;
 extern const float CAMERA_VELOCITY_FRICTION = 0.985f;
-extern const float CAMERA_START_ZOOM = 0.1f;
-extern const float CAMERA_START_ZOOM_TARGET = 0.01f;
+extern const float CAMERA_START_ZOOM = 0.2f;
+extern const float CAMERA_START_ZOOM_TARGET = 0.2f;
 
 // Simulation settings
 extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;

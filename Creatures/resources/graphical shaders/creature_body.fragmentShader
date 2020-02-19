@@ -3,6 +3,11 @@
 // Per vertex values
 in float oVertexSquaredDistance;
 in float oForwardDirectionDot;
+in float oSpikeDirectionDot;
+in float oFeederDirectionDot;
+in float oShieldDirectionDot;
+in float oSpikeSquaredDistance;
+in vec2 oEuclideanPos;
 
 // Per instance values
 // @TODO: Find if there's a way to pass these to the fragment shader actually per instance
@@ -15,18 +20,50 @@ out float gl_FragDepth;
 
 void main()
 {
-    // Slight shading towards the edges
-    float shading = pow(1.0 - oVertexSquaredDistance, 0.25);
+    
+    // Display shading
+    float shadingColMul = pow(1.0 - oVertexSquaredDistance, 0.25);
 
-    // Apply a skin pattern
-    float skinPattern = (mod(oVertexSquaredDistance, oSkinPattern.x) > oSkinPattern.y ? 1.1 : 1.0);
+    // Display skin pattern
+    float skinPatternColMul =
+        mod(oVertexSquaredDistance, oSkinPattern.x) > oSkinPattern.y
+        ? 1.1
+        : 1.0;
 
     // Display forward direction
-    float forwardDir = oForwardDirectionDot / oVertexSquaredDistance > 0.995 && oVertexSquaredDistance > 0.65 ? 1.25 : 1.0;
+    float forwardDirColMul = 
+        oForwardDirectionDot / oVertexSquaredDistance > 0.995 &&
+        oVertexSquaredDistance > 0.35
+        ? 1.35
+        : 1.0;
    
-    // Set final color
-    FragColor = oVertexColor * shading * skinPattern * forwardDir;
+    // Display shield
+    float shieldSpan = 0.25;
+    float shieldColMul =
+        oShieldDirectionDot / oVertexSquaredDistance > (1.0 - shieldSpan) &&
+        oVertexSquaredDistance > 0.75
+        ? 1.25
+        : 1.0;
 
+
+    // Display spike
+    float spikeColMul =
+        oEuclideanPos.x > -0.5 && oEuclideanPos.x < 0.5
+        ? 1.25
+        : 1.0;
+
+    
+    // Set final color
+    FragColor =
+        oVertexColor *
+        shadingColMul *
+        skinPatternColMul *
+        forwardDirColMul *
+        //shieldColMul *
+        spikeColMul;
+
+    
+    
     // Opaqueness reflects life
     FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oLife) * 5.0), oLife + 0.1);
     FragColor.a *= 0.975; // Still make everything ever so slightly transparent

@@ -34,6 +34,10 @@ struct CreatureCreationData
 	GLfloat turnThrust; // Temp
 	GLfloat hardness; // Temp
 	vec2 skin; // Temp
+	GLfloat spikeLocalAngle; // Temp
+	GLfloat feederLocalAngle; // Temp
+	GLfloat shieldLocalAngle; // Temp
+	GLfloat shieldSpan;
 };
 
 
@@ -149,19 +153,24 @@ CreatureAttributesSSBOInfo creature_GeneralPurpose{ 0, sizeof(vec2) };
 CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };
 CreatureAttributesSSBOInfo creature_SkinPatterns{ 0, sizeof(vec2) };
 
-// Creature-localized devices (straws, shields, sensors)
-CreatureAttributesSSBOInfo creature_StrawStates{ 0, sizeof(GLfloat) };
-CreatureAttributesSSBOInfo creature_StrawLocalAngles{ 0, sizeof(GLfloat) };
-CreatureAttributesSSBOInfo creature_StrawDirections{ 0, sizeof(vec2) };
+// Creature-localized devices (Feeders, shields, sensors)
+CreatureAttributesSSBOInfo creature_SpikeStates{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_SpikeLocalAngles{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_SpikeDirections{ 0, sizeof(vec2) };
+
+CreatureAttributesSSBOInfo creature_FeederStates{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_FeederLocalAngles{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_FeederDirections{ 0, sizeof(vec2) };
 
 CreatureAttributesSSBOInfo creature_ShieldStates{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_ShieldLocalAngles{ 0, sizeof(GLfloat) };
+CreatureAttributesSSBOInfo creature_ShieldSpans{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_ShieldDirections{ 0, sizeof(vec2) };
 
-		// @TODO: actually implement this placeholder
-CreatureAttributesSSBOInfo creature_SensorsStates{ 0, sizeof(GLfloat) };
-CreatureAttributesSSBOInfo creature_SensorsLocalAngles{ 0, sizeof(GLfloat) };
-CreatureAttributesSSBOInfo creature_SensorsDirections{ 0, sizeof(vec2) };
+// @TODO: actually implement this placeholder
+//CreatureAttributesSSBOInfo creature_SensorsStates{ 0, sizeof(GLfloat) };
+//CreatureAttributesSSBOInfo creature_SensorsLocalAngles{ 0, sizeof(GLfloat) };
+//reatureAttributesSSBOInfo creature_SensorsDirections{ 0, sizeof(vec2) };
 
 // Deformations
 const GLuint deformers_MaxNumOfDeformers = floor(M_PI / asin(CREATURE_MIN_RADIUS.min / (CREATURE_MAX_RADIUS.max + CREATURE_MIN_RADIUS.min)));
@@ -198,15 +207,19 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurpose);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Colors);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinPatterns);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_StrawStates);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_StrawLocalAngles);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_StrawDirections);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_SpikeStates);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_SpikeLocalAngles);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_SpikeDirections);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_FeederStates);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_FeederLocalAngles);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_FeederDirections);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldStates);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldLocalAngles);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldSpans);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldDirections);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsStates);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsLocalAngles);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsDirections);
+	//creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsStates);
+	//creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsLocalAngles);
+	//creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsDirections);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_DeformerPositions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_DeformerRadii);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_DeformerCounts);
@@ -322,7 +335,7 @@ InstancedDrawCallData drawCallData_CreatureBody;
 			Remmaped pos.x = pos.x + simWidth / 2
 	*/
 
-	// The uniform grid buffer: stores the creature indices per tiles
+// The uniform grid buffer: stores the creature indices per tiles
 GLuint ugrid_SSBO;
 
 // Used to find out when we need to rebuild the uniform grid
@@ -519,6 +532,11 @@ GLuint AddCreature(CreatureCreationData newCreatureData)
 	SetCreatureAttribute(creature_Harndesses, newCreatureIndex, &newCreatureData.hardness);
 	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, NULL);
 	SetCreatureAttribute(creature_SkinPatterns, newCreatureIndex, &newCreatureData.skin);
+	SetCreatureAttribute(creature_SpikeLocalAngles, newCreatureIndex, &newCreatureData.spikeLocalAngle);
+	SetCreatureAttribute(creature_FeederLocalAngles, newCreatureIndex, &newCreatureData.feederLocalAngle);
+	SetCreatureAttribute(creature_ShieldLocalAngles, newCreatureIndex, &newCreatureData.shieldLocalAngle);
+	SetCreatureAttribute(creature_ShieldSpans, newCreatureIndex, &newCreatureData.shieldSpan);
+
 
 	creature_count++;
 
@@ -734,12 +752,16 @@ void Simulation_Init()
 		data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
 		data.rad = CREATURE_MIN_RADIUS.value + random() * 0.2;
 		data.life = random();
-		data.angle = random() * 7;
+		data.angle = random() * 2 * M_PI;
 		data.angleVel = (random() - 0.5) * 0.03;
 		data.forwardThrust = random() * random() * 0.01;
 		data.turnThrust = 0.0;
 		data.hardness = random();
 		data.skin = vec2(random(), random());
+		data.spikeLocalAngle = random() * 2 * M_PI;
+		data.feederLocalAngle = random() * 2 * M_PI;
+		data.shieldLocalAngle = random() * 2 * M_PI;
+		data.shieldSpan = random() * M_PI * 0.35;
 		AddCreature(data);
 	}
 
@@ -820,6 +842,20 @@ void Simulation_Logic()
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
+	// Creature actuations
+	programID = program_CreatureActuations.program;
+	workGroupsNeeded = program_CreatureActuations.workGroupsNeeded;
+	glUseProgram(programID);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Velocities.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_AngleVelocities.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_ForwardDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_ForwardThrusts.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_TurnThrusts.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+
 	// Update body placements
 	programID = program_UpdateCreaturePlacements.program;
 	workGroupsNeeded = program_UpdateCreaturePlacements.workGroupsNeeded;
@@ -832,6 +868,12 @@ void Simulation_Logic()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_AngleVelocities.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_SpikeLocalAngles.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_SpikeDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_FeederLocalAngles.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_FeederDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_ShieldLocalAngles.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_ShieldDirections.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -890,20 +932,6 @@ void Simulation_Logic()
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
-	// Creature actuations
-	programID = program_CreatureActuations.program;
-	workGroupsNeeded = program_CreatureActuations.workGroupsNeeded;
-	glUseProgram(programID);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Velocities.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_AngleVelocities.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_ForwardDirections.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_ForwardThrusts.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_TurnThrusts.ssbo);
-	glDispatchCompute(workGroupsNeeded, 1, 1);
-
-	glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-
 	// Uniform grid unbind
 	programID = program_UniformGridUnBind.program;
 	workGroupsNeeded = program_UniformGridUnBind.workGroupsNeeded;
@@ -944,6 +972,10 @@ void Simulation_Render()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_DeformerPositions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_DeformerRadii.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_DeformerCounts.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_SpikeDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_FeederDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_ShieldDirections.ssbo);
+
 
 	glBindVertexArray(drawCallData_CreatureBody.VAO);
 	glUseProgram(drawCallData_CreatureBody.program);

@@ -30,6 +30,35 @@ layout (std430, binding = 5) buffer CreatureForwardDirections
 	vec2 ForwardDirections[];
 };
 
+layout (std430, binding = 6) buffer CreatureSpikeLocalAngles
+{
+	float SpikeLocalAngles[];
+};
+
+layout (std430, binding = 7) buffer CreatureSpikeDirections
+{
+	vec2 SpikeDirections[];
+};
+
+layout (std430, binding = 8) buffer CreatureFeederLocalAngles
+{
+	float FeederLocalAngles[];
+};
+
+layout (std430, binding = 9) buffer CreatureFeederDirections
+{
+	vec2 FeederDirections[];
+};
+
+layout (std430, binding = 10) buffer CreatureShieldLocalAngles
+{
+	float ShieldLocalAngles[];
+};
+
+layout (std430, binding = 11) buffer CreatureShieldDirections
+{
+	vec2 ShieldDirections[];
+};
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
@@ -63,18 +92,28 @@ void main()
 
 	// Angle and angle velocity
 
-	float ang = Angles[gid];
-	float angVel = AngleVelocities[gid];
+	float creatureAngle = Angles[gid];
+	float creatureAngleVelocity = AngleVelocities[gid];
 
-	angVel = angVel * uAngleVelocityDownscale;
-	ang += angVel;
+	creatureAngleVelocity *= uAngleVelocityDownscale;
+	creatureAngle += creatureAngleVelocity;
 
-	Angles[gid] = mod(ang, M_PI * 2);
-	AngleVelocities[gid] = angVel;
+	Angles[gid] = mod(creatureAngle, M_PI * 2);
+	AngleVelocities[gid] = creatureAngleVelocity;
 
 
 
-	// Forward direction
-	ForwardDirections[gid] = vec2(-sin(ang), cos(ang));
+	// Set directions
+
+	ForwardDirections[gid] = vec2(-sin(creatureAngle), cos(creatureAngle));
+
+	float spikeGlobalAngle = creatureAngle + SpikeLocalAngles[gid];
+	SpikeDirections[gid] = vec2(-sin(spikeGlobalAngle), cos(spikeGlobalAngle));
+
+	float feederGlobalAngle = creatureAngle + FeederLocalAngles[gid];
+	FeederDirections[gid] = vec2(-sin(feederGlobalAngle), cos(feederGlobalAngle));
+
+	float shieldGlobalAngle = creatureAngle + ShieldLocalAngles[gid];
+	ShieldDirections[gid] = vec2(-sin(shieldGlobalAngle), cos(shieldGlobalAngle));
 	
 }
