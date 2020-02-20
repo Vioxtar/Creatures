@@ -19,7 +19,7 @@ extern const uint16_t TECH_BORDER_PHYSICS_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_UNIFORM_GRID_BIND_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_CREATURE_INTERACTIONS_WORKGROUP_LOCAL_SIZE = 1536;
-extern const uint16_t TECH_CREATURE_ACTUATIONS_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_CREATURE_BODY_WORK_WORKGROUP_LOCAL_SIZE = 1536;
 
 
 // Camera settings
@@ -37,11 +37,11 @@ extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
 extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 2;
 
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 1000, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 300, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 300, 1, 300 };
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.5, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.995, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 1.0, 0.0, 1.0 };
 
 // Render settings

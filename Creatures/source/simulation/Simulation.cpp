@@ -256,7 +256,7 @@ ProgramInfo program_CreatureInteractions{ 0, 0, TECH_CREATURE_INTERACTIONS_WORKG
 ProgramInfo program_BrainPushInputs{ 0, 0, TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainForwardPropagate{ 0, 0, TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainPullOutputs{ 0, 0, TECH_BRAIN_PULL_OUTPUTS_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureActuations{ 0, 0, TECH_CREATURE_ACTUATIONS_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureBodyWork{ 0, 0, TECH_CREATURE_BODY_WORK_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_InitNewFrame{ 0, 0, TECH_INIT_NEW_FRAME_WORKGROUP_LOCAL_SIZE };
 
 void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
@@ -269,7 +269,7 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPushInputs);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainForwardPropagate);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPullOutputs);
-	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureActuations);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureBodyWork);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_InitNewFrame);
 }
 
@@ -605,10 +605,10 @@ void InitLogicPrograms()
 	program_InitNewFrame.program = CreateLinkedShaderProgram(1, initNewFrameShaderTypes, initNewFrameShaderPaths, &replacers);
 	replacers.clear();
 
-	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureActuations.workGroupLocalSize)));
-	GLenum creatureActuationsShaderTypes[] = { GL_COMPUTE_SHADER };
-	const char* creatureActuationsShaderPaths[] = { "resources/compute shaders/creature_actuations.computeShader" };
-	program_CreatureActuations.program = CreateLinkedShaderProgram(1, creatureActuationsShaderTypes, creatureActuationsShaderPaths, &replacers);
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureBodyWork.workGroupLocalSize)));
+	GLenum creatureBodyWorkShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* creatureBodyWorkShaderPaths[] = { "resources/compute shaders/creature_body_work.computeShader" };
+	program_CreatureBodyWork.program = CreateLinkedShaderProgram(1, creatureBodyWorkShaderTypes, creatureBodyWorkShaderPaths, &replacers);
 	replacers.clear();
 
 	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_UpdateCreaturePlacements.workGroupLocalSize)));
@@ -842,9 +842,9 @@ void Simulation_Logic()
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
-	// Creature actuations
-	programID = program_CreatureActuations.program;
-	workGroupsNeeded = program_CreatureActuations.workGroupsNeeded;
+	// Creature body works
+	programID = program_CreatureBodyWork.program;
+	workGroupsNeeded = program_CreatureBodyWork.workGroupsNeeded;
 	glUseProgram(programID);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Velocities.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_AngleVelocities.ssbo);

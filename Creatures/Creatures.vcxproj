@@ -175,7 +175,7 @@
     <None Include="resources\compute shaders\brain_forward_propagate.computeShader" />
     <None Include="resources\compute shaders\brain_pull_outputs.computeShader" />
     <None Include="resources\compute shaders\brain_push_inputs.computeShader" />
-    <None Include="resources\compute shaders\creature_actuations.computeShader" />
+    <None Include="resources\compute shaders\creature_body_work.computeShader" />
     <None Include="resources\compute shaders\creature_interactions.computeShader" />
     <None Include="resources\compute shaders\init_new_frame.computeShader" />
     <None Include="resources\compute shaders\uniform_grid_bind.computeShader" />

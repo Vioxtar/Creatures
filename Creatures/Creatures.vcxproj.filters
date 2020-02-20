@@ -51,11 +51,11 @@
     <None Include="resources\compute shaders\brain_forward_propagate.computeShader" />
     <None Include="resources\compute shaders\brain_pull_outputs.computeShader" />
     <None Include="resources\compute shaders\update_creature_placements.computeShader" />
-    <None Include="resources\compute shaders\creature_actuations.computeShader" />
     <None Include="resources\graphical shaders\creature_body.fragmentShader" />
     <None Include="resources\graphical shaders\creature_body.vertexShader" />
     <None Include="resources\compute shaders\creature_interactions.computeShader" />
     <None Include="resources\compute shaders\init_new_frame.computeShader" />
+    <None Include="resources\compute shaders\creature_body_work.computeShader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\OpenGLErrorDebugger.h">

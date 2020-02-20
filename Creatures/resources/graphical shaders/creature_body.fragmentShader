@@ -34,7 +34,7 @@ void main()
         oEuclideanPos.x > -0.025 &&
         oEuclideanPos.x < 0.025 &&
         oEuclideanPos.y > 0
-        ? 1.0 + oVertexSquaredDistance * 0.35
+        ? 1.0 - oVertexSquaredDistance * 0.25
         : 1.0;
    
     // Display shield
@@ -45,7 +45,6 @@ void main()
         ? 1.25
         : 1.0;
 
-
     // Display spike
     float spikeYDist = 1.0 - oSpikeEuclideanPos.y; 
     float spikeXMul = oSpikeEuclideanPos.x * 2.0; // Make the base of the triangle narrower
@@ -54,7 +53,6 @@ void main()
         abs(spikeXMul) < spikeYDist
         ? 1.25
         : 1.0;
-
 
     // Display feeder
     float feederYDist = 1.0 - oFeederEuclideanPos.y; 
