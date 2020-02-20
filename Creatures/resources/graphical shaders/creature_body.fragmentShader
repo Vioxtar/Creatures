@@ -2,12 +2,11 @@
 
 // Per vertex values
 in float oVertexSquaredDistance;
-in float oForwardDirectionDot;
-in float oSpikeDirectionDot;
-in float oFeederDirectionDot;
-in float oShieldDirectionDot;
-in float oSpikeSquaredDistance;
 in vec2 oEuclideanPos;
+
+in float oShieldDirectionDot;
+in vec2 oSpikeEuclideanPos;
+in vec2 oFeederEuclideanPos;
 
 // Per instance values
 // @TODO: Find if there's a way to pass these to the fragment shader actually per instance
@@ -32,9 +31,10 @@ void main()
 
     // Display forward direction
     float forwardDirColMul = 
-        oForwardDirectionDot / oVertexSquaredDistance > 0.995 &&
-        oVertexSquaredDistance > 0.35
-        ? 1.35
+        oEuclideanPos.x > -0.025 &&
+        oEuclideanPos.x < 0.025 &&
+        oEuclideanPos.y > 0
+        ? 1.0 + oVertexSquaredDistance * 0.35
         : 1.0;
    
     // Display shield
@@ -47,8 +47,21 @@ void main()
 
 
     // Display spike
+    float spikeYDist = 1.0 - oSpikeEuclideanPos.y; 
+    float spikeXMul = oSpikeEuclideanPos.x * 2.0; // Make the base of the triangle narrower
     float spikeColMul =
-        oEuclideanPos.x > -0.5 && oEuclideanPos.x < 0.5
+        spikeYDist < 0.25 &&
+        abs(spikeXMul) < spikeYDist
+        ? 1.25
+        : 1.0;
+
+
+    // Display feeder
+    float feederYDist = 1.0 - oFeederEuclideanPos.y; 
+    float feederXMul = oFeederEuclideanPos.x * 2.0; // Make the base of the triangle narrower
+    float feederColMul =
+        feederYDist < 0.25 &&
+        abs(feederXMul) < 0.25 - feederYDist
         ? 1.25
         : 1.0;
 
@@ -59,9 +72,9 @@ void main()
         shadingColMul *
         skinPatternColMul *
         forwardDirColMul *
-        //shieldColMul *
-        spikeColMul;
-
+        shieldColMul *
+        spikeColMul *
+        feederColMul;
     
     
     // Opaqueness reflects life

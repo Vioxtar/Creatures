@@ -69,12 +69,11 @@ layout (std430, binding = 12) buffer CreatureShieldDirections
 
 // Per vertex values
 out float oVertexSquaredDistance;
-out float oForwardDirectionDot;
-out float oSpikeDirectionDot;
-out float oFeederDirectionDot;
-out float oShieldDirectionDot;
-out float oSpikeSquaredDistance;
 out vec2 oEuclideanPos;
+
+out float oShieldDirectionDot;
+out vec2 oSpikeEuclideanPos;
+out vec2 oFeederEuclideanPos;
 
 // Per instance values
 // @TODO: Find if there's a way to pass these to the fragment shader actually per instance
@@ -98,8 +97,8 @@ void main()
 	vec2 creatureForwardDir = ForwardDirections[gl_InstanceID];
 	vec3 creatureColor = vec3(Colors[colIndex], Colors[colIndex + 1], Colors[colIndex + 2]);
 	vec2 creatureSpikeDir = SpikeDirections[gl_InstanceID];
-	vec2 creatureFeederDir = SpikeDirections[gl_InstanceID];
-	vec2 creatureShieldDir = SpikeDirections[gl_InstanceID];
+	vec2 creatureFeederDir = FeederDirections[gl_InstanceID];
+	vec2 creatureShieldDir = ShieldDirections[gl_InstanceID];
 
 
 	// Rotate by angle
@@ -164,12 +163,16 @@ void main()
 
 	// Per vertex
 	oVertexSquaredDistance = dot(rotatedLocalVertPos, rotatedLocalVertPos);
-	oForwardDirectionDot = dot(rotatedLocalVertPos, creatureForwardDir);
-	oSpikeDirectionDot = dot(rotatedLocalVertPos, creatureSpikeDir);
-	oFeederDirectionDot = dot(rotatedLocalVertPos, creatureFeederDir);
-	oShieldDirectionDot = dot(rotatedLocalVertPos, creatureShieldDir);
 	oEuclideanPos = aVertexLocalPos;
+	
+	oShieldDirectionDot = dot(rotatedLocalVertPos, creatureShieldDir);
 
-	vec2 spikeDiff = rotatedLocalVertPos - creatureSpikeDir;
-	oSpikeSquaredDistance = dot(spikeDiff, spikeDiff);
+	// Build our local euclidean spaces by accounting dot products with a direction and its ortho direction
+	// We need to do this because procedurally drawing shapes such as the spike/feeder is difficult in non-euclidean space
+
+	vec2 creatureSpikeOrthoDir = vec2(creatureSpikeDir.y, -creatureSpikeDir.x);
+	oSpikeEuclideanPos = vec2(dot(creatureSpikeOrthoDir, rotatedLocalVertPos), dot(creatureSpikeDir, rotatedLocalVertPos));
+
+	vec2 creatureFeederOrthoDir = vec2(creatureFeederDir.y, -creatureFeederDir.x);
+	oFeederEuclideanPos = vec2(dot(creatureFeederOrthoDir, rotatedLocalVertPos), dot(creatureFeederDir, rotatedLocalVertPos));
 }
