@@ -227,7 +227,7 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 
 GLuint creature_count = 0; // The count of active creatures in the simulation
 GLuint max_supported_creature_count_by_current_buffers; // The number of creatures supported by current SSBO buffers
-const GLenum ssbo_usage = GL_STREAM_DRAW;
+const GLenum ssbo_usage = GL_STATIC_DRAW;
 
 
 ////////////////////////////////////////////
