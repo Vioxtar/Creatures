@@ -150,6 +150,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\imgui\imgui.cpp" />
+    <ClCompile Include="source\imgui\imgui_demo.cpp" />
+    <ClCompile Include="source\imgui\imgui_draw.cpp" />
+    <ClCompile Include="source\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="source\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="source\imgui\imgui_widgets.cpp" />
     <ClCompile Include="source\simulation\Camera.cpp" />
     <ClCompile Include="source\simulation\Simulation.cpp" />
     <ClCompile Include="source\simulation\Settings.cpp" />
@@ -161,6 +167,14 @@
     <ClCompile Include="source\utils\ShapeUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\imgui\imconfig.h" />
+    <ClInclude Include="source\imgui\imgui.h" />
+    <ClInclude Include="source\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="source\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="source\imgui\imgui_internal.h" />
+    <ClInclude Include="source\imgui\imstb_rectpack.h" />
+    <ClInclude Include="source\imgui\imstb_textedit.h" />
+    <ClInclude Include="source\imgui\imstb_truetype.h" />
     <ClInclude Include="source\simulation\Camera.h" />
     <ClInclude Include="source\simulation\Simulation.h" />
     <ClInclude Include="source\simulation\Settings.h" />

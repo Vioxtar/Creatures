@@ -79,7 +79,9 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainBiasesExponents->reserve(brains_MaxNumOfActivatedNodes);
 	for (int i = 0; i < brains_MaxNumOfActivatedNodes; i++)
 	{
-		brainBiasesExponents->emplace_back(vec2(random(), random()));
+		float bias = random();
+		float activationExponent = random() * 10;
+		brainBiasesExponents->emplace_back(vec2(bias, activationExponent));
 	}
 
 	// Fill links with random values in [0, 1)
@@ -355,7 +357,10 @@ void BuildUniformGrid()
 	float newMinCreatureRadius = CREATURE_MIN_RADIUS.value;
 	float newSimulationWidth = SIMULATION_WIDTH.value;
 	float newSimulationHeight = SIMULATION_HEIGHT.value;
-	float newInteractDist = newMaxCreatureRadius * 2.0;// +newMaxCreatureSenseRadius;
+
+	float physicalInteractionDistOverlap = newMaxCreatureRadius * 2.0; // Multiply by two, because creatures > newMaxCreatureRadius distant from each other can still interact due to overlaps!
+	float senseInteractionDist = newMaxCreatureSenseRadius; // Creatures sensors do not overlap in any way!
+	float newInteractDist = std::max(physicalInteractionDistOverlap, senseInteractionDist);
 
 	bool interactDistChanged = ugrid_LastInteractDist != newInteractDist;
 	bool minCreatureRadiusChanged = ugrid_LastMinCreatureRadius != newMinCreatureRadius;

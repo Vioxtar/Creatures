@@ -12,7 +12,7 @@
 
 using namespace std;
 
-void glfw_framebuffer_size_callback(GLFWwindow*, int width, int height);
+void glfwFrameBufferSizeCallback(GLFWwindow*, int width, int height);
 
 void glfw_cursor_position_callback(GLFWwindow* window, double x, double y);
 

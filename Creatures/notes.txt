@@ -57,6 +57,8 @@
 
 
 	NON-OBVIOUS-TODOS:
+	Consider adding negated activated functions (like you posted in discord) for maybe even MORE expressive brains!
+		But for now... use two-node setups for moving shit linearly
 	Create two creature-creating functions: create first gen creature, and create offspring creature
 	replace branching code with branchless code
 	Consider giving every node its own activation exponent?
