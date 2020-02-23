@@ -30,9 +30,10 @@ void main()
         : 1.0;
 
     // Display forward direction
+    float forwardDirXMul = oVertexSquaredDistance * 0.1;
     float forwardDirColMul = 
-        oEuclideanPos.x > -0.025 &&
-        oEuclideanPos.x < 0.025 &&
+        oEuclideanPos.x > -forwardDirXMul &&
+        oEuclideanPos.x < forwardDirXMul &&
         oEuclideanPos.y > 0
         ? 1.0 - oVertexSquaredDistance * 0.25
         : 1.0;

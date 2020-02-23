@@ -45,11 +45,19 @@
 		4. it is difficult to avoid a O^(creatures in tile * number of sensing points * creatures in tile) complexity, we may need to come up with a clever spatial indexer of some sort
 
 
+	When considering the sensor circle/points approaches, we need to choose between:
+		1. Less memory access, more computations: bigger uniform grid tile of sense radius dimensions, during in-tile iterations test for senses
+		2. More memory access, less computations: we spatial-index the uniform grid based on our sampling positions: but then we STILL have to perform
+			computations to test for sensing, only on far less creatures...
 
+	When considering the cone/line approaches, sensing areas span across several uniform tiles so we're forced to go with the first 'less memory access' choice
 
+	One of these options is probably more performant than the other... and its probably the first...? because we're indexing the uniform grid incoherently creature_count * sensor_count times
+	Choose first option!
 
 
 	NON-OBVIOUS-TODOS:
+	Create two creature-creating functions: create first gen creature, and create offspring creature
 	replace branching code with branchless code
 	Consider giving every node its own activation exponent?
 	Find if theres a way to pass non-interpolated data to the fragment shader by creature instance
@@ -62,7 +70,7 @@
 	Spikes and shields and stick mechanisms
 	Fix window misalignment
 	FIX THE WEIRD GHOST BALL AT 0, 0
-
+	Find out why border physics is so damn unstable (not really the case when border restitution is at 0)
 
 
 

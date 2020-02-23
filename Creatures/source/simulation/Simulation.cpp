@@ -362,7 +362,7 @@ void BuildUniformGrid()
 	float newMinCreatureRadius = CREATURE_MIN_RADIUS.value;
 	float newSimulationWidth = SIMULATION_WIDTH.value;
 	float newSimulationHeight = SIMULATION_HEIGHT.value;
-	float newInteractDist = newMaxCreatureRadius + newMaxCreatureSenseRadius;
+	float newInteractDist = newMaxCreatureRadius * 2.0;// +newMaxCreatureSenseRadius;
 
 	bool interactDistChanged = ugrid_LastInteractDist != newInteractDist;
 	bool minCreatureRadiusChanged = ugrid_LastMinCreatureRadius != newMinCreatureRadius;
@@ -750,7 +750,7 @@ void Simulation_Init()
 		data.col = vec3(random(), random(), random());
 		data.pos = vec2(0, 0);
 		data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
-		data.rad = CREATURE_MIN_RADIUS.value + random() * 0.2;
+		data.rad = CREATURE_MAX_RADIUS.value;
 		data.life = random();
 		data.angle = random() * 2 * M_PI;
 		data.angleVel = (random() - 0.5) * 0.03;
