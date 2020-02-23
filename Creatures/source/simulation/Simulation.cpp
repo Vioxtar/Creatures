@@ -20,9 +20,8 @@ struct CreatureCreationData
 {
 	vector<GLfloat> brainLinks;
 	vector<GLfloat> brainNodes;
-	vector<GLfloat> brainBiases;
+	vector<vec2> brainBiasesExponents;
 	vector<GLuint> brainStructure;
-	GLfloat brainActivationExponent;
 	vec3 col;
 	vec2 pos;
 	vec2 vel;
@@ -59,11 +58,11 @@ const GLuint brains_MaxNumOfLinks = CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL 
 	// We don't have midlevels in our max structure, number of links is just number of inputs * number of outputs
 	(CREATURE_BRAIN_NUM_OF_INPUTS * CREATURE_BRAIN_NUM_OF_OUTPUTS);
 
-const GLuint brains_MaxNumOfBiases = brains_MaxNumOfNodes - CREATURE_BRAIN_NUM_OF_INPUTS;
+const GLuint brains_MaxNumOfActivatedNodes = brains_MaxNumOfNodes - CREATURE_BRAIN_NUM_OF_INPUTS;
 
 const GLuint brains_MaxNumOfStructureIndices = 1 + 1 + CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS + 1; // [NumOfLevels, NumOfInputs, NumOfMidLevels, NumOfOutputs]
 
-void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<GLfloat>* brainBiases, vector<GLfloat>* brainLinks, vector<GLuint>* brainStructure, GLfloat& brainActivationExponent)
+void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExponents, vector<GLfloat>* brainLinks, vector<GLuint>* brainStructure)
 {
 
 	// WE CURRENTLY FILL THE ENTIRE BRAIN WITH DATA! NO PARTIAL BRAINS JUST YET!
@@ -77,10 +76,10 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<GLfloat>* brainBiases
 
 	// Fill biases with some values between [-1, 1] for now
 	// @TODO: Actually find what's a reasonable starting biases size 
-	brainBiases->reserve(brains_MaxNumOfBiases);
-	for (int i = 0; i < brains_MaxNumOfBiases; i++)
+	brainBiasesExponents->reserve(brains_MaxNumOfActivatedNodes);
+	for (int i = 0; i < brains_MaxNumOfActivatedNodes; i++)
 	{
-		brainBiases->emplace_back(0.0);
+		brainBiasesExponents->emplace_back(vec2(random(), random()));
 	}
 
 	// Fill links with random values in [0, 1)
@@ -99,10 +98,6 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<GLfloat>* brainBiases
 		brainStructure->emplace_back(CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL);
 	}
 	brainStructure->emplace_back(CREATURE_BRAIN_NUM_OF_OUTPUTS);
-
-	// Set the activation exponent
-	// @TODO: Actually randomize properly with min/max values
-	brainActivationExponent = random() * CREATURE_BRAIN_ACTIVATION_EXPONENT;
 }
 
 
@@ -121,9 +116,8 @@ struct CreatureAttributesSSBOInfo
 // Brains
 CreatureAttributesSSBOInfo creature_BrainsLinks{ 0, sizeof(GLfloat) * brains_MaxNumOfLinks };
 CreatureAttributesSSBOInfo creature_BrainsNodes{ 0, sizeof(GLfloat) * brains_MaxNumOfNodes };
-CreatureAttributesSSBOInfo creature_BrainsBiases{ 0, sizeof(GLfloat) * brains_MaxNumOfBiases };
+CreatureAttributesSSBOInfo creature_BrainsBiasesExponents{ 0, sizeof(vec2) * brains_MaxNumOfActivatedNodes };
 CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * brains_MaxNumOfStructureIndices };
-CreatureAttributesSSBOInfo creature_BrainsActivationExponents{ 0, sizeof(GLfloat) };
 
 // Physics
 CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };
@@ -186,9 +180,8 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 {
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsLinks);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsNodes);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsBiases);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsBiasesExponents);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsStructures);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsActivationExponents);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Positions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Velocities);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Angles);
@@ -516,9 +509,8 @@ GLuint AddCreature(CreatureCreationData newCreatureData)
 
 	SetCreatureAttribute(creature_BrainsLinks, newCreatureIndex, newCreatureData.brainLinks.data());
 	SetCreatureAttribute(creature_BrainsNodes, newCreatureIndex, newCreatureData.brainNodes.data());
-	SetCreatureAttribute(creature_BrainsNodes, newCreatureIndex, newCreatureData.brainBiases.data());
+	SetCreatureAttribute(creature_BrainsBiasesExponents, newCreatureIndex, newCreatureData.brainBiasesExponents.data());
 	SetCreatureAttribute(creature_BrainsStructures, newCreatureIndex, newCreatureData.brainStructure.data());
-	SetCreatureAttribute(creature_BrainsActivationExponents, newCreatureIndex, &newCreatureData.brainActivationExponent);
 	SetCreatureAttribute(creature_Colors, newCreatureIndex, &newCreatureData.col);
 	SetCreatureAttribute(creature_Positions, newCreatureIndex, &newCreatureData.pos);
 	SetCreatureAttribute(creature_Velocities, newCreatureIndex, &newCreatureData.vel);
@@ -745,7 +737,7 @@ void Simulation_Init()
 	{
 		CreatureCreationData data;
 
-		InitFirstGenBrain(&data.brainNodes, &data.brainBiases, &data.brainLinks, &data.brainStructure, data.brainActivationExponent);
+		InitFirstGenBrain(&data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
 
 		data.col = vec3(random(), random(), random());
 		data.pos = vec2(0, 0);
@@ -815,13 +807,12 @@ void Simulation_Logic()
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
 	SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", brains_MaxNumOfNodes);
-	SetUniformUInteger(programID, "uMaxNumOfBiasesInBrain", brains_MaxNumOfBiases);
+	SetUniformUInteger(programID, "uMaxNumOfActivatedNodesInBrain", brains_MaxNumOfActivatedNodes);
 	SetUniformUInteger(programID, "uMaxNumOfLinksInBrain", brains_MaxNumOfLinks);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsBiases.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsBiasesExponents.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_BrainsLinks.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_BrainsActivationExponents.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
