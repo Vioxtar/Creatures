@@ -3,6 +3,10 @@
 int currWindowWidth;
 int currWindowHeight;
 
+//////////////////////////////
+// -- SPACE TRANSLATIONS -- //
+//////////////////////////////
+
 vec2 ViewportSpaceToCameraSpace(vec2 pos)
 {
 	float halfWidth = currWindowWidth / 2;
@@ -27,6 +31,10 @@ vec2 ViewportSpaceToSimulationSpace(vec2 pos)
 {
 	return CameraSpaceToSimulationSpace(ViewportSpaceToCameraSpace(pos));
 }
+
+///////////////////////////////////////////
+// -- DEAR IMGUI / GLFW INIT & UPDATE -- //
+///////////////////////////////////////////
 
 void UserInterface_Init(GLFWwindow* window)
 {
@@ -59,8 +67,6 @@ void UserInterface_Init(GLFWwindow* window)
 
 }
 
-
-bool show_demo_window = true;
 void UserInterface_PreUpdate()
 {
 
@@ -76,9 +82,13 @@ void UserInterface_PreUpdate()
 	ImGui::NewFrame();
 }
 
+bool show_demo_window = true;
 void UserInterface_Update()
 {
-	ImGui::ShowDemoWindow(&show_demo_window);
+	if (show_demo_window)
+	{
+		ImGui::ShowDemoWindow(&show_demo_window);
+	}
 }
 
 void UserInterface_PostUpdate()
@@ -87,6 +97,10 @@ void UserInterface_PostUpdate()
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
+
+//////////////////////////
+// -- INPUT CONTROLS -- //
+//////////////////////////
 
 bool DearImGuiUsingMouse()
 {
@@ -98,6 +112,12 @@ bool DearImGuiUsingKeyboard()
 	return ImGui::GetIO().WantCaptureKeyboard;
 }
 
+
+
+
+//////////////////////////
+// -- GLFW CALLBACKS -- //
+//////////////////////////
 
 void glfw_frame_buffer_size_callback(GLFWwindow*, int width, int height)
 {
