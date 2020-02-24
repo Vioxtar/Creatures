@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #define GLFW_INCLUDE_NONE
-#include "UserInterface.h"
+#include "ui/UserInterface.h"
 
 #include "utils/ShapeUtils.h"
 #include "utils/OpenGLErrorDebugger.h"
@@ -75,7 +75,6 @@ int main()
 	glfwSetMouseButtonCallback(window, glfw_mouse_button_callback);
 	glfwSetScrollCallback(window, glfw_scroll_callback);
 
-	
 	// Initialize user interface
 	UserInterface_Init(window);
 

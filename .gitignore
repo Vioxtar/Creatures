@@ -5,3 +5,6 @@ x64/*
 Release/*
 *.pyperf
 Creatures/Vtune*
+Creatures/debug*
+Dependencies/Include/glm/out*
+Creatures/imgui.ini

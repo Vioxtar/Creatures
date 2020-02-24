@@ -4,11 +4,12 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
-#include <iostream>
-#include "utils/MathUtils.h"
-#include "simulation/Camera.h"
-#include "simulation/Simulation.h"
+#include "../utils/MathUtils.h"
+#include "../simulation/Camera.h"
+#include "../simulation/Simulation.h"
+
 #include <glm/glm.hpp>
+#include <iostream>
 
 #ifndef GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
