@@ -225,6 +225,56 @@ GLuint max_supported_creature_count_by_current_buffers; // The number of creatur
 const GLenum ssbo_usage = GL_STATIC_DRAW;
 
 
+///////////////////////////////
+// -- CREATURE SSBO UTILS -- //
+///////////////////////////////
+
+
+void InitEmptyCreatureAttributesSSBO(CreatureAttributesSSBOInfo& attributes, GLuint attributesCount)
+{
+	// Create a new SSBO
+	GLuint newSSBO;
+	glGenBuffers(1, &newSSBO);
+
+	// Initialize with NULL data
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, newSSBO);
+	GLuint size = attributesCount * attributes.attributeBytesSize;
+	glBufferData(GL_SHADER_STORAGE_BUFFER, size, NULL, ssbo_usage);
+
+	attributes.ssbo = newSSBO;
+}
+
+void ExpandCreatureAttributesSSBO(CreatureAttributesSSBOInfo& attributes, GLuint attributeCountAdd)
+{
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
+
+	// Get old size, and calculate new size
+	GLint64 oldSize;
+	glGetBufferParameteri64v(GL_SHADER_STORAGE_BUFFER, GL_BUFFER_SIZE, &oldSize);
+	GLuint newSize = (GLuint)oldSize + attributeCountAdd * attributes.attributeBytesSize;
+
+	// Create a new empty SSBO
+	GLuint newSSBO;
+	glGenBuffers(1, &newSSBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, newSSBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, newSize, NULL, ssbo_usage);
+
+	// Copy old SSBO to new SSBO
+	glBindBuffer(GL_COPY_READ_BUFFER, attributes.ssbo);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, newSSBO);
+	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, oldSize); // This causes a performance warning for some reason on NVIDIA drivers
+
+	// Delete old SSBO
+	GLuint buffersToDelete = { attributes.ssbo };
+	glDeleteBuffers(1, &buffersToDelete);
+
+	// Finalize
+	attributes.ssbo = newSSBO;
+}
+
+
+
+
 ////////////////////////////////////////////
 // -- LOGIC PROGRAMS WORKING VARIABLES -- //
 ////////////////////////////////////////////
@@ -269,8 +319,109 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 }
 
 
-// Render draw call datas
-InstancedDrawCallData drawCallData_CreatureBody;
+
+
+///////////////////////////////////////////////
+// -- CREATURE MANIPULATION COMFORT TOOLS -- //
+///////////////////////////////////////////////
+
+//@TODO: Keep a stack of recycle-able creature indices that were removed and later reused for adding new creatures without expanding buffers!
+
+void SetCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creatureIndex, const void* data)
+{
+	GLuint writeOffset = attributes.attributeBytesSize * creatureIndex;
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, writeOffset, attributes.attributeBytesSize, data);
+}
+
+void RemoveCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creatureIndex)
+{
+	GLuint lastCreatureIndex = creature_count - 1;
+	if (lastCreatureIndex != creatureIndex)
+	{
+		// Copy the data in lastCreatureIndex to our creatureIndex
+		glBindBuffer(GL_COPY_READ_BUFFER, attributes.ssbo);
+		glBindBuffer(GL_COPY_WRITE_BUFFER, attributes.ssbo);
+
+		GLuint readOffset = lastCreatureIndex * attributes.attributeBytesSize;
+		GLuint writeOffset = creatureIndex * attributes.attributeBytesSize;
+		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, readOffset, writeOffset, attributes.attributeBytesSize);
+	}
+
+	// Nullify the new last creature index
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, lastCreatureIndex, attributes.attributeBytesSize, NULL);
+}
+
+// @TODO: At some point in time we'll eventually need to account for the absolute max buffer size supported by our GPU
+GLuint AddCreature(CreatureCreationData newCreatureData)
+{
+	// Check if we're exceeding capacity
+	if (creature_count >= max_supported_creature_count_by_current_buffers)
+	{
+		// We're exceeding capacities for all of our SSBOs, expand them
+		GLuint increaseSize = TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
+
+		for (auto creatureAttributeSSBOInfoRef : creatureAttributesSSBOInfosRefs)
+		{
+			ExpandCreatureAttributesSSBO(*creatureAttributeSSBOInfoRef, increaseSize);
+		}
+
+		max_supported_creature_count_by_current_buffers += increaseSize;
+	}
+
+	// Create the new creature by simply setting its attributes
+
+	GLuint newCreatureIndex = creature_count;
+
+	SetCreatureAttribute(creature_BrainsLinks, newCreatureIndex, newCreatureData.brainLinks.data());
+	SetCreatureAttribute(creature_BrainsNodes, newCreatureIndex, newCreatureData.brainNodes.data());
+	SetCreatureAttribute(creature_BrainsBiasesExponents, newCreatureIndex, newCreatureData.brainBiasesExponents.data());
+	SetCreatureAttribute(creature_BrainsStructures, newCreatureIndex, newCreatureData.brainStructure.data());
+	SetCreatureAttribute(creature_Colors, newCreatureIndex, &newCreatureData.col);
+	SetCreatureAttribute(creature_Positions, newCreatureIndex, &newCreatureData.pos);
+	SetCreatureAttribute(creature_Velocities, newCreatureIndex, &newCreatureData.vel);
+	SetCreatureAttribute(creature_GeneralPurpose, newCreatureIndex, NULL);
+	SetCreatureAttribute(creature_Radii, newCreatureIndex, &newCreatureData.rad);
+	SetCreatureAttribute(creature_Lives, newCreatureIndex, &newCreatureData.life);
+	SetCreatureAttribute(creature_Angles, newCreatureIndex, &newCreatureData.angle);
+	SetCreatureAttribute(creature_AngleVelocities, newCreatureIndex, &newCreatureData.angleVel);
+	SetCreatureAttribute(creature_ForwardThrusts, newCreatureIndex, &newCreatureData.forwardThrust);
+	SetCreatureAttribute(creature_TurnThrusts, newCreatureIndex, &newCreatureData.turnThrust);
+	SetCreatureAttribute(creature_Harndesses, newCreatureIndex, &newCreatureData.hardness);
+	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, NULL);
+	SetCreatureAttribute(creature_SkinPatterns, newCreatureIndex, &newCreatureData.skin);
+	SetCreatureAttribute(creature_SpikeLocalAngles, newCreatureIndex, &newCreatureData.spikeLocalAngle);
+	SetCreatureAttribute(creature_FeederLocalAngles, newCreatureIndex, &newCreatureData.feederLocalAngle);
+	SetCreatureAttribute(creature_ShieldLocalAngles, newCreatureIndex, &newCreatureData.shieldLocalAngle);
+	SetCreatureAttribute(creature_ShieldSpans, newCreatureIndex, &newCreatureData.shieldSpan);
+
+
+	creature_count++;
+
+	// Recalculate number of workgroups needed for our programs
+	RecalculateAllProgramInfosNumberOfWorkGroupsNeeded();
+
+	return newCreatureIndex;
+}
+
+void RemoveCreature(GLuint creatureIndex)
+{
+	if (creature_count <= 0)
+		return;
+
+	for (auto creatureAttributeSSBOInfoRef : creatureAttributesSSBOInfosRefs)
+	{
+		RemoveCreatureAttribute(*creatureAttributeSSBOInfoRef, creatureIndex);
+	}
+
+	creature_count--;
+
+	// Recalculate number of workgroups needed for our programs
+	RecalculateAllProgramInfosNumberOfWorkGroupsNeeded();
+}
+
+
 
 
 ////////////////////////
@@ -413,151 +564,6 @@ void BuildUniformGrid()
 
 
 
-///////////////////////////////
-// -- CREATURE SSBO UTILS -- //
-///////////////////////////////
-
-
-void InitEmptyCreatureAttributesSSBO(CreatureAttributesSSBOInfo& attributes, GLuint attributesCount)
-{
-	// Create a new SSBO
-	GLuint newSSBO;
-	glGenBuffers(1, &newSSBO);
-
-	// Initialize with NULL data
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, newSSBO);
-	GLuint size = attributesCount * attributes.attributeBytesSize;
-	glBufferData(GL_SHADER_STORAGE_BUFFER, size, NULL, ssbo_usage);
-
-	attributes.ssbo = newSSBO;
-}
-
-void ExpandCreatureAttributesSSBO(CreatureAttributesSSBOInfo& attributes, GLuint attributeCountAdd)
-{
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
-
-	// Get old size, and calculate new size
-	GLint64 oldSize;
-	glGetBufferParameteri64v(GL_SHADER_STORAGE_BUFFER, GL_BUFFER_SIZE, &oldSize);
-	GLuint newSize = (GLuint)oldSize + attributeCountAdd * attributes.attributeBytesSize;
-
-	// Create a new empty SSBO
-	GLuint newSSBO;
-	glGenBuffers(1, &newSSBO);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, newSSBO);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, newSize, NULL, ssbo_usage);
-
-	// Copy old SSBO to new SSBO
-	glBindBuffer(GL_COPY_READ_BUFFER, attributes.ssbo);
-	glBindBuffer(GL_COPY_WRITE_BUFFER, newSSBO);
-	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, oldSize); // This causes a performance warning for some reason on NVIDIA drivers
-
-	// Delete old SSBO
-	GLuint buffersToDelete = { attributes.ssbo };
-	glDeleteBuffers(1, &buffersToDelete);
-
-	// Finalize
-	attributes.ssbo = newSSBO;
-}
-
-
-///////////////////////////////////////////////
-// -- CREATURE MANIPULATION COMFORT TOOLS -- //
-///////////////////////////////////////////////
-
-void SetCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creatureIndex, const void* data)
-{
-	GLuint writeOffset = attributes.attributeBytesSize * creatureIndex;
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, writeOffset, attributes.attributeBytesSize, data);
-}
-
-void RemoveCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creatureIndex)
-{
-	GLuint lastCreatureIndex = creature_count - 1;
-	if (lastCreatureIndex != creatureIndex)
-	{
-		// Copy the data in lastCreatureIndex to our creatureIndex
-		glBindBuffer(GL_COPY_READ_BUFFER, attributes.ssbo);
-		glBindBuffer(GL_COPY_WRITE_BUFFER, attributes.ssbo);
-
-		GLuint readOffset = lastCreatureIndex * attributes.attributeBytesSize;
-		GLuint writeOffset = creatureIndex * attributes.attributeBytesSize;
-		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, readOffset, writeOffset, attributes.attributeBytesSize);
-	}
-
-	// Nullify the new last creature index
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, lastCreatureIndex, attributes.attributeBytesSize, NULL);
-}
-
-// @TODO: At some point in time we'll eventually need to account for the absolute max buffer size supported by our GPU
-GLuint AddCreature(CreatureCreationData newCreatureData)
-{
-	// Check if we're exceeding capacity
-	if (creature_count >= max_supported_creature_count_by_current_buffers)
-	{
-		// We're exceeding capacities for all of our SSBOs, expand them
-		GLuint increaseSize = TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
-
-		for (auto creatureAttributeSSBOInfoRef : creatureAttributesSSBOInfosRefs)
-		{
-			ExpandCreatureAttributesSSBO(*creatureAttributeSSBOInfoRef, increaseSize);
-		}
-
-		max_supported_creature_count_by_current_buffers += increaseSize;
-	}
-
-	// Create the new creature by simply setting its attributes
-
-	GLuint newCreatureIndex = creature_count;
-
-	SetCreatureAttribute(creature_BrainsLinks, newCreatureIndex, newCreatureData.brainLinks.data());
-	SetCreatureAttribute(creature_BrainsNodes, newCreatureIndex, newCreatureData.brainNodes.data());
-	SetCreatureAttribute(creature_BrainsBiasesExponents, newCreatureIndex, newCreatureData.brainBiasesExponents.data());
-	SetCreatureAttribute(creature_BrainsStructures, newCreatureIndex, newCreatureData.brainStructure.data());
-	SetCreatureAttribute(creature_Colors, newCreatureIndex, &newCreatureData.col);
-	SetCreatureAttribute(creature_Positions, newCreatureIndex, &newCreatureData.pos);
-	SetCreatureAttribute(creature_Velocities, newCreatureIndex, &newCreatureData.vel);
-	SetCreatureAttribute(creature_GeneralPurpose, newCreatureIndex, NULL);
-	SetCreatureAttribute(creature_Radii, newCreatureIndex, &newCreatureData.rad);
-	SetCreatureAttribute(creature_Lives, newCreatureIndex, &newCreatureData.life);
-	SetCreatureAttribute(creature_Angles, newCreatureIndex, &newCreatureData.angle);
-	SetCreatureAttribute(creature_AngleVelocities, newCreatureIndex, &newCreatureData.angleVel);
-	SetCreatureAttribute(creature_ForwardThrusts, newCreatureIndex, &newCreatureData.forwardThrust);
-	SetCreatureAttribute(creature_TurnThrusts, newCreatureIndex, &newCreatureData.turnThrust);
-	SetCreatureAttribute(creature_Harndesses, newCreatureIndex, &newCreatureData.hardness);
-	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, NULL);
-	SetCreatureAttribute(creature_SkinPatterns, newCreatureIndex, &newCreatureData.skin);
-	SetCreatureAttribute(creature_SpikeLocalAngles, newCreatureIndex, &newCreatureData.spikeLocalAngle);
-	SetCreatureAttribute(creature_FeederLocalAngles, newCreatureIndex, &newCreatureData.feederLocalAngle);
-	SetCreatureAttribute(creature_ShieldLocalAngles, newCreatureIndex, &newCreatureData.shieldLocalAngle);
-	SetCreatureAttribute(creature_ShieldSpans, newCreatureIndex, &newCreatureData.shieldSpan);
-
-
-	creature_count++;
-
-	// Recalculate number of workgroups needed for our programs
-	RecalculateAllProgramInfosNumberOfWorkGroupsNeeded();
-
-	return newCreatureIndex;
-}
-
-void RemoveCreature(GLuint creatureIndex)
-{
-	if (creature_count <= 0)
-		return;
-
-	for (auto creatureAttributeSSBOInfoRef : creatureAttributesSSBOInfosRefs)
-	{
-		RemoveCreatureAttribute(*creatureAttributeSSBOInfoRef, creatureIndex);
-	}
-
-	creature_count--;
-
-	// Recalculate number of workgroups needed for our programs
-	RecalculateAllProgramInfosNumberOfWorkGroupsNeeded();
-}
 
 
 
@@ -658,6 +664,8 @@ void InitLogicPrograms()
 
 }
 
+// Render draw call datas
+InstancedDrawCallData drawCallData_CreatureBody;
 void InitDrawingPrograms()
 {
 
@@ -985,9 +993,9 @@ void Simulation_Update()
 
 
 
-//////////////////////////////////////
-// -- CREATURE DATA SNAPSHOTTING -- //
-//////////////////////////////////////
+////////////////////////////////////////////////////////
+// -- CREATURE DATA SNAPSHOTTING & UI INTERACTIONS -- //
+////////////////////////////////////////////////////////
 
 vector<vec2> GetCreaturePositions()
 {

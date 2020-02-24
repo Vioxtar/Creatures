@@ -58,10 +58,7 @@
 
 	NON-OBVIOUS-TODOS:
 	ADD A GENERATIONS HISTOGRAM (instead of average generations etc)
-	For removal of creatures you have two options:
-		1. Keep a isValid SSBO and bind that to EVERY program and only compute stuff if its valid..., plus keep a stack of 'nonvalid' creature indices to be used should we want to add a new creature (in which case we simply recycle old buffer memory)
-		2. Do a replace-with-last style removal, but the problem then is that if the UI had the last creature selected, the selction would immediately change to the dying creature only for it to be removed..
-			to fix this^ we'll need to keep a UniqueIDs ssbo, and have the UI store that uniqueID instead. To keep the uniqueID alligned with actual indices (which is useful!) we can simply edit the uniqueIDs of creatures on the switch removal action!
+	For removal of creatures just keep a stack of empty creature indices to be recycled! The RemoveCreature(index) function nullifies the data, so programs won't iterate it!
 	Consider adding negated activated functions (like you posted in discord) for maybe even MORE expressive brains!
 		But for now... use two-node setups for moving shit linearly
 	Create two creature-creating functions: create first gen creature, and create offspring creature
