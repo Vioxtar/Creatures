@@ -949,11 +949,6 @@ void Simulation_Logic()
 void Simulation_Render()
 {
 
-	// Clear
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
 	uint numOfInstances = creature_count;
 
 	// Creature bodies

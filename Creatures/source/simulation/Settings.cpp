@@ -36,7 +36,7 @@ extern const float CAMERA_START_ZOOM_TARGET = 0.01f;
 extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
 extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 20;
 
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 4000, 0, 1000000 };
 extern TweakableFloatSetting SIMULATION_WIDTH = { 1000, 1, 300 };
 extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
 

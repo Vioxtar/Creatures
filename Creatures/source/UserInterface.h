@@ -1,5 +1,9 @@
 #pragma once
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+
 #include <iostream>
 #include "utils/MathUtils.h"
 #include "simulation/Camera.h"
@@ -12,7 +16,16 @@
 
 using namespace std;
 
-void glfwFrameBufferSizeCallback(GLFWwindow*, int width, int height);
+void UserInterface_Init(GLFWwindow* window);
+
+void UserInterface_PreUpdate();
+
+void UserInterface_Update();
+
+void UserInterface_PostUpdate();
+
+
+void glfw_frame_buffer_size_callback(GLFWwindow*, int width, int height);
 
 void glfw_cursor_position_callback(GLFWwindow* window, double x, double y);
 
