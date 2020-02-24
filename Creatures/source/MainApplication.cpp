@@ -9,6 +9,8 @@
 #include "utils/ShapeUtils.h"
 #include "utils/OpenGLErrorDebugger.h"
 
+#include "Settings.h"
+
 #include "simulation/Simulation.h"
 #include "simulation/Camera.h"
 
@@ -35,8 +37,8 @@ int main()
 #endif
 
 	// Starting width and height parameters
-	const int startingWidth = 1200;
-	const int startingHeight = 1200;
+	const int startingWidth = WINDOW_STARTING_WIDTH;
+	const int startingHeight = WINDOW_STARTING_HEIGHT;
 
 	// Create window object
 	GLFWwindow* window = glfwCreateWindow(startingWidth, startingHeight, "Creatures", NULL, NULL);
@@ -114,7 +116,12 @@ int main()
 
 
 		// Clear last frame
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClearColor(
+			RENDER_CLEAR_COLOR_R.value,
+			RENDER_CLEAR_COLOR_G.value,
+			RENDER_CLEAR_COLOR_B.value,
+			1.0f
+		);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		// Poll input events and start a new frame

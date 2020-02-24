@@ -2,7 +2,9 @@
 
 
 
-
+// Window settings
+extern const uint16_t WINDOW_STARTING_WIDTH = 1000;
+extern const uint16_t WINDOW_STARTING_HEIGHT = 1000;
 
 
 // Technical settings
@@ -46,8 +48,9 @@ extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 1.0, 0.0, 1
 
 // Render settings
 extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES = 60;
-
-// Window settings
+extern TweakableFloatSetting RENDER_CLEAR_COLOR_R = { 0.1, 0.0, 1.0 };
+extern TweakableFloatSetting RENDER_CLEAR_COLOR_G = { 0.1, 0.0, 1.0 };
+extern TweakableFloatSetting RENDER_CLEAR_COLOR_B = { 0.1, 0.0, 1.0 };
 
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.4, 0.3, 0.5 };

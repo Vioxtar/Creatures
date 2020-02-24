@@ -114,6 +114,18 @@ bool DearImGuiUsingKeyboard()
 
 
 
+////////////////////////
+// -- USER ACTIONS -- //
+////////////////////////
+
+unsigned int SelectCreatureByDistanceToMouse()
+{
+	// Find which creature is closest to our mouse
+	vector<vec2> creaturePositions = GetCreaturePositions();
+	//vec2 mouseSimPos = ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
+	
+}
+
 
 //////////////////////////
 // -- GLFW CALLBACKS -- //
@@ -163,6 +175,11 @@ void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int 
 	{
 		mousePressed = action == GLFW_PRESS;
 		Camera_Enable_Glide(!mousePressed);
+	}
+
+	if (button == GLFW_MOUSE_BUTTON_RIGHT)
+	{
+		SelectCreatureByDistanceToMouse();
 	}
 }
 

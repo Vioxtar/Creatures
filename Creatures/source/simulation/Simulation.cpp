@@ -149,7 +149,7 @@ CreatureAttributesSSBOInfo creature_GeneralPurpose{ 0, sizeof(vec2) };
 CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };
 CreatureAttributesSSBOInfo creature_SkinPatterns{ 0, sizeof(vec2) };
 
-// Creature-localized devices (Feeders, shields, sensors)
+// Creature-localized devices (feeders, shields, sensors)
 CreatureAttributesSSBOInfo creature_SpikeStates{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_SpikeLocalAngles{ 0, sizeof(GLfloat) };
 CreatureAttributesSSBOInfo creature_SpikeDirections{ 0, sizeof(vec2) };
@@ -980,4 +980,25 @@ void Simulation_Update()
 {
 	Simulation_Logic();
 	Simulation_Render();
+}
+
+
+
+
+//////////////////////////////////////
+// -- CREATURE DATA SNAPSHOTTING -- //
+//////////////////////////////////////
+
+vector<vec2> GetCreaturePositions()
+{
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_Positions.ssbo);
+	void* ptr = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+	
+	vector<vec2> positions;
+	unsigned int dataSize = size_t(creature_Positions.attributeBytesSize) * creature_count;
+	positions.reserve(dataSize);
+	memcpy(positions.data(), ptr, dataSize);
+	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+	return positions;
 }

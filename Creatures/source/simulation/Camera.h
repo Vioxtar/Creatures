@@ -3,7 +3,7 @@
 #include "Simulation.h"
 #include "..//utils/MathUtils.h"
 
-#include "Settings.h"
+#include "../Settings.h"
 
 using namespace glm;
 using namespace std;

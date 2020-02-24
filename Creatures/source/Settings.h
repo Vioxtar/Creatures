@@ -4,7 +4,7 @@
 #include <algorithm> 
 #include <vector>
 
-#include "..//utils/MathUtils.h"
+#include "utils/MathUtils.h"
 
 using namespace std;
 using namespace mathutils;
@@ -30,6 +30,12 @@ void SimulationSettings_SetBool(bool& setting, bool value);
 // Used to let subscribers know when they should update their values
 typedef void (*SimSettingsChangedSubscriber)();
 SimSettingsChangedSubscriber SimulationSettingsChangedSubscribe(SimSettingsChangedSubscriber subscriber);
+
+
+// Window settings
+extern const uint16_t WINDOW_STARTING_WIDTH;
+extern const uint16_t WINDOW_STARTING_HEIGHT;
+
 
 
 // Technical settings
@@ -71,6 +77,9 @@ extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE;
 
 // Render settings
 extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES;
+extern TweakableFloatSetting RENDER_CLEAR_COLOR_R;
+extern TweakableFloatSetting RENDER_CLEAR_COLOR_G;
+extern TweakableFloatSetting RENDER_CLEAR_COLOR_B;
 
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS;

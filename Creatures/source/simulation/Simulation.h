@@ -4,7 +4,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "Settings.h"
+#include "../Settings.h"
 
 #include "Camera.h"
 
@@ -20,3 +20,14 @@ using namespace std;
 void Simulation_Init();
 void Simulation_Update();
 
+
+//////////////////////////////////////
+// -- CREATURE DATA SNAPSHOTTING -- //
+//////////////////////////////////////
+
+struct CreatureSnapshot
+{
+	vec2 pos;
+};
+
+vector<vec2> GetCreaturePositions();
