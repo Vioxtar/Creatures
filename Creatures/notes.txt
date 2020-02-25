@@ -1,5 +1,6 @@
 
-	SATURATION IS LIFE
+	SATURATION IS INHERITED
+	LIFE CAN BE LESS BORDER OPACITY
 	OPACITY IS ENERGY
 	RADIUS IS MEAT
 
@@ -14,36 +15,9 @@
 		1. sensing the world does not require an exploding amount of brain inputs for performance reasons
 		2. creatures are able to gather a rich collection of data that is sufficient to describe their enviornment
 		3. creatures and the end user see the same data: we dont want the user to be able to see more than creatures, this can lead to an extreme gap between the user's expectations of creature performance to actual creature performance, which results in an overall disappointing user experience
-		4. the act of rewarding sensing can be 'learned' through evolution
-
-	Solution
-		Instead of relying on cones or traces, we rely on sampling of data that corresponds to a single point in space within a creature's sense radius
-		Much like our own eyes that can move independently of our head/body, creatures will be able to control sensor podisitions within the sense radius
-		Every sense point returns:
-			0. Activation - 1 if extremely close, 0 if really far, or none-existant! Basically the fraction of our sense radius!
-			1. last hue difference (species) (the distance between their hue and our hue, thus always between 0 and 1)
-			2. last saturation (life) (a value between 0 and 1, activated)
-			3. last lightness (communication) (a value between 0 and 1, activated)
-			4. energy (?)
-			5. spike  (actual value times dot to see if aiming at us)
-			6. feeder (actual value times dot to see if aiming at us)
-			7. shield (actual value times dot to see if aiming at us)
-			8. perhaps some relative velocity?
-			9. perhapse some data sensed creature's position / what side of it did we sample?
-
-		Every sensing points' relative position can be described via the following options:
-			1. distance fraction in the sense zone, and angle
-			2. euclidean space remapped to area
-			3. idk
-
-	Problems
-		1. its unclear how we should be moving sensing points left/right using our brain outputs without somehow requiring two nodes for left/right and a third for up down
-		2. this may necessitate non-activated outputs, but maybe we'll probably be doing that anyways
-		3. controlling sensing point placement can be quite complex - and probably isnt as rewarding as a traces/cones approach in its un-evolved state (to gain useful vision, a good portion if not all of the brain may be required, and what we're left is may not be enough.
-		   it can be argued that a certain fusion between creature functionality and useful eyesight can be achieved, but this HAS to come at a cost of creature behavior)
-		   we are not here to observe how creatures use their eyes! we're here to see epic swarms and group dynamics... does this require a complicated vision model?
-		4. it is difficult to avoid a O^(creatures in tile * number of sensing points * creatures in tile) complexity, we may need to come up with a clever spatial indexer of some sort
-
+		4. while the average unevolved sensing should be rewarding (important), evolved sensing is even more rewarding
+		
+	
 
 	When considering the sensor circle/points approaches, we need to choose between:
 		1. Less memory access, more computations: bigger uniform grid tile of sense radius dimensions, during in-tile iterations test for senses
@@ -57,6 +31,8 @@
 
 
 	NON-OBVIOUS-TODOS:
+	make the simulation random-seedable!
+	creatures can move backwards at 0.75 the speed they can move forward
 	Have a performance window! Squeeze everything you want into there (FPS counter, FPS plot based on time/creature count, forward propagations stats/etc)
 	Use a seperate thread for UI (including callbacks and updates...)
 	ADD A GENERATIONS HISTOGRAM (instead of average generations etc)

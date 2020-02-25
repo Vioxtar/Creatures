@@ -151,6 +151,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\simulation\Camera.cpp" />
+    <ClCompile Include="source\simulation\CreatureData.cpp" />
     <ClCompile Include="source\simulation\Simulation.cpp" />
     <ClCompile Include="source\Settings.cpp" />
     <ClCompile Include="source\ui\imgui\imgui.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="source\imgui\imstb_textedit.h" />
     <ClInclude Include="source\imgui\imstb_truetype.h" />
     <ClInclude Include="source\simulation\Camera.h" />
+    <ClInclude Include="source\simulation\CreatureData.h" />
     <ClInclude Include="source\simulation\Simulation.h" />
     <ClInclude Include="source\Settings.h" />
     <ClInclude Include="source\ui\imgui\imconfig.h" />

@@ -125,7 +125,7 @@ double currMouseXPos, currMouseYPos = 0;
 bool SelectCreatureByDistanceToMouse(unsigned int& selectedCreature)
 {
 	// Find which creature is closest to our mouse
-	vector<vec2> creaturePositions = GetCreaturePositions();
+	vector<vec2> creaturePositions;
 	
 	vec2 mouseSimPos = ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
 	
@@ -205,7 +205,6 @@ void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int 
 
 		if (found)
 		{
-			RemoveCreature(index);
 		}
 	}
 }
