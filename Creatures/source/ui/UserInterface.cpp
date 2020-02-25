@@ -118,12 +118,34 @@ bool DearImGuiUsingKeyboard()
 // -- USER ACTIONS -- //
 ////////////////////////
 
-unsigned int SelectCreatureByDistanceToMouse()
+
+bool mousePressed = false;
+double currMouseXPos, currMouseYPos = 0;
+
+bool SelectCreatureByDistanceToMouse(unsigned int& selectedCreature)
 {
 	// Find which creature is closest to our mouse
 	vector<vec2> creaturePositions = GetCreaturePositions();
-	//vec2 mouseSimPos = ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
 	
+	vec2 mouseSimPos = ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
+	
+	float minSqrdDist = UI_MAX_CREATURE_SELECTION_SQUARED_DISTANCE;
+	bool found = false;
+	for (unsigned int i = 0; i < creaturePositions.size(); i++)
+	{
+		vec2 creaturePos = creaturePositions.data()[i];
+		
+		vec2 diff = creaturePos - mouseSimPos;
+		float sqrdDist = dot(diff, diff);
+		if (sqrdDist < minSqrdDist)
+		{
+			minSqrdDist = sqrdDist;
+			selectedCreature = i;
+			found = true;
+		}
+	}
+
+	return found;
 }
 
 
@@ -149,8 +171,7 @@ void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, in
 	//}
 }
 
-bool mousePressed = false;
-double currMouseXPos, currMouseYPos = 0;
+
 void glfw_cursor_position_callback(GLFWwindow* window, double x, double y)
 {
 	if (DearImGuiUsingMouse()) return;
@@ -177,9 +198,15 @@ void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int 
 		Camera_Enable_Glide(!mousePressed);
 	}
 
-	if (button == GLFW_MOUSE_BUTTON_RIGHT)
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
-		SelectCreatureByDistanceToMouse();
+		unsigned int index;
+		bool found = SelectCreatureByDistanceToMouse(index);
+
+		if (found)
+		{
+			RemoveCreature(index);
+		}
 	}
 }
 

@@ -334,24 +334,6 @@ void SetCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creature
 	glBufferSubData(GL_SHADER_STORAGE_BUFFER, writeOffset, attributes.attributeBytesSize, data);
 }
 
-void RemoveCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creatureIndex)
-{
-	GLuint lastCreatureIndex = creature_count - 1;
-	if (lastCreatureIndex != creatureIndex)
-	{
-		// Copy the data in lastCreatureIndex to our creatureIndex
-		glBindBuffer(GL_COPY_READ_BUFFER, attributes.ssbo);
-		glBindBuffer(GL_COPY_WRITE_BUFFER, attributes.ssbo);
-
-		GLuint readOffset = lastCreatureIndex * attributes.attributeBytesSize;
-		GLuint writeOffset = creatureIndex * attributes.attributeBytesSize;
-		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, readOffset, writeOffset, attributes.attributeBytesSize);
-	}
-
-	// Nullify the new last creature index
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, lastCreatureIndex, attributes.attributeBytesSize, NULL);
-}
 
 // @TODO: At some point in time we'll eventually need to account for the absolute max buffer size supported by our GPU
 GLuint AddCreature(CreatureCreationData newCreatureData)
@@ -403,6 +385,22 @@ GLuint AddCreature(CreatureCreationData newCreatureData)
 	RecalculateAllProgramInfosNumberOfWorkGroupsNeeded();
 
 	return newCreatureIndex;
+}
+
+void RemoveCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creatureIndex)
+{
+	GLuint lastCreatureIndex = creature_count - 1;
+
+	if (lastCreatureIndex != creatureIndex)
+	{
+		// Copy the data in lastCreatureIndex to our creatureIndex, the rest is taken care of through uniform memory limits
+		glBindBuffer(GL_COPY_READ_BUFFER, attributes.ssbo);
+		glBindBuffer(GL_COPY_WRITE_BUFFER, attributes.ssbo);
+
+		GLuint readOffset = lastCreatureIndex * attributes.attributeBytesSize;
+		GLuint writeOffset = creatureIndex * attributes.attributeBytesSize;
+		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, readOffset, writeOffset, attributes.attributeBytesSize);
+	}
 }
 
 void RemoveCreature(GLuint creatureIndex)
@@ -759,9 +757,9 @@ void Simulation_Init()
 		data.life = random();
 		data.angle = random() * 2 * M_PI;
 		data.angleVel = (random() - 0.5) * 0.03;
-		data.forwardThrust = random() * random() * 0.01;
+		data.forwardThrust = 0;// random()* random() * 0.01;
 		data.turnThrust = 0.0;
-		data.hardness = random();
+		data.hardness = 0.001;
 		data.skin = vec2(random(), random());
 		data.spikeLocalAngle = random() * 2 * M_PI;
 		data.feederLocalAngle = random() * 2 * M_PI;
@@ -792,6 +790,7 @@ void Simulation_Logic()
 	programID = program_InitNewFrame.program;
 	workGroupsNeeded = program_InitNewFrame.workGroupsNeeded;
 	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_DeformerCounts.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
@@ -803,6 +802,7 @@ void Simulation_Logic()
 	programID = program_BrainPushInputs.program;
 	workGroupsNeeded = program_BrainPushInputs.workGroupsNeeded;
 	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformUInteger(programID, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
 	SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", brains_MaxNumOfNodes);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
@@ -818,6 +818,7 @@ void Simulation_Logic()
 	programID = program_BrainForwardPropagate.program;
 	workGroupsNeeded = program_BrainForwardPropagate.workGroupsNeeded;
 	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformUInteger(programID, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
 	SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", brains_MaxNumOfNodes);
 	SetUniformUInteger(programID, "uMaxNumOfActivatedNodesInBrain", brains_MaxNumOfActivatedNodes);
@@ -835,6 +836,7 @@ void Simulation_Logic()
 	programID = program_BrainPullOutputs.program;
 	workGroupsNeeded = program_BrainPullOutputs.workGroupsNeeded;
 	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformUInteger(programID, "uMaxNumOfStructureIndices", brains_MaxNumOfStructureIndices);
 	SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", brains_MaxNumOfNodes);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
@@ -850,6 +852,7 @@ void Simulation_Logic()
 	programID = program_CreatureBodyWork.program;
 	workGroupsNeeded = program_CreatureBodyWork.workGroupsNeeded;
 	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Velocities.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_AngleVelocities.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_ForwardDirections.ssbo);
@@ -864,6 +867,7 @@ void Simulation_Logic()
 	programID = program_UpdateCreaturePlacements.program;
 	workGroupsNeeded = program_UpdateCreaturePlacements.workGroupsNeeded;
 	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformFloat(programID, "uVelocityDownscale", SIMULATION_VELOCITY_DOWNSCALE.value);
 	SetUniformFloat(programID, "uAngleVelocityDownscale", SIMULATION_ANGLE_VELOCITY_DOWNSCALE.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
@@ -887,6 +891,7 @@ void Simulation_Logic()
 	programID = program_BorderPhysics.program;
 	workGroupsNeeded = program_BorderPhysics.workGroupsNeeded;
 	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformVector2f(programID, "uSimDimensions", vec2(SIMULATION_WIDTH.value, SIMULATION_HEIGHT.value));
 	SetUniformFloat(programID, "uBorderRestitution", SIMULATION_BORDER_RESTITUTION.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
@@ -901,6 +906,7 @@ void Simulation_Logic()
 	programID = program_UniformGridBind.program;
 	workGroupsNeeded = program_UniformGridBind.workGroupsNeeded;
 	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformVector2f(programID, "uSimDimensions", vec2(ugrid_SimWidth, ugrid_SimHeight));
 	SetUniformVector2ui(programID, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
 	SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
@@ -917,6 +923,7 @@ void Simulation_Logic()
 	programID = program_CreatureInteractions.program;
 	workGroupsNeeded = program_CreatureInteractions.workGroupsNeeded;
 	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformVector2ui(programID, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
 	SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
 	SetUniformVector2f(programID, "uRandom", vec2(random() - 0.5, random() - 0.5)); // Used to resolve creatures absolutely clipped in each other
@@ -940,16 +947,13 @@ void Simulation_Logic()
 	programID = program_UniformGridUnBind.program;
 	workGroupsNeeded = program_UniformGridUnBind.workGroupsNeeded;
 	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ugrid_SSBO);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_UniformGridTiles.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-
-
-
 
 
 }
@@ -1002,10 +1006,10 @@ vector<vec2> GetCreaturePositions()
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_Positions.ssbo);
 	void* ptr = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
 	
-	vector<vec2> positions;
+	vector<vec2> positions(creature_count);
 	unsigned int dataSize = size_t(creature_Positions.attributeBytesSize) * creature_count;
-	positions.reserve(dataSize);
-	memcpy(positions.data(), ptr, dataSize);
+	memcpy(&positions[0], ptr, dataSize);
+
 	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
 	return positions;

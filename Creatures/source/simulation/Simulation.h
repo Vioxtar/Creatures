@@ -32,3 +32,5 @@ struct CreatureSnapshot
 };
 
 vector<vec2> GetCreaturePositions();
+
+void RemoveCreature(GLuint index);

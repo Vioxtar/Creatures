@@ -36,7 +36,8 @@ SimSettingsChangedSubscriber SimulationSettingsChangedSubscribe(SimSettingsChang
 extern const uint16_t WINDOW_STARTING_WIDTH;
 extern const uint16_t WINDOW_STARTING_HEIGHT;
 
-
+// UI settings
+extern const float UI_MAX_CREATURE_SELECTION_SQUARED_DISTANCE;
 
 // Technical settings
 extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;

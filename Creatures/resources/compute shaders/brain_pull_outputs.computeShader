@@ -23,6 +23,7 @@ layout (std430, binding = 3) buffer CreatureLives
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
+uniform uint uCreatureCount;
 uniform uint uMaxNumOfStructureIndices;
 uniform uint uMaxNumOfNodesInBrain;
 
@@ -32,6 +33,12 @@ void main()
 	// EVERYTHING HERE IS HACKY AF
 
 	uint gid = gl_GlobalInvocationID.x;
+	if (gid >= uCreatureCount)
+	{
+		return;
+	}
+
+
 	uint colIndex = gid * 3;
 	uint brainNodesStartIndex = gid * uMaxNumOfNodesInBrain;
 	uint brainStructureStartIndex = gid * uMaxNumOfStructureIndices;

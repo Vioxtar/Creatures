@@ -88,6 +88,7 @@ out float oLife;
 
 void main()
 {
+
 	uint colIndex = gl_InstanceID * 3;
 
 	// Collect data

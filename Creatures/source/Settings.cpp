@@ -6,6 +6,8 @@
 extern const uint16_t WINDOW_STARTING_WIDTH = 1000;
 extern const uint16_t WINDOW_STARTING_HEIGHT = 1000;
 
+// UI settings
+extern const float UI_MAX_CREATURE_SELECTION_SQUARED_DISTANCE = 1.0;
 
 // Technical settings
 extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 500;
@@ -39,8 +41,8 @@ extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
 extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 20;
 
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 1000, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 300, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 300, 1, 300 };
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };

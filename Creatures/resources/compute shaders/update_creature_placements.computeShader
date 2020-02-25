@@ -62,6 +62,7 @@ layout (std430, binding = 11) buffer CreatureShieldDirections
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
+uniform uint uCreatureCount;
 uniform float uVelocityDownscale;
 uniform float uAngleVelocityDownscale;
 
@@ -70,7 +71,10 @@ uniform float uAngleVelocityDownscale;
 void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
-
+	if (gid >= uCreatureCount)
+	{
+		return;
+	}
 	
 	// Position and velocity
 

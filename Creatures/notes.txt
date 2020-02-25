@@ -57,8 +57,9 @@
 
 
 	NON-OBVIOUS-TODOS:
+	Have a performance window! Squeeze everything you want into there (FPS counter, FPS plot based on time/creature count, forward propagations stats/etc)
+	Use a seperate thread for UI (including callbacks and updates...)
 	ADD A GENERATIONS HISTOGRAM (instead of average generations etc)
-	For removal of creatures just keep a stack of empty creature indices to be recycled! The RemoveCreature(index) function nullifies the data, so programs won't iterate it!
 	Consider adding negated activated functions (like you posted in discord) for maybe even MORE expressive brains!
 		But for now... use two-node setups for moving shit linearly
 	Create two creature-creating functions: create first gen creature, and create offspring creature

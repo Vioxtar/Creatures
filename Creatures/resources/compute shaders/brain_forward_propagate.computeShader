@@ -22,6 +22,7 @@ layout (std430, binding = 3) buffer CreatureBrainsLinks
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
+uniform uint uCreatureCount;
 uniform uint uMaxNumOfStructureIndices;
 uniform uint uMaxNumOfNodesInBrain;
 uniform uint uMaxNumOfActivatedNodesInBrain;
@@ -48,7 +49,11 @@ void main()
 {
 
 	uint gid = gl_GlobalInvocationID.x;
-	
+	if (gid >= uCreatureCount)
+	{
+		return;
+	}
+
 	uint brainStructureStartIndex = gid * uMaxNumOfStructureIndices;
 	uint nodesStartIndex = gid * uMaxNumOfNodesInBrain;
 	uint biasesExponentsStartIndex = gid * uMaxNumOfActivatedNodesInBrain;
