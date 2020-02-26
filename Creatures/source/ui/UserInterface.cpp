@@ -91,6 +91,8 @@ void UserInterface_Update()
 	{
 		ImGui::ShowDemoWindow(&show_demo_window);
 	}
+
+	UpdateCreatureTrackers();
 }
 
 void UserInterface_PostUpdate()
@@ -100,9 +102,9 @@ void UserInterface_PostUpdate()
 }
 
 
-//////////////////////////
-// -- INPUT CONTROLS -- //
-//////////////////////////
+////////////////////////////
+// -- INPUT MANAGEMENT -- //
+////////////////////////////
 
 bool DearImGuiUsingMouse()
 {
@@ -116,9 +118,9 @@ bool DearImGuiUsingKeyboard()
 
 
 
-////////////////////////
-// -- USER ACTIONS -- //
-////////////////////////
+////////////////
+// -- MISC -- //
+////////////////
 
 bool mousePressed = false;
 double currMouseXPos, currMouseYPos = 0;
@@ -211,7 +213,7 @@ void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int 
 
 		if (creatureClicked)
 		{
-			
+			TrackCreature(index);
 		}
 	}
 }
