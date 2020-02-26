@@ -1,5 +1,12 @@
-#include "imgui/imgui.h"
+
 #include "CreatureTracking.h"
+
+class CreatureTracker;
+
+map<unsigned int, CreatureTracker> activeCreatureTrackers;
+
+// Expired creature trackers to be deleted
+vector<unsigned int> expiredCreatureTrackers;
 
 class CreatureTracker
 {
@@ -9,12 +16,11 @@ class CreatureTracker
 
 	void Show()
 	{
-
-		// Draw our tracking halo
+		// Draw a halo around our creature
 		ImGui::GetBackgroundDrawList()->AddCircle(
 			SimulationSpaceToViewportSpace(lastCreatureDataSnapshot.pos),
 			SimulationScaleToViewportScale(lastCreatureDataSnapshot.rad) + UI_CREATURE_TRACKER_HALO_RADIUS_PIXEL_BIAS,
-			IM_COL32(0, 255, 0, 200),
+			IM_COL32(0, 255, 0, 100),
 			UI_CREATURE_TRACKER_HALO_NUM_OF_SEGMENTS,
 			UI_CREATURE_TRACKER_HALO_PIXEL_THICKNESS
 		);
@@ -26,12 +32,18 @@ class CreatureTracker
 		lastCreatureDataSnapshot = GetCreatureSnapshot(creatureIndex);
 	}
 
-public:
-	CreatureTracker(unsigned int creatureIndx)
+	void Close()
 	{
-		creatureIndex = creatureIndx;
+		expiredCreatureTrackers.push_back(creatureIndex);
 	}
 
+public:
+	CreatureTracker(unsigned int creatureIndex) : creatureIndex(creatureIndex)
+	{
+		cout << "NEW TRACKER " << creatureIndex << " from CONSTRUCTOR" << endl;
+	}
+
+	CreatureTracker(const CreatureTracker&) = delete;
 
 	void Update()
 	{
@@ -39,20 +51,34 @@ public:
 		UpdateCreatureData();
 		Show();
 	}
-};
 
-vector<CreatureTracker> creatureTrackers;
+	bool operator==(const CreatureTracker& other) const
+	{
+		return this->creatureIndex == other.creatureIndex;
+	}
+
+	bool operator<(const CreatureTracker& other) const
+	{
+		return this->creatureIndex < other.creatureIndex;
+	}
+
+};
 
 void TrackCreature(unsigned int creatureIndex)
 {
 	// Create new tracker, add to active trackers vector
-	creatureTrackers.push_back(CreatureTracker(creatureIndex));
+	activeCreatureTrackers.emplace(creatureIndex, creatureIndex);
 }
 
 void UpdateCreatureTrackers()
 {
-	for (auto tracker : creatureTrackers)
+	for (auto& it : activeCreatureTrackers)
 	{
-		tracker.Update();
+		it.second.Update();
+	}
+
+	for (auto creatureIndex : expiredCreatureTrackers)
+	{
+		activeCreatureTrackers.erase(creatureIndex);
 	}
 }

@@ -35,7 +35,6 @@ extern const uint16_t TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_CREATURE_INTERACTIONS_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_CREATURE_BODY_WORK_WORKGROUP_LOCAL_SIZE = 1536;
 
-
 // Camera settings
 extern const float CAMERA_MAX_ZOOM_OUT = 0.001f;
 extern const float CAMERA_MAX_ZOOM_IN = 10.0f;
