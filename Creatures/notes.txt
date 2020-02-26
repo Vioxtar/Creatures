@@ -53,6 +53,7 @@ add mutations
 
 	NON-OBVIOUS-TODOS:
 	make the simulation random-seedable!
+	Creatures have stick points - if stick A sticks to non-stick surface, it results in 0.25 force, if stick A sticks to stick B and both are active, it results in 1 force
 	creatures can move backwards at 0.75 the speed they can move forward
 	Have a performance window! Squeeze everything you want into there (FPS counter, FPS plot based on time/creature count, forward propagations stats/etc)
 	Use a seperate thread for UI (including callbacks and updates...)

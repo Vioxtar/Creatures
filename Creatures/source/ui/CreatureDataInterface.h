@@ -12,3 +12,5 @@ using namespace glm;
 using namespace std;
 
 vector<vec2> GetCreaturePositions();
+
+CreatureData GetCreatureSnapshot(unsigned int creatureIndex);

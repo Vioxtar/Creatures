@@ -5,14 +5,17 @@ class CreatureTracker
 {
 	unsigned int creatureIndex;
 
+	CreatureData lastCreatureDataSnapshot;
+
 	void Show()
 	{
-		ImGui::GetBackgroundDrawList()->AddCircle(vec2(0, 0), 25, IM_COL32(0, 255, 0, 200), 48, 10);
+		ImGui::GetBackgroundDrawList()->AddCircle(SimulationSpaceToViewportSpace(lastCreatureDataSnapshot.pos), 25, IM_COL32(0, 255, 0, 200), 48, 10);
 	}
 
 
 	void UpdateCreatureData()
 	{
+		lastCreatureDataSnapshot = GetCreatureSnapshot(creatureIndex);
 	}
 
 public:
@@ -24,7 +27,7 @@ public:
 
 	void Update()
 	{
-		// @TODO: If passed update frequency...
+		// @TODO: Update in intervals instead of every frame...
 		UpdateCreatureData();
 		Show();
 	}

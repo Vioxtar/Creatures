@@ -16,6 +16,11 @@
 #endif
 
 using namespace std;
+using namespace glm;
+
+///////////////////////////////////////////
+// -- DEAR IMGUI / GLFW INIT & UPDATE -- //
+///////////////////////////////////////////
 
 void UserInterface_Init(GLFWwindow* window);
 
@@ -25,6 +30,9 @@ void UserInterface_Update();
 
 void UserInterface_PostUpdate();
 
+//////////////////////////
+// -- GLFW CALLBACKS -- //
+//////////////////////////
 
 void glfw_frame_buffer_size_callback(GLFWwindow*, int width, int height);
 
@@ -35,3 +43,10 @@ void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int 
 void glfw_scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 
 void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+//////////////////////////////
+// -- SPACE TRANSLATIONS -- //
+//////////////////////////////
+
+vec2 ViewportSpaceToSimulationSpace(vec2 pos);
+vec2 SimulationSpaceToViewportSpace(vec2 pos);

@@ -12,3 +12,17 @@ vector<vec2> GetCreaturePositions()
 
 	return positions;
 }
+
+
+CreatureData GetCreatureSnapshot(unsigned int creatureIndex)
+{
+	CreatureData snapShot;
+	
+
+	CreatureAttributesSSBOInfo& creatureAttributes = creature_Positions;
+	size_t attributeSize = creatureAttributes.attributeBytesSize;
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creatureAttributes.ssbo);
+	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, attributeSize * creatureIndex, attributeSize, &snapShot.pos);
+
+	return snapShot;
+}

@@ -34,6 +34,31 @@ vec2 ViewportSpaceToSimulationSpace(vec2 pos)
 	return CameraSpaceToSimulationSpace(ViewportSpaceToCameraSpace(pos));
 }
 
+vec2 CameraSpaceToViewportSpace(vec2 pos)
+{
+	float halfWidth = currWindowWidth / 2;
+	float halfHeight = currWindowHeight / 2;
+
+	pos.x *= halfWidth;
+	pos.y *= -halfHeight;
+
+	pos += vec2(halfWidth, halfHeight);
+
+	return pos;
+}
+
+vec2 SimulationSpaceToCameraSpace(vec2 pos)
+{
+	mat4 simSpaceToCameraSpace = GetSimSpaceToCameraTransform();
+	vec4 camPosition = simSpaceToCameraSpace * vec4(pos.x, pos.y, 1.0, 1.0);
+	return camPosition;
+}
+
+vec2 SimulationSpaceToViewportSpace(vec2 pos)
+{
+	return CameraSpaceToViewportSpace(SimulationSpaceToCameraSpace(pos));
+}
+
 ///////////////////////////////////////////
 // -- DEAR IMGUI / GLFW INIT & UPDATE -- //
 ///////////////////////////////////////////
