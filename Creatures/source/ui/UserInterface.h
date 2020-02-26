@@ -8,6 +8,7 @@
 #include "../simulation/Camera.h"
 #include "../simulation/Simulation.h"
 
+#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/glm.hpp>
 #include <iostream>
 
@@ -50,3 +51,4 @@ void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, in
 
 vec2 ViewportSpaceToSimulationSpace(vec2 pos);
 vec2 SimulationSpaceToViewportSpace(vec2 pos);
+float SimulationScaleToViewportScale(float scaleVal);

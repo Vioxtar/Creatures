@@ -15,7 +15,6 @@
 #include "simulation/Camera.h"
 
 
-
 //#define ENABLE_DEBUG
 
 

@@ -59,6 +59,18 @@ vec2 SimulationSpaceToViewportSpace(vec2 pos)
 	return CameraSpaceToViewportSpace(SimulationSpaceToCameraSpace(pos));
 }
 
+float SimulationScaleToViewportScale(float scaleVal)
+{
+	// Scale factor is the distance between the viewport equivalents of (1,0) and (0,0)
+	vec2 simOne = vec2(1, 0);
+	vec2 simZero = vec2(0, 0);
+
+	vec2 viewportOne = SimulationSpaceToViewportSpace(simOne);
+	vec2 viewportZero = SimulationSpaceToViewportSpace(simZero);
+
+	return abs(viewportOne.x - viewportZero.x) * scaleVal;
+}
+
 ///////////////////////////////////////////
 // -- DEAR IMGUI / GLFW INIT & UPDATE -- //
 ///////////////////////////////////////////

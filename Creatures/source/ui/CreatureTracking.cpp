@@ -9,7 +9,15 @@ class CreatureTracker
 
 	void Show()
 	{
-		ImGui::GetBackgroundDrawList()->AddCircle(SimulationSpaceToViewportSpace(lastCreatureDataSnapshot.pos), 25, IM_COL32(0, 255, 0, 200), 48, 10);
+
+		// Draw our tracking halo
+		ImGui::GetBackgroundDrawList()->AddCircle(
+			SimulationSpaceToViewportSpace(lastCreatureDataSnapshot.pos),
+			SimulationScaleToViewportScale(lastCreatureDataSnapshot.rad) + UI_CREATURE_TRACKER_HALO_RADIUS_PIXEL_BIAS,
+			IM_COL32(0, 255, 0, 200),
+			UI_CREATURE_TRACKER_HALO_NUM_OF_SEGMENTS,
+			UI_CREATURE_TRACKER_HALO_PIXEL_THICKNESS
+		);
 	}
 
 
