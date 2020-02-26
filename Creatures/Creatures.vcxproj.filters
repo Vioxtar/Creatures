@@ -63,6 +63,9 @@
     <ClCompile Include="source\simulation\CreatureData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\ui\CreatureDataInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\compute shaders\border_physics.computeShader" />
@@ -152,6 +155,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\simulation\CreatureData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ui\CreatureDataInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

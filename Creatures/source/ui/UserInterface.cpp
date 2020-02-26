@@ -1,4 +1,6 @@
 #include "UserInterface.h"
+#include "CreatureDataInterface.h"
+#include "CreatureTracking.h"
 
 int currWindowWidth;
 int currWindowHeight;
@@ -118,23 +120,27 @@ bool DearImGuiUsingKeyboard()
 // -- USER ACTIONS -- //
 ////////////////////////
 
-
 bool mousePressed = false;
 double currMouseXPos, currMouseYPos = 0;
+
+vec2 GetMouseSimPos()
+{
+	return ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
+}
+
 
 bool SelectCreatureByDistanceToMouse(unsigned int& selectedCreature)
 {
 	// Find which creature is closest to our mouse
-	vector<vec2> creaturePositions;
+	vector<vec2> creaturePositions = GetCreaturePositions();
 	
-	vec2 mouseSimPos = ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
+	vec2 mouseSimPos = GetMouseSimPos();
 	
 	float minSqrdDist = UI_MAX_CREATURE_SELECTION_SQUARED_DISTANCE;
 	bool found = false;
 	for (unsigned int i = 0; i < creaturePositions.size(); i++)
 	{
 		vec2 creaturePos = creaturePositions.data()[i];
-		
 		vec2 diff = creaturePos - mouseSimPos;
 		float sqrdDist = dot(diff, diff);
 		if (sqrdDist < minSqrdDist)
@@ -167,7 +173,7 @@ void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, in
 {
 	//if (key == GLFW_KEY_E && action == GLFW_PRESS)
 	//{
-
+		
 	//}
 }
 
@@ -201,10 +207,11 @@ void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int 
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
 		unsigned int index;
-		bool found = SelectCreatureByDistanceToMouse(index);
+		bool creatureClicked = SelectCreatureByDistanceToMouse(index);
 
-		if (found)
+		if (creatureClicked)
 		{
+			
 		}
 	}
 }

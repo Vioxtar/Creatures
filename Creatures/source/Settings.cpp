@@ -62,9 +62,9 @@ extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 20;
 // -- TWEAKABLE SETTINGS -- //
 //////////////////////////////
 
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 1000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 50, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 50, 1, 300 };
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 1000, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };

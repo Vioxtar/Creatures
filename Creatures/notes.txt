@@ -1,4 +1,14 @@
 
+
+quick roadmap to v 1.0
+
+fix misalignment on window resize
+create simplistic creature tracker for sensor debugging
+implement sensors
+finish energy/life stuff
+add mutations 
+
+
 	SATURATION IS INHERITED
 	LIFE CAN BE LESS BORDER OPACITY
 	OPACITY IS ENERGY

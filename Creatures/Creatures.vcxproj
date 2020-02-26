@@ -154,6 +154,7 @@
     <ClCompile Include="source\simulation\CreatureData.cpp" />
     <ClCompile Include="source\simulation\Simulation.cpp" />
     <ClCompile Include="source\Settings.cpp" />
+    <ClCompile Include="source\ui\CreatureDataInterface.cpp" />
     <ClCompile Include="source\ui\imgui\imgui.cpp" />
     <ClCompile Include="source\ui\imgui\imgui_demo.cpp" />
     <ClCompile Include="source\ui\imgui\imgui_draw.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="source\simulation\CreatureData.h" />
     <ClInclude Include="source\simulation\Simulation.h" />
     <ClInclude Include="source\Settings.h" />
+    <ClInclude Include="source\ui\CreatureDataInterface.h" />
     <ClInclude Include="source\ui\imgui\imconfig.h" />
     <ClInclude Include="source\ui\imgui\imgui.h" />
     <ClInclude Include="source\ui\imgui\imgui_impl_glfw.h" />
