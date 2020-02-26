@@ -22,7 +22,6 @@ CreatureData GetCreatureSnapshot(unsigned int creatureIndex)
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_Positions.ssbo);
 	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, creature_Positions.attributeBytesSize * creatureIndex, creature_Positions.attributeBytesSize, &snapShot.pos);
 
-
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_Radii.ssbo);
 	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, creature_Radii.attributeBytesSize * creatureIndex, creature_Radii.attributeBytesSize, &snapShot.rad);
 

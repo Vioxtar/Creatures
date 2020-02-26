@@ -8,6 +8,7 @@ map<unsigned int, CreatureTracker> activeCreatureTrackers;
 // Expired creature trackers to be deleted
 vector<unsigned int> expiredCreatureTrackers;
 
+
 class CreatureTracker
 {
 	unsigned int creatureIndex;
@@ -38,10 +39,8 @@ class CreatureTracker
 	}
 
 public:
-	CreatureTracker(unsigned int creatureIndex) : creatureIndex(creatureIndex)
-	{
-		cout << "NEW TRACKER " << creatureIndex << " from CONSTRUCTOR" << endl;
-	}
+
+	CreatureTracker(unsigned int creatureIndex) : creatureIndex(creatureIndex) {}
 
 	CreatureTracker(const CreatureTracker&) = delete;
 
@@ -61,8 +60,8 @@ public:
 	{
 		return this->creatureIndex < other.creatureIndex;
 	}
-
 };
+
 
 void TrackCreature(unsigned int creatureIndex)
 {
@@ -70,15 +69,20 @@ void TrackCreature(unsigned int creatureIndex)
 	activeCreatureTrackers.emplace(creatureIndex, creatureIndex);
 }
 
+
 void UpdateCreatureTrackers()
 {
+	// Update all trackers
 	for (auto& it : activeCreatureTrackers)
 	{
 		it.second.Update();
 	}
 
+	// Clear closed creature trackers
 	for (auto creatureIndex : expiredCreatureTrackers)
 	{
 		activeCreatureTrackers.erase(creatureIndex);
 	}
+
+	expiredCreatureTrackers.clear();
 }
