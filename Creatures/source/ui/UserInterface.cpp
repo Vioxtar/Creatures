@@ -168,14 +168,15 @@ vec2 GetMouseSimPos()
 }
 
 
-bool SelectCreatureByDistanceToMouse(unsigned int& selectedCreature)
+bool SelectCreatureByDistanceToMouse(CreatureUniqueID& selectedCreatureID)
 {
 	// Find which creature is closest to our mouse
-	vector<vec2> creaturePositions = GetCreaturePositions();
+	vector<vec2> creaturePositions = GetSSBOIndexedCreaturePositions();
 	
 	vec2 mouseSimPos = GetMouseSimPos();
 	
 	float minSqrdDist = UI_MAX_CREATURE_SELECTION_SQUARED_DISTANCE;
+	unsigned int closestCreatureSSBOIndex;
 	bool found = false;
 	for (unsigned int i = 0; i < creaturePositions.size(); i++)
 	{
@@ -185,9 +186,17 @@ bool SelectCreatureByDistanceToMouse(unsigned int& selectedCreature)
 		if (sqrdDist < minSqrdDist)
 		{
 			minSqrdDist = sqrdDist;
-			selectedCreature = i;
+			closestCreatureSSBOIndex = i;
 			found = true;
 		}
+	}
+
+	// @DEBUG!!!! :D
+	closestCreatureSSBOIndex = creature_count - 10;
+
+	if (found)
+	{
+		selectedCreatureID = CreatureSSBOIndexToUniqueID(closestCreatureSSBOIndex);
 	}
 
 	return found;
@@ -245,12 +254,12 @@ void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int 
 
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
-		unsigned int index;
-		bool creatureClicked = SelectCreatureByDistanceToMouse(index);
+		CreatureUniqueID creatureID;
+		bool creatureClicked = SelectCreatureByDistanceToMouse(creatureID);
 
 		if (creatureClicked)
 		{
-			TrackCreature(index);
+			TrackCreature(creatureID);
 		}
 	}
 }

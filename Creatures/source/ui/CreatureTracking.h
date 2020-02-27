@@ -4,6 +4,6 @@
 #include <map>
 #include "UserInterface.h"
 
-void TrackCreature(unsigned int creatureIndex);
+void TrackCreature(CreatureUniqueID creatureID);
 
 void UpdateCreatureTrackers();

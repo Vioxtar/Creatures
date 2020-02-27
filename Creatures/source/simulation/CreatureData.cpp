@@ -1,6 +1,21 @@
 #include "CreatureData.h"
 
 
+CreatureUniqueID creature_NextUniqueIDToBeAssigned = 0;
+map<CreatureUniqueID, GLuint> creature_UniqueIDsToSSBOIndex;
+vector<CreatureUniqueID> creature_UniqueIDs;
+
+GLuint CreatureUniqueIDToSSBOIndex(CreatureUniqueID creatureID)
+{
+	return creature_UniqueIDsToSSBOIndex.at(creatureID);
+}
+
+CreatureUniqueID CreatureSSBOIndexToUniqueID(GLuint ssboIndex)
+{
+	// @TODO: Check that ssbo index < creature_count
+	return creature_UniqueIDs[ssboIndex];
+}
+
 extern GLuint creature_count = 0; // The count of active creatures in the simulation
 extern GLuint max_supported_creature_count_by_current_buffers = 0; // The number of creatures supported by current SSBO buffers
 
@@ -182,9 +197,6 @@ void ExpandCreatureAttributesSSBO(CreatureAttributesSSBOInfo& attributes, GLuint
 }
 
 
-
-
-
 ///////////////////////////////////////////////
 // -- CREATURE MANIPULATION COMFORT TOOLS -- //
 ///////////////////////////////////////////////
@@ -238,8 +250,20 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_FeederLocalAngles, newCreatureIndex, &newCreatureData.feederLocalAngle);
 	SetCreatureAttribute(creature_ShieldLocalAngles, newCreatureIndex, &newCreatureData.shieldLocalAngle);
 	SetCreatureAttribute(creature_ShieldSpans, newCreatureIndex, &newCreatureData.shieldSpan);
+	
+	// Map creature unique ID to creature index
+	creature_UniqueIDsToSSBOIndex.emplace(creature_NextUniqueIDToBeAssigned, newCreatureIndex);
 
+	// Map creature index to unique ID
+	// @TODO: assert creature_UniqueIDs[creature_count] == creature_NextUniqueIDToBeAssigned
+	creature_UniqueIDs.push_back(creature_NextUniqueIDToBeAssigned);
+	creature_NextUniqueIDToBeAssigned++;
+	
 	creature_count++;
+	if (creature_count != creature_UniqueIDs.size())
+	{
+		throw "poop :D";
+	}
 
 	return newCreatureIndex;
 }
@@ -269,6 +293,16 @@ void CreatureData_RemoveCreature(GLuint creatureIndex)
 	{
 		RemoveCreatureAttribute(*creatureAttributeSSBOInfoRef, creatureIndex);
 	}
+
+	// Obtain the unique ID of our removed creature, and remove it from the map
+	CreatureUniqueID uniqueIDOfRemovedCreature = creature_UniqueIDs[creatureIndex];
+	creature_UniqueIDsToSSBOIndex.erase(uniqueIDOfRemovedCreature);
+
+	// Finally, swap-last-remove our unique IDs vector in the same removal fashion we utilized for our SSBOs
+	unsigned int lastCreatureIndex = creature_count - 1;
+	CreatureUniqueID uniqueIDOfLastIndexedCreature = creature_UniqueIDs[lastCreatureIndex];
+	creature_UniqueIDs[creatureIndex] = uniqueIDOfLastIndexedCreature;
+	creature_UniqueIDs.pop_back();
 
 	creature_count--;
 }

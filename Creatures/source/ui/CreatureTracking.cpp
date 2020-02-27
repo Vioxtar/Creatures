@@ -3,15 +3,15 @@
 
 class CreatureTracker;
 
-map<unsigned int, CreatureTracker> activeCreatureTrackers;
+map<CreatureUniqueID, CreatureTracker> activeCreatureTrackers;
 
 // Expired creature trackers to be deleted
-vector<unsigned int> expiredCreatureTrackers;
+vector<CreatureUniqueID> expiredCreatureTrackers;
 
 
 class CreatureTracker
 {
-	unsigned int creatureIndex;
+	CreatureUniqueID creatureID;
 
 	CreatureData lastCreatureDataSnapshot;
 
@@ -27,46 +27,45 @@ class CreatureTracker
 		);
 	}
 
-
 	void UpdateCreatureData()
 	{
-		lastCreatureDataSnapshot = GetCreatureSnapshot(creatureIndex);
+		lastCreatureDataSnapshot = GetCreatureSnapshot(creatureID);
 	}
 
 	void Close()
 	{
-		expiredCreatureTrackers.push_back(creatureIndex);
+		expiredCreatureTrackers.push_back(creatureID);
 	}
 
 public:
 
-	CreatureTracker(unsigned int creatureIndex) : creatureIndex(creatureIndex) {}
+	CreatureTracker(CreatureUniqueID creatureID) : creatureID(creatureID) {}
 
 	CreatureTracker(const CreatureTracker&) = delete;
 
 	void Update()
 	{
 		// @TODO: Update in intervals instead of every frame...
-		UpdateCreatureData();
-		Show();
+		try
+		{
+			UpdateCreatureData();
+			Show();
+		}
+		catch (out_of_range& e)
+		{
+			// If our unique creature ID was out of range then we were probably removed, close the tracker
+			Close();
+			cout << "CAUGHT OUT OF RANGE, CLOSING" << endl;
+		}
 	}
 
-	bool operator==(const CreatureTracker& other) const
-	{
-		return this->creatureIndex == other.creatureIndex;
-	}
-
-	bool operator<(const CreatureTracker& other) const
-	{
-		return this->creatureIndex < other.creatureIndex;
-	}
 };
 
 
-void TrackCreature(unsigned int creatureIndex)
+void TrackCreature(CreatureUniqueID creatureID)
 {
 	// Create new tracker, add to active trackers vector
-	activeCreatureTrackers.emplace(creatureIndex, creatureIndex);
+	activeCreatureTrackers.emplace(creatureID, creatureID);
 }
 
 
@@ -79,9 +78,9 @@ void UpdateCreatureTrackers()
 	}
 
 	// Clear closed creature trackers
-	for (auto creatureIndex : expiredCreatureTrackers)
+	for (auto creatureID : expiredCreatureTrackers)
 	{
-		activeCreatureTrackers.erase(creatureIndex);
+		activeCreatureTrackers.erase(creatureID);
 	}
 
 	expiredCreatureTrackers.clear();

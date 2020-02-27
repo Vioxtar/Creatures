@@ -675,4 +675,12 @@ void Simulation_Update()
 {
 	Simulation_Logic();
 	Simulation_Render();
+
+
+	// @DEBUG
+	if (random() < 0.01)
+	{
+		CreatureData_RemoveCreature(creature_count - 1 - int(random() * 10));
+		cout << "REMOVED FUCKER " << endl;
+	}
 }

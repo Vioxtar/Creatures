@@ -3,6 +3,8 @@
 #include "../Settings.h"
 #include <glm/glm.hpp>
 #include <vector>
+#include <map>
+#include <exception>
 
 using namespace glm;
 
@@ -40,7 +42,10 @@ void CreatureData_Init();
 extern GLuint creature_count; // The count of active creatures in the simulation
 extern GLuint max_supported_creature_count_by_current_buffers; // The number of creatures supported by current SSBO buffers
 
+typedef unsigned long long int CreatureUniqueID;
 
+GLuint CreatureUniqueIDToSSBOIndex(CreatureUniqueID creatureUniqueID);
+CreatureUniqueID CreatureSSBOIndexToUniqueID(GLuint ssboIndex);
 
 ////////////////////////////////////
 // -- CREATURE ATTRIBUTE SSBOS -- //
