@@ -1,4 +1,3 @@
-
 #include "CreatureTracking.h"
 
 class CreatureTracker;
@@ -12,11 +11,22 @@ vector<CreatureUniqueID> expiredCreatureTrackers;
 class CreatureTracker
 {
 	CreatureUniqueID creatureID;
-
 	CreatureData lastCreatureDataSnapshot;
+	string windowTitle;
+	bool active;
 
 	void Show()
 	{
+
+		if (!ImGui::Begin(windowTitle.c_str(), &active))
+		{
+			ImGui::End();
+			return;
+		}
+
+
+
+
 		// Draw a halo around our creature
 		ImGui::GetBackgroundDrawList()->AddCircle(
 			SimulationSpaceToViewportSpace(lastCreatureDataSnapshot.pos),
@@ -25,6 +35,9 @@ class CreatureTracker
 			UI_CREATURE_TRACKER_HALO_NUM_OF_SEGMENTS,
 			UI_CREATURE_TRACKER_HALO_PIXEL_THICKNESS
 		);
+
+		ImGui::End();
+
 	}
 
 	void UpdateCreatureData()
@@ -39,21 +52,33 @@ class CreatureTracker
 
 public:
 
-	CreatureTracker(CreatureUniqueID creatureID) : creatureID(creatureID) {}
+	CreatureTracker(CreatureUniqueID creatureID) : creatureID(creatureID), active(true)
+	{
+		windowTitle = "Creature ";
+		windowTitle.append(to_string(creatureID));
+	}
 
 	CreatureTracker(const CreatureTracker&) = delete;
 
 	void Update()
 	{
+
+		if (!active)
+		{
+			Close();
+			return;
+		}
+
 		// @TODO: Update in intervals instead of every frame...
 		try
 		{
+			// Our creature is valid
 			UpdateCreatureData();
 			Show();
 		}
 		catch (out_of_range& e)
 		{
-			// If our unique creature ID was out of range then we were probably removed, close the tracker
+			// If our unique creature ID was out of range, we're no longer valid
 			Close();
 		}
 	}

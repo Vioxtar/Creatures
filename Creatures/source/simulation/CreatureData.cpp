@@ -255,15 +255,11 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	creature_UniqueIDsToSSBOIndex.emplace(creature_NextUniqueIDToBeAssigned, newCreatureIndex);
 
 	// Map creature index to unique ID
-	// @TODO: assert creature_UniqueIDs[creature_count] == creature_NextUniqueIDToBeAssigned
-	creature_UniqueIDs.push_back(creature_NextUniqueIDToBeAssigned);
+	// @TODO: assert creature_UniqueIDs[creature_count] == creature_NextUniqueIDToBeAssigned?
+	creature_UniqueIDs.emplace_back(creature_NextUniqueIDToBeAssigned);
 	creature_NextUniqueIDToBeAssigned++;
 	
 	creature_count++;
-	if (creature_count != creature_UniqueIDs.size())
-	{
-		throw "poop :D";
-	}
 
 	return newCreatureIndex;
 }
@@ -336,4 +332,6 @@ void CreatureData_Init()
 		InitEmptyCreatureAttributesSSBO(*creatureAttributeSSBOInfoRef, numOfCreaturesOnInit);
 	}
 
+	// Lastly pre-allocate memory for our unique IDs vector
+	creature_UniqueIDs.reserve(numOfCreaturesOnInit);
 }

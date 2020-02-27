@@ -11,6 +11,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <string>
 
 #ifndef GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>

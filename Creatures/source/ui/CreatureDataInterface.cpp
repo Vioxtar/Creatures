@@ -21,7 +21,6 @@ CreatureData GetCreatureSnapshot(CreatureUniqueID creatureID)
 	GLuint ssboIndex = CreatureUniqueIDToSSBOIndex(creatureID);
 
 	CreatureData snapShot;
-	
 
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_Positions.ssbo);
 	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, creature_Positions.attributeBytesSize * ssboIndex, creature_Positions.attributeBytesSize, &snapShot.pos);

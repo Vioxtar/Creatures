@@ -102,6 +102,7 @@
       </EnableModules>
       <AdditionalOptions>/Zc:twoPhase-  /openmp:experimental %(AdditionalOptions)</AdditionalOptions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
