@@ -138,9 +138,10 @@ void UserInterface_PreUpdate()
 	ImGui::NewFrame();
 }
 
-bool show_demo_window = true;
+bool show_demo_window = true; // @DEBUG
 void UserInterface_Update()
 {
+	// @DEBUG
 	if (show_demo_window)
 	{
 		ImGui::ShowDemoWindow(&show_demo_window);

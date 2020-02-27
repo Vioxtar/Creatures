@@ -6,7 +6,7 @@
 
 #include "../Settings.h"
 #include "CreatureData.h"
-#include "Camera.h"
+#include "..//ui/Camera.h"
 
 #include "..//utils/OpenGLShaderUtils.h"
 #include "..//utils/ShapeUtils.h"

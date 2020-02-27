@@ -12,7 +12,7 @@
 #include "Settings.h"
 
 #include "simulation/Simulation.h"
-#include "simulation/Camera.h"
+#include "ui/Camera.h"
 
 
 //#define ENABLE_DEBUG

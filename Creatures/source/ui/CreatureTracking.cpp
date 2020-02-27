@@ -18,9 +18,11 @@ class CreatureTracker
 	bool overlay_Halo;
 	bool overlay_ForwardDir;
 	bool overlay_RightDir;
-
+	
 	void Show()
 	{
+		// Show overlay even if we're minimized
+		ShowOverlay();
 
 		if (!ImGui::Begin(windowTitle.c_str(), &active))
 		{
@@ -36,7 +38,10 @@ class CreatureTracker
 		}
 
 		ImGui::End();
+	}
 
+	void ShowOverlay()
+	{
 		if (overlay_Halo)
 		{
 			// Draw a halo around our creature
@@ -49,8 +54,6 @@ class CreatureTracker
 			);
 		}
 
-
-		// @TODO: Regulate the forward/right direction drawing based on pixel (calculate differences between p1 and p2 and use newP2 = p1 + diff * mul)
 		if (overlay_ForwardDir)
 		{
 			vec2 p1 = SimulationSpaceToViewportSpace(creatureSnapShot.pos);
@@ -78,7 +81,6 @@ class CreatureTracker
 				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 			);
 		}
-
 	}
 
 	void UpdateCreatureData()

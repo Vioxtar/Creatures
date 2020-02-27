@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Simulation.h"
+#include "..//simulation/Simulation.h"
 #include "..//utils/MathUtils.h"
 
 #include "../Settings.h"

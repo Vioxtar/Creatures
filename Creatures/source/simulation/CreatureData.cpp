@@ -30,7 +30,8 @@ extern CreatureAttributesSSBOInfo creature_BrainsLinks{ 0, sizeof(GLfloat) * CRE
 extern CreatureAttributesSSBOInfo creature_BrainsNodes{ 0, sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_NODES };
 extern CreatureAttributesSSBOInfo creature_BrainsBiasesExponents{ 0, sizeof(vec2) * CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES };
 extern CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES };
- 
+
+
 // Physics
 extern CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };
 extern CreatureAttributesSSBOInfo creature_Velocities{ 0, sizeof(vec2) };

@@ -5,7 +5,7 @@
 #include "imgui/imgui_impl_opengl3.h"
 
 #include "../utils/MathUtils.h"
-#include "../simulation/Camera.h"
+#include "Camera.h"
 #include "../simulation/Simulation.h"
 
 #include <glm/gtx/matrix_decompose.hpp>
