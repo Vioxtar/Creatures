@@ -33,6 +33,8 @@
 
 
 	NON-OBVIOUS-TODOS:
+	send in actualc reature radius fraction as brain input! Creatures only know their 0.2 output contribution!
+	Add varying input and output counts for brain creatures - depends on the number of eyes!
 	make the simulation random-seedable!
 	Creatures have stick points - if stick A sticks to non-stick surface, it results in 0.25 force, if stick A sticks to stick B and both are active, it results in 1 force
 	creatures can move backwards at 0.75 the speed they can move forward
@@ -42,18 +44,15 @@
 	Consider adding negated activated functions (like you posted in discord) for maybe even MORE expressive brains!
 		But for now... use two-node setups for moving shit linearly
 	Create two creature-creating functions: create first gen creature, and create offspring creature
-	replace branching code with branchless code
-	Consider giving every node its own activation exponent?
+	replace branching code with branchless code?
 	Find if theres a way to pass non-interpolated data to the fragment shader by creature instance
 	Implement 'visibilities' SSBO, every frame update each creature's 'LOD' value: false is offscreen, true is visible, then use that for deformations/whatever else
-	(Optional) Refactor simulation.cpp by splitting up code (programs, creature SSBOs, etc, just like camera is split up)
 	Settings pretty names
 	DearImgui integration and UI
 		F11 to fullscreen
 	Add WINDOW settings in settings file?
 	Spikes and shields and stick mechanisms
 	Fix window misalignment
-	FIX THE WEIRD GHOST BALL AT 0, 0
 	Find out why border physics is so damn unstable (not really the case when border restitution is at 0)
 
 

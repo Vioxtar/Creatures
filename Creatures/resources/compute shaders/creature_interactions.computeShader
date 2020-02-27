@@ -27,7 +27,7 @@ layout (std430, binding = 4) buffer UniformGrid
 
 layout (std430, binding = 5) buffer CreatureTiles
 {
-	uint Tiles[];
+	int Tiles[];
 };
 
 layout (std430, binding = 6) buffer CreatureGeneralPurpose
@@ -75,11 +75,11 @@ void main()
 	uint gridYDim = uGridDimensions.y;	
 
 	// Find our own tile
-	uint tileIndex = Tiles[gid];
+	int tileIndex = Tiles[gid];
 
 	if (tileIndex == -1)
 	{
-		// We weren't included in the tile because it ran out of space
+		// If tile index is -1 then we were out of uniform grid bounds, do nothing
 		return;
 	}
 
@@ -88,10 +88,11 @@ void main()
 	uint yTileIndex = (tileIndex - xTileIndex) / gridXDim;
 
 	// Find the start/end x,y indices (consider uGridDimensions in case we're near edges)
-	uint xStart = max(xTileIndex - 1, 0);
+	uint xStart = max(int(xTileIndex) - 1, 0);
 	uint xEnd = min(xTileIndex + 1, gridXDim - 1);
-	uint yStart = max(yTileIndex - 1, 0);
+	uint yStart = max(int(yTileIndex) - 1, 0);
 	uint yEnd = min(yTileIndex + 1, gridYDim - 1);
+
 
 	// Cache our own values, we don't need to access them every iteration
 	vec2 aPos = Positions[gid];
@@ -136,13 +137,6 @@ void main()
 				vec2 c1c2PosDiff = bPos - aPos;
 				float distSquared = dot(c1c2PosDiff, c1c2PosDiff);
 
-
-
-
-
-				//////////////////////
-				// -- COLLISIONS -- //
-				//////////////////////
 
 				if (distSquared <= 0)
 				{

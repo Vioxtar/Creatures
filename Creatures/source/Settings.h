@@ -75,8 +75,10 @@ extern const uint16_t CREATURE_BRAIN_NUM_OF_OUTPUTS;
 extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS;
 extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL;
 
-
-
+// Creature eye settings
+extern const uint16_t CREATURE_EYE_NUM_OF_CONES;
+extern const uint16_t CREATURE_EYE_NUM_OF_CONE_VALUES;
+extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES;
 
 ////////////////////////////////////
 // -- TWEAKABLE SETTINGS UTILS -- //
@@ -128,9 +130,10 @@ extern TweakableFloatSetting RENDER_CLEAR_COLOR_B;
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS;
 extern TweakableFloatSetting CREATURE_MIN_RADIUS;
-extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS;
 
-
+// Creature eye settings
+extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE;
+extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS;
 
 
 

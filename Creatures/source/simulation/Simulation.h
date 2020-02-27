@@ -12,7 +12,8 @@
 #include "..//utils/ShapeUtils.h"
 #include "..//utils/MathUtils.h"
 
-
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 using namespace glm;
 using namespace std;

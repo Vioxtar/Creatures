@@ -18,7 +18,8 @@ class CreatureTracker
 	bool overlay_Halo;
 	bool overlay_ForwardDir;
 	bool overlay_RightDir;
-	
+	bool overlay_Eye;
+
 	void Show()
 	{
 		// Show overlay even if we're minimized
@@ -35,6 +36,7 @@ class CreatureTracker
 			ImGui::Checkbox("Halo", &overlay_Halo);
 			ImGui::Checkbox("Forward Direction", &overlay_ForwardDir);
 			ImGui::Checkbox("Right Direction", &overlay_RightDir);
+			ImGui::Checkbox("Eyes", &overlay_Eye);
 		}
 
 		ImGui::End();
@@ -81,6 +83,28 @@ class CreatureTracker
 				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 			);
 		}
+
+		if (overlay_Eye)
+		{
+			// Draw eye area
+			ImGui::GetBackgroundDrawList()->AddQuad(
+				SimulationSpaceToViewportSpace(creatureSnapShot.pos + (creatureSnapShot.rightDir + creatureSnapShot.forwardDir) * CREATURE_EYE_MAX_PROBE_DISTANCE.value),
+				SimulationSpaceToViewportSpace(creatureSnapShot.pos + (creatureSnapShot.rightDir - creatureSnapShot.forwardDir) * CREATURE_EYE_MAX_PROBE_DISTANCE.value),
+				SimulationSpaceToViewportSpace(creatureSnapShot.pos + (-creatureSnapShot.rightDir - creatureSnapShot.forwardDir) * CREATURE_EYE_MAX_PROBE_DISTANCE.value),
+				SimulationSpaceToViewportSpace(creatureSnapShot.pos + (-creatureSnapShot.rightDir + creatureSnapShot.forwardDir) * CREATURE_EYE_MAX_PROBE_DISTANCE.value),
+				IM_COL32(255, 255, 0, 100),
+				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
+			);
+
+			// Draw eye position
+			ImGui::GetBackgroundDrawList()->AddCircle(
+				SimulationSpaceToViewportSpace(creatureSnapShot.eyePos),
+				3,
+				IM_COL32(0, 255, 0, 100),
+				5,
+				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
+			);
+		}
 	}
 
 	void UpdateCreatureData()
@@ -104,6 +128,7 @@ public:
 		overlay_Halo = true;
 		overlay_ForwardDir = false;
 		overlay_RightDir = false;
+		overlay_Eye = true;
 	}
 
 	CreatureTracker(const CreatureTracker&) = delete;

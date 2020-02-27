@@ -31,6 +31,12 @@ extern CreatureAttributesSSBOInfo creature_BrainsNodes{ 0, sizeof(GLfloat) * CRE
 extern CreatureAttributesSSBOInfo creature_BrainsBiasesExponents{ 0, sizeof(vec2) * CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES };
 extern CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES };
 
+// Eyes
+extern CreatureAttributesSSBOInfo creature_EyeMuscles{ 0, sizeof(vec2) };
+extern CreatureAttributesSSBOInfo creature_EyePositions{ 0, sizeof(vec2) };
+extern CreatureAttributesSSBOInfo creature_EyeConeRadii{ 0, sizeof(GLfloat) };
+extern CreatureAttributesSSBOInfo creature_EyePupilSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES };
+extern CreatureAttributesSSBOInfo creature_EyeConeSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONE_VALUES * CREATURE_EYE_NUM_OF_CONES };
 
 // Physics
 extern CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };
@@ -99,6 +105,9 @@ void ResetDynamicAttributeSizes()
 
 	creature_DeformerPositions.attributeBytesSize = sizeof(vec2) * CREATURE_MAX_NUM_OF_DEFORMERS;
 	creature_DeformerRadii.attributeBytesSize = sizeof(GLfloat) * CREATURE_MAX_NUM_OF_DEFORMERS;
+
+	creature_EyePupilSights.attributeBytesSize = sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES;
+	creature_EyeConeSights.attributeBytesSize = sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONE_VALUES * CREATURE_EYE_NUM_OF_CONES;
 }
 
 
@@ -112,6 +121,11 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsNodes);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsBiasesExponents);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsStructures);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_EyeMuscles);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_EyePositions);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_EyeConeRadii);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_EyePupilSights);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_EyeConeSights);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Positions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Velocities);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Angles);
@@ -255,7 +269,8 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_FeederLocalAngles, newCreatureIndex, &newCreatureData.feederLocalAngle);
 	SetCreatureAttribute(creature_ShieldLocalAngles, newCreatureIndex, &newCreatureData.shieldLocalAngle);
 	SetCreatureAttribute(creature_ShieldSpans, newCreatureIndex, &newCreatureData.shieldSpan);
-	
+	SetCreatureAttribute(creature_EyeMuscles, newCreatureIndex, &newCreatureData.eyeMuscles);
+
 	// Map creature unique ID to creature index
 	creature_UniqueIDsToSSBOIndex.emplace(creature_NextUniqueIDToBeAssigned, newCreatureIndex);
 

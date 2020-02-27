@@ -55,7 +55,9 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 
 	// @TODO: First gen is currently getting max structure for performance testing
 	brainStructure->reserve(CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
-	brainStructure->emplace_back(2 + CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS); // Number of levels (currently set to max)
+	// First structure value is the number of overall levels
+	brainStructure->emplace_back(2 + CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS);
+	
 	brainStructure->emplace_back(CREATURE_BRAIN_NUM_OF_INPUTS);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS; i++)
 	{
@@ -186,8 +188,6 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 GLuint ugrid_SSBO;
 
 // Used to find out when we need to rebuild the uniform grid
-float ugrid_LastMaxCreatureRadius;
-float ugrid_LastMaxCreatureSenseRadius;
 float ugrid_LastMinCreatureRadius;
 float ugrid_LastSimulationWidth;
 float ugrid_LastSimulationHeight;
@@ -205,7 +205,7 @@ void BuildUniformGrid()
 {
 	// Start by checking whether or not we need to rebuild the grid
 	float newMaxCreatureRadius = CREATURE_MAX_RADIUS.value;
-	float newMaxCreatureSenseRadius = CREATURE_MAX_SENSE_RADIUS.value;
+	float newMaxCreatureSenseRadius = sqrt(2 * pow(CREATURE_EYE_MAX_PROBE_DISTANCE.value, 2)) + CREATURE_EYE_MAX_CONES_RADIUS.value;
 	float newMinCreatureRadius = CREATURE_MIN_RADIUS.value;
 	float newSimulationWidth = SIMULATION_WIDTH.value;
 	float newSimulationHeight = SIMULATION_HEIGHT.value;
@@ -236,7 +236,9 @@ void BuildUniformGrid()
 	ugrid_GridYDim = (GLuint)std::max(1, (int)floor(ugrid_SimHeight / newInteractDist));
 
 	// Calculate how many creatures we can squeeze in a tile, and scale
-	uint maxNumOfCreaturesSqueezableInTile = ceil(pow(newInteractDist, 2) / (M_PI * (pow(newMinCreatureRadius, 2))));
+	float tileArea = pow(newInteractDist, 2);
+	float minRadiusCreatureArea = M_PI * (pow(newMinCreatureRadius, 2));
+	uint maxNumOfCreaturesSqueezableInTile = ceil(tileArea / minRadiusCreatureArea);
 	maxNumOfCreaturesSqueezableInTile *= SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR;
 
 	// Calculate buffer sizes
@@ -255,8 +257,6 @@ void BuildUniformGrid()
 
 
 	// Finally, update our values again
-	ugrid_LastMaxCreatureRadius = newMaxCreatureRadius;
-	ugrid_LastMaxCreatureSenseRadius = newMaxCreatureSenseRadius;
 	ugrid_LastMinCreatureRadius = newMinCreatureRadius;
 	ugrid_LastSimulationWidth = newSimulationWidth;
 	ugrid_LastSimulationHeight = newSimulationHeight;
@@ -404,8 +404,6 @@ void InitUniformGrid()
 	SimulationSettingsChangedSubscribe(BuildUniformGrid); // Set callback
 
 	// Initialize values to force BuildUniformGrid to recreate the grid
-	ugrid_LastMaxCreatureRadius = -1;
-	ugrid_LastMaxCreatureSenseRadius = -1;
 	ugrid_LastMinCreatureRadius = -1;
 	ugrid_LastSimulationWidth = -1;
 	ugrid_LastSimulationHeight = -1;
@@ -447,6 +445,7 @@ void Simulation_Init()
 		data.feederLocalAngle = random() * 2 * M_PI;
 		data.shieldLocalAngle = random() * 2 * M_PI;
 		data.shieldSpan = random() * M_PI * 0.35;
+		data.eyeMuscles = vec2((random() - 0.5) * 2, (random() - 0.5) * 2);
 		CreatureData_AddCreature(data);
 	}
 
@@ -555,6 +554,7 @@ void Simulation_Logic()
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformFloat(programID, "uVelocityDownscale", SIMULATION_VELOCITY_DOWNSCALE.value);
 	SetUniformFloat(programID, "uAngleVelocityDownscale", SIMULATION_ANGLE_VELOCITY_DOWNSCALE.value);
+	SetUniformFloat(programID, "uCreatureEyeMaxProbeDistance", CREATURE_EYE_MAX_PROBE_DISTANCE.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurpose.ssbo); // Applies physics fix vector, zerofies
@@ -568,6 +568,9 @@ void Simulation_Logic()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_FeederDirections.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_ShieldLocalAngles.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_ShieldDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 13, creature_EyeMuscles.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 14, creature_EyePositions.ssbo);
+
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);

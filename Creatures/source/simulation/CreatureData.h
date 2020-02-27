@@ -31,6 +31,8 @@ struct CreatureData
 	GLfloat feederLocalAngle;
 	GLfloat shieldLocalAngle;
 	GLfloat shieldSpan;
+	vec2 eyePos;
+	vec2 eyeMuscles;
 };
 
 
@@ -66,6 +68,13 @@ extern CreatureAttributesSSBOInfo creature_BrainsLinks;
 extern CreatureAttributesSSBOInfo creature_BrainsNodes;
 extern CreatureAttributesSSBOInfo creature_BrainsBiasesExponents;
 extern CreatureAttributesSSBOInfo creature_BrainsStructures;
+
+// Eyes
+extern CreatureAttributesSSBOInfo creature_EyeMuscles;
+extern CreatureAttributesSSBOInfo creature_EyePositions;
+extern CreatureAttributesSSBOInfo creature_EyeConeRadii;
+extern CreatureAttributesSSBOInfo creature_EyePupilSights;
+extern CreatureAttributesSSBOInfo creature_EyeConeSights;
 
 // Physics
 extern CreatureAttributesSSBOInfo creature_Positions;

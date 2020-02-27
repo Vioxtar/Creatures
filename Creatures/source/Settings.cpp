@@ -53,7 +53,7 @@ extern const float CAMERA_START_ZOOM_TARGET = 0.01f;
 
 // Simulation settings
 extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER = 5.0f;
-extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 20;
+extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 10;
 
 // Render settings
 extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES = 60;
@@ -64,7 +64,10 @@ extern const uint16_t CREATURE_BRAIN_NUM_OF_OUTPUTS = 12;
 extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS = 3;
 extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 20;
 
-
+// Creature eye settings
+extern const uint16_t CREATURE_EYE_NUM_OF_CONES = 16;
+extern const uint16_t CREATURE_EYE_NUM_OF_CONE_VALUES = 1;
+extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 10;
 
 
 //////////////////////////////
@@ -87,9 +90,10 @@ extern TweakableFloatSetting RENDER_CLEAR_COLOR_B = { 0.1, 0.0, 1.0 };
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.4, 0.3, 0.5 };
 extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.2, 0.1, 0.3 };
-extern TweakableFloatSetting CREATURE_MAX_SENSE_RADIUS = { 2.0, 0.1, 2.0 };
 
-
+// Creature eye settings
+extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 3.0, 0.1, 3.0 };
+extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 2.0, 0.1, 2.0 };
 
 
 
@@ -119,10 +123,6 @@ extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES = 1 + 1 + CREATU
 
 // Deformations - the max number of deformers is the maximum amount of circles of minimal radius that can simultaneously touch a single circle of maximal radius
 extern const GLuint CREATURE_MAX_NUM_OF_DEFORMERS = floor(M_PI / asin(CREATURE_MIN_RADIUS.min / (CREATURE_MAX_RADIUS.max + CREATURE_MIN_RADIUS.min)));
-
-
-
-
 
 
 
