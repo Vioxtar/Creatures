@@ -21,6 +21,7 @@ extern const unsigned int UI_CREATURE_TRACKER_HALO_PIXEL_THICKNESS = 10;
 extern const unsigned int UI_CREATURE_TRACKER_HALO_ALPHA = 10;
 
 extern const unsigned int UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS = 2;
+extern const unsigned int UI_CREATURE_TRACKER_DIRECTION_PIXEL_DISTANCE = 20;
 
 
 // Technical settings

@@ -49,11 +49,17 @@ class CreatureTracker
 			);
 		}
 
+
+		// @TODO: Regulate the forward/right direction drawing based on pixel (calculate differences between p1 and p2 and use newP2 = p1 + diff * mul)
 		if (overlay_ForwardDir)
 		{
+			vec2 p1 = SimulationSpaceToViewportSpace(creatureSnapShot.pos);
+			vec2 p2 = SimulationSpaceToViewportSpace(creatureSnapShot.pos + creatureSnapShot.forwardDir);
+			vec2 p1Add = normalize(p2 - p1);
+			p1Add *= UI_CREATURE_TRACKER_DIRECTION_PIXEL_DISTANCE;
 			ImGui::GetBackgroundDrawList()->AddLine(
-				SimulationSpaceToViewportSpace(creatureSnapShot.pos),
-				SimulationSpaceToViewportSpace(creatureSnapShot.pos + creatureSnapShot.forwardDir),
+				p1,
+				p1 + p1Add,
 				IM_COL32(0, 255, 0, 100),
 				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 			);
@@ -61,9 +67,13 @@ class CreatureTracker
 
 		if (overlay_RightDir)
 		{
+			vec2 p1 = SimulationSpaceToViewportSpace(creatureSnapShot.pos);
+			vec2 p2 = SimulationSpaceToViewportSpace(creatureSnapShot.pos + creatureSnapShot.rightDir);
+			vec2 p1Add = normalize(p2 - p1);
+			p1Add *= UI_CREATURE_TRACKER_DIRECTION_PIXEL_DISTANCE;
 			ImGui::GetBackgroundDrawList()->AddLine(
-				SimulationSpaceToViewportSpace(creatureSnapShot.pos),
-				SimulationSpaceToViewportSpace(creatureSnapShot.pos + creatureSnapShot.rightDir),
+				p1,
+				p1 + p1Add,
 				IM_COL32(0, 255, 0, 100),
 				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 			);
