@@ -284,6 +284,7 @@ void RemoveCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creat
 	}
 }
 
+
 void CreatureData_RemoveCreature(GLuint creatureIndex)
 {
 	if (creature_count <= 0)
@@ -294,20 +295,23 @@ void CreatureData_RemoveCreature(GLuint creatureIndex)
 		RemoveCreatureAttribute(*creatureAttributeSSBOInfoRef, creatureIndex);
 	}
 
-	// Obtain the unique ID of our removed creature, and remove it from the map
+	// Obtain the unique ID of our removed creature
 	CreatureUniqueID uniqueIDOfRemovedCreature = creature_UniqueIDs[creatureIndex];
-	creature_UniqueIDsToSSBOIndex.erase(uniqueIDOfRemovedCreature);
 
-	// Finally, swap-last-remove our unique IDs vector in the same removal fashion we utilized for our SSBOs
+	// Let the last-place creature take its place
 	unsigned int lastCreatureIndex = creature_count - 1;
 	CreatureUniqueID uniqueIDOfLastIndexedCreature = creature_UniqueIDs[lastCreatureIndex];
 	creature_UniqueIDs[creatureIndex] = uniqueIDOfLastIndexedCreature;
+	creature_UniqueIDsToSSBOIndex[uniqueIDOfLastIndexedCreature] = creatureIndex;
+
+	// Remove this creature from the map
+	creature_UniqueIDsToSSBOIndex.erase(uniqueIDOfRemovedCreature);
+
+	// Remove the duplicate entry for the last element
 	creature_UniqueIDs.pop_back();
 
 	creature_count--;
 }
-
-
 
 //////////////////////////
 // -- INITIALIZATION -- //

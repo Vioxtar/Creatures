@@ -55,7 +55,6 @@ public:
 		{
 			// If our unique creature ID was out of range then we were probably removed, close the tracker
 			Close();
-			cout << "CAUGHT OUT OF RANGE, CLOSING" << endl;
 		}
 	}
 

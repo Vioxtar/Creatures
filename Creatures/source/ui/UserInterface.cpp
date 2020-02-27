@@ -191,9 +191,6 @@ bool SelectCreatureByDistanceToMouse(CreatureUniqueID& selectedCreatureID)
 		}
 	}
 
-	// @DEBUG!!!! :D
-	closestCreatureSSBOIndex = creature_count - 10;
-
 	if (found)
 	{
 		selectedCreatureID = CreatureSSBOIndexToUniqueID(closestCreatureSSBOIndex);
