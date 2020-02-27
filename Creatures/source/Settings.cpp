@@ -12,11 +12,16 @@ extern const uint16_t WINDOW_STARTING_WIDTH = 1000;
 extern const uint16_t WINDOW_STARTING_HEIGHT = 1000;
 
 // UI settings
+extern const float UI_DEARIMGUI_STYLE_FRAME_ROUNDING = 10.0;
+
 extern const float UI_MAX_CREATURE_SELECTION_SQUARED_DISTANCE = 1.0;
 extern const unsigned int UI_CREATURE_TRACKER_HALO_RADIUS_PIXEL_BIAS = 20;
 extern const unsigned int UI_CREATURE_TRACKER_HALO_NUM_OF_SEGMENTS = 48;
 extern const unsigned int UI_CREATURE_TRACKER_HALO_PIXEL_THICKNESS = 10;
 extern const unsigned int UI_CREATURE_TRACKER_HALO_ALPHA = 10;
+
+extern const unsigned int UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS = 2;
+
 
 // Technical settings
 extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 500;

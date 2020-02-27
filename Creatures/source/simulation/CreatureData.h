@@ -21,6 +21,8 @@ struct CreatureData
 	GLfloat life;
 	GLfloat angle;
 	GLfloat angleVel;
+	vec2 forwardDir;
+	vec2 rightDir;
 	GLfloat forwardThrust;
 	GLfloat turnThrust;
 	GLfloat hardness;
@@ -71,6 +73,7 @@ extern CreatureAttributesSSBOInfo creature_Velocities;
 extern CreatureAttributesSSBOInfo creature_Angles;
 extern CreatureAttributesSSBOInfo creature_AngleVelocities;
 extern CreatureAttributesSSBOInfo creature_ForwardDirections;
+extern CreatureAttributesSSBOInfo creature_RightDirections;
 
 // Movement
 extern CreatureAttributesSSBOInfo creature_ForwardThrusts;

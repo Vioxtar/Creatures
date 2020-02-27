@@ -11,9 +11,13 @@ vector<CreatureUniqueID> expiredCreatureTrackers;
 class CreatureTracker
 {
 	CreatureUniqueID creatureID;
-	CreatureData lastCreatureDataSnapshot;
+	CreatureData creatureSnapShot;
 	string windowTitle;
 	bool active;
+
+	bool overlay_Halo;
+	bool overlay_ForwardDir;
+	bool overlay_RightDir;
 
 	void Show()
 	{
@@ -24,25 +28,52 @@ class CreatureTracker
 			return;
 		}
 
-
-
-
-		// Draw a halo around our creature
-		ImGui::GetBackgroundDrawList()->AddCircle(
-			SimulationSpaceToViewportSpace(lastCreatureDataSnapshot.pos),
-			SimulationScaleToViewportScale(lastCreatureDataSnapshot.rad) + UI_CREATURE_TRACKER_HALO_RADIUS_PIXEL_BIAS,
-			IM_COL32(0, 255, 0, 100),
-			UI_CREATURE_TRACKER_HALO_NUM_OF_SEGMENTS,
-			UI_CREATURE_TRACKER_HALO_PIXEL_THICKNESS
-		);
+		if (ImGui::CollapsingHeader("Overlay Display"))
+		{
+			ImGui::Checkbox("Halo", &overlay_Halo);
+			ImGui::Checkbox("Forward Direction", &overlay_ForwardDir);
+			ImGui::Checkbox("Right Direction", &overlay_RightDir);
+		}
 
 		ImGui::End();
+
+		if (overlay_Halo)
+		{
+			// Draw a halo around our creature
+			ImGui::GetBackgroundDrawList()->AddCircle(
+				SimulationSpaceToViewportSpace(creatureSnapShot.pos),
+				SimulationScaleToViewportScale(creatureSnapShot.rad) + UI_CREATURE_TRACKER_HALO_RADIUS_PIXEL_BIAS,
+				IM_COL32(0, 255, 0, 100),
+				UI_CREATURE_TRACKER_HALO_NUM_OF_SEGMENTS,
+				UI_CREATURE_TRACKER_HALO_PIXEL_THICKNESS
+			);
+		}
+
+		if (overlay_ForwardDir)
+		{
+			ImGui::GetBackgroundDrawList()->AddLine(
+				SimulationSpaceToViewportSpace(creatureSnapShot.pos),
+				SimulationSpaceToViewportSpace(creatureSnapShot.pos + creatureSnapShot.forwardDir),
+				IM_COL32(0, 255, 0, 100),
+				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
+			);
+		}
+
+		if (overlay_RightDir)
+		{
+			ImGui::GetBackgroundDrawList()->AddLine(
+				SimulationSpaceToViewportSpace(creatureSnapShot.pos),
+				SimulationSpaceToViewportSpace(creatureSnapShot.pos + creatureSnapShot.rightDir),
+				IM_COL32(0, 255, 0, 100),
+				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
+			);
+		}
 
 	}
 
 	void UpdateCreatureData()
 	{
-		lastCreatureDataSnapshot = GetCreatureSnapshot(creatureID);
+		creatureSnapShot = GetCreatureSnapshot(creatureID);
 	}
 
 	void Close()
@@ -52,10 +83,15 @@ class CreatureTracker
 
 public:
 
-	CreatureTracker(CreatureUniqueID creatureID) : creatureID(creatureID), active(true)
+	CreatureTracker(CreatureUniqueID creatureID) :
+		creatureID(creatureID), active(true)
 	{
 		windowTitle = "Creature ";
 		windowTitle.append(to_string(creatureID));
+
+		overlay_Halo = true;
+		overlay_ForwardDir = false;
+		overlay_RightDir = false;
 	}
 
 	CreatureTracker(const CreatureTracker&) = delete;
@@ -88,7 +124,7 @@ public:
 
 void TrackCreature(CreatureUniqueID creatureID)
 {
-	// Create new tracker, add to active trackers vector
+	// Create new tracker, add to active trackers map
 	activeCreatureTrackers.emplace(creatureID, creatureID);
 }
 

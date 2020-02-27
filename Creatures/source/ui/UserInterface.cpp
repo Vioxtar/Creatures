@@ -71,6 +71,23 @@ float SimulationScaleToViewportScale(float scaleVal)
 	return abs(viewportOne.x - viewportZero.x) * scaleVal;
 }
 
+
+///////////////////
+// -- STYLING -- //
+///////////////////
+
+unsigned int stylePushes = 0;
+void DearImGuiPushMainStyle()
+{
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, UI_DEARIMGUI_STYLE_FRAME_ROUNDING); stylePushes++;
+}
+
+void DearImGuiPopMainStyle()
+{
+	ImGui::PopStyleVar(stylePushes);
+	stylePushes = 0;
+}
+
 ///////////////////////////////////////////
 // -- DEAR IMGUI / GLFW INIT & UPDATE -- //
 ///////////////////////////////////////////
@@ -129,7 +146,11 @@ void UserInterface_Update()
 		ImGui::ShowDemoWindow(&show_demo_window);
 	}
 
+	DearImGuiPushMainStyle();
+
 	UpdateCreatureTrackers();
+
+	DearImGuiPopMainStyle();
 }
 
 void UserInterface_PostUpdate()
@@ -225,6 +246,7 @@ void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, in
 
 void glfw_cursor_position_callback(GLFWwindow* window, double x, double y)
 {
+
 	if (DearImGuiUsingMouse()) return;
 
 	if (mousePressed)
@@ -241,11 +263,16 @@ void glfw_cursor_position_callback(GLFWwindow* window, double x, double y)
 
 void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
+	// Regardless of DearImGui, update our own mousePressed variable
+	if (button == GLFW_MOUSE_BUTTON_LEFT)
+	{
+		mousePressed = action == GLFW_PRESS;
+	}
+
 	if (DearImGuiUsingMouse()) return;
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT)
 	{
-		mousePressed = action == GLFW_PRESS;
 		Camera_Enable_Glide(!mousePressed);
 	}
 

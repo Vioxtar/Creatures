@@ -37,7 +37,8 @@ extern CreatureAttributesSSBOInfo creature_Velocities{ 0, sizeof(vec2) };
 extern CreatureAttributesSSBOInfo creature_Angles{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_AngleVelocities{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_ForwardDirections{ 0, sizeof(vec2) };
- 
+extern CreatureAttributesSSBOInfo creature_RightDirections{ 0, sizeof(vec2) };
+
 // Movement
 extern CreatureAttributesSSBOInfo creature_ForwardThrusts{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_TurnThrusts{ 0, sizeof(GLfloat) };
@@ -115,6 +116,7 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Angles);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_AngleVelocities);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ForwardDirections);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_RightDirections);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ForwardThrusts);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_TurnThrusts);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Radii);
@@ -241,6 +243,8 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_Lives, newCreatureIndex, &newCreatureData.life);
 	SetCreatureAttribute(creature_Angles, newCreatureIndex, &newCreatureData.angle);
 	SetCreatureAttribute(creature_AngleVelocities, newCreatureIndex, &newCreatureData.angleVel);
+	SetCreatureAttribute(creature_ForwardDirections, newCreatureIndex, &newCreatureData.forwardDir);
+	SetCreatureAttribute(creature_RightDirections, newCreatureIndex, &newCreatureData.rightDir);
 	SetCreatureAttribute(creature_ForwardThrusts, newCreatureIndex, &newCreatureData.forwardThrust);
 	SetCreatureAttribute(creature_TurnThrusts, newCreatureIndex, &newCreatureData.turnThrust);
 	SetCreatureAttribute(creature_Harndesses, newCreatureIndex, &newCreatureData.hardness);

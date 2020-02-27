@@ -561,12 +561,13 @@ void Simulation_Logic()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_AngleVelocities.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_SpikeLocalAngles.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_SpikeDirections.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_FeederLocalAngles.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_FeederDirections.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_ShieldLocalAngles.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_ShieldDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_RightDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_SpikeLocalAngles.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_SpikeDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_FeederLocalAngles.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_FeederDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_ShieldLocalAngles.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_ShieldDirections.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
