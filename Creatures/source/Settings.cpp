@@ -44,7 +44,7 @@ extern const uint16_t TECH_CREATURE_BODY_WORK_WORKGROUP_LOCAL_SIZE = 1536;
 // Camera settings
 extern const float CAMERA_MAX_ZOOM_OUT = 0.001f;
 extern const float CAMERA_MAX_ZOOM_IN = 10.0f;
-extern const float CAMERA_ZOOM_INTERPOLATION_SPEED = 0.035f;
+extern const float CAMERA_ZOOM_INTERPOLATION_SPEED = 0.1f;
 extern const float CAMERA_ZOOM_SCROLL_SCALE = 0.1f;
 extern const float CAMERA_ZOOM_MOVE_SCALE = 0.0002f;
 extern const float CAMERA_VELOCITY_FRICTION = 0.985f;
@@ -74,7 +74,7 @@ extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 10;
 // -- TWEAKABLE SETTINGS -- //
 //////////////////////////////
 
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 20000, 0, 1000000 };
 extern TweakableFloatSetting SIMULATION_WIDTH = { 1000, 1, 300 };
 extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
 

@@ -5,16 +5,22 @@
 int currWindowWidth;
 int currWindowHeight;
 
+float widthDiff;
+float heightDiff;
+
+float widthScale;
+float heightScale;
+
 //////////////////////////////
 // -- SPACE TRANSLATIONS -- //
 //////////////////////////////
 
 vec2 ViewportSpaceToCameraSpace(vec2 pos)
 {
-	float halfWidth = currWindowWidth / 2;
-	float halfHeight = currWindowHeight / 2;
+	float halfWidth = widthScale * currWindowWidth / 2;
+	float halfHeight = heightScale * currWindowHeight / 2;
 
-	pos -= vec2(halfWidth, halfHeight);
+	pos -= vec2(halfWidth - widthDiff, halfHeight - heightDiff);
 	pos.x /= halfWidth;
 	pos.y /= -halfHeight;
 	
@@ -36,13 +42,13 @@ vec2 ViewportSpaceToSimulationSpace(vec2 pos)
 
 vec2 CameraSpaceToViewportSpace(vec2 pos)
 {
-	float halfWidth = currWindowWidth / 2;
-	float halfHeight = currWindowHeight / 2;
+	float halfWidth = widthScale * currWindowWidth / 2;
+	float halfHeight = heightScale * currWindowHeight / 2;
 
 	pos.x *= halfWidth;
 	pos.y *= -halfHeight;
 
-	pos += vec2(halfWidth, halfHeight);
+	pos += vec2(halfWidth - widthDiff, halfHeight - heightDiff);
 
 	return pos;
 }
@@ -231,8 +237,20 @@ void glfw_frame_buffer_size_callback(GLFWwindow*, int width, int height)
 	currWindowWidth = width;
 	currWindowHeight = height;
 
+	// Used to avoid stretching
 	int maxDimension = std::max(currWindowWidth, currWindowHeight);
-	glViewport(0, 0, maxDimension, maxDimension);
+
+	// Used to keep things offset away from the center of the window
+	widthDiff = maxDimension - currWindowWidth;
+	heightDiff = maxDimension - currWindowHeight;
+	widthDiff *= 0.5;
+	heightDiff *= 0.5;
+
+	glViewport(-widthDiff, -heightDiff, maxDimension, maxDimension);
+
+	// Ratios to stretch space translations
+	widthScale = float(maxDimension) / float(currWindowWidth);
+	heightScale = float(maxDimension) / float(currWindowHeight);
 }
 
 
