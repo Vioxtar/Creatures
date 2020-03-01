@@ -86,6 +86,7 @@
     <None Include="resources\compute shaders\frame_post_logic.computeShader" />
     <None Include="resources\compute shaders\creature_sights_part1.computeShader" />
     <None Include="resources\compute shaders\creature_sights_part2.computeShader" />
+    <None Include="resources\compute shaders\creature_sights_part3.computeShader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\OpenGLErrorDebugger.h">

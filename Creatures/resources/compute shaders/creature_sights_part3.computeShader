@@ -65,7 +65,7 @@ void main()
 
 
 	// Set default values to-be-written
-	float pupilSkinHueDifference = 0.0
+	float pupilSkinHueDifference = 0.0;
 	float pupilSkinValue = 0.0;
 	float pupilSkinSaturation = 0.0;
 	float pupilLife = 0.0;
@@ -82,7 +82,7 @@ void main()
 	if (bGID != gid)
 	{
 		// Get some stuff about ourselves
-		float aHue = SkinHues[aGID];
+		float aHue = SkinHues[gid];
 
 		// Get some data about our seen creature
 		float bHue = SkinHues[bGID];

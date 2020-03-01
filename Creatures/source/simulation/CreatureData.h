@@ -14,6 +14,7 @@ struct CreatureData
 	vector<GLfloat> brainNodes;
 	vector<vec2> brainBiasesExponents;
 	vector<GLuint> brainStructure;
+	vector<GLfloat> eyeConeSights;
 	GLfloat skinHue;
 	GLfloat skinSaturation;
 	GLfloat skinValue;
@@ -36,6 +37,7 @@ struct CreatureData
 	GLfloat shieldSpan;
 	vec2 eyePos;
 	vec2 eyeMuscles;
+	GLfloat eyeConeRadius;
 };
 
 

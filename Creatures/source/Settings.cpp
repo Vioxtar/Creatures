@@ -96,8 +96,8 @@ extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.4, 0.3, 0.5 };
 extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.2, 0.1, 0.3 };
 
 // Creature eye settings
-extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 3.0, 0.1, 3.0 };
-extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 2.0, 0.1, 2.0 };
+extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 10.0, 0.1, 30.0 };
+extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 5.0, 0.1, 5.0 };
 
 
 

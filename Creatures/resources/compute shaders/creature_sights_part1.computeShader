@@ -45,7 +45,7 @@ layout (std430, binding = 8) buffer CreatureGeneralPurposeFloat
 	float EyePupilActivations[];
 };
 
-layout (std430, binding = 9) buffer CreatureGeneralPurposeVec2
+layout (std430, binding = 9) buffer CreatureGeneralPurposeSecondVec2
 {
 	vec2 EyePupilC2C1PosDiffNorms[];
 };
@@ -62,9 +62,6 @@ uniform uint uIndicesInTile;
 uniform uint uCreatureEyeNumOfCones;
 uniform uint uCreatureEyeNumOfValuesInSingleCone;
 uniform uint uCreatureEyeNumOfConesValues;
-
-uniform uint uCreatureEyeNumOfPupilValues;
-
 
 #define M_PI_HALF	1.5707963267948966192313216916397
 #define M_PI		3.1415926535897932384626433832795
@@ -206,7 +203,7 @@ void main()
 				float bPosToPupilPosDist = length(bPosToPupilPosDiff);
 
 				// Did the creature land in our eye cone radius?
-				if (bPosToPupilPosDist - bRad <= eyeConeRadius)
+				if (bPosToPupilPosDist <= eyeConeRadius)
 				{
 					// The creature is within our eye...
 
@@ -247,7 +244,7 @@ void main()
 
 						// @TODO: Consider the radius here!
 						float activation = 1.0 - bPosToPupilPosDist / eyeConeRadius;
-						coneSights[coneIndex] = activation;
+						coneSights[coneIndex] = max(activation, coneSights[coneIndex]);
 
 					}
 				}			

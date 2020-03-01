@@ -86,7 +86,7 @@ class CreatureTracker
 
 		if (overlay_Eye)
 		{
-			// Draw eye area
+			// Draw eye probe area
 			ImGui::GetBackgroundDrawList()->AddQuad(
 				SimulationSpaceToViewportSpace(creatureSnapShot.pos + (creatureSnapShot.rightDir + creatureSnapShot.forwardDir) * CREATURE_EYE_MAX_PROBE_DISTANCE.value),
 				SimulationSpaceToViewportSpace(creatureSnapShot.pos + (creatureSnapShot.rightDir - creatureSnapShot.forwardDir) * CREATURE_EYE_MAX_PROBE_DISTANCE.value),
@@ -96,14 +96,43 @@ class CreatureTracker
 				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 			);
 
-			// Draw eye position
+			vec2 viewportEyePos = SimulationSpaceToViewportSpace(creatureSnapShot.eyePos);
+			float viewportEyeConeRadius = SimulationScaleToViewportScale(creatureSnapShot.eyeConeRadius);
+			
+			// Draw eye cone ring
 			ImGui::GetBackgroundDrawList()->AddCircle(
-				SimulationSpaceToViewportSpace(creatureSnapShot.eyePos),
-				3,
-				IM_COL32(0, 255, 0, 100),
-				5,
+				viewportEyePos,
+				viewportEyeConeRadius,
+				IM_COL32(0, 255, 0, 35),
+				int(viewportEyeConeRadius),
 				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 			);
+
+			// Draw eye cones
+			float angAdd = 2.0 * M_PI / float(CREATURE_EYE_NUM_OF_CONES);
+			float creatureAngle = creatureSnapShot.angle;
+			for (unsigned int i = 0; i < CREATURE_EYE_NUM_OF_CONES; ++i)
+			{
+				// Draw cone line
+				float lineAng = M_PI + i * angAdd - creatureAngle;
+				vec2 coneLineDir = vec2(sin(lineAng), cos(lineAng));
+				ImGui::GetBackgroundDrawList()->AddLine(
+					viewportEyePos,
+					viewportEyePos + coneLineDir * viewportEyeConeRadius,
+					IM_COL32(0, 255, 0, 20),
+					UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
+				);
+
+				// Draw cone activation
+				float activationAng = M_PI + i * angAdd + (angAdd / 2) - creatureAngle;
+				vec2 coneActivationDir = vec2(sin(activationAng), cos(activationAng));
+				ImGui::GetBackgroundDrawList()->AddLine(
+					viewportEyePos,
+					viewportEyePos + coneActivationDir * viewportEyeConeRadius * creatureSnapShot.eyeConeSights.data()[i],
+					IM_COL32(0, 255, 0, 100),
+					UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
+				);
+			}
 		}
 	}
 

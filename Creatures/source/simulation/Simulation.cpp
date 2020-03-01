@@ -472,8 +472,8 @@ void Simulation_Init()
 		data.rad = CREATURE_MAX_RADIUS.value;
 		data.life = random();
 		data.angle = random() * 2 * M_PI;
-		data.angleVel = (random() - 0.5) * 0.03;
-		data.forwardThrust = random()* random() * 0.01;
+		data.angleVel = (random() - 0.5) * 0.002;
+		data.forwardThrust = random()* random() * 0.001;
 		data.turnThrust = 0.0;
 		data.hardness = random();
 		data.skin = vec2(random(), random());
@@ -482,6 +482,7 @@ void Simulation_Init()
 		data.shieldLocalAngle = random() * 2 * M_PI;
 		data.shieldSpan = random() * M_PI * 0.35;
 		data.eyeMuscles = vec2((random() - 0.5) * 2, (random() - 0.5) * 2);
+		data.eyeConeRadius = CREATURE_EYE_MAX_CONES_RADIUS.max;
 		CreatureData_AddCreature(data);
 	}
 
