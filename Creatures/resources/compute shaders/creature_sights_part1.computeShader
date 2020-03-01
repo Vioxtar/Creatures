@@ -1,0 +1,270 @@
+#version 460 core
+
+layout (std430, binding = 0) buffer CreaturePositions
+{
+	vec2 Positions[];
+};
+
+layout (std430, binding = 1) buffer CreatureRadii
+{
+	float Radii[];
+};
+
+layout (std430, binding = 2) buffer UniformGrid
+{
+	uint UGrid[];
+};
+
+layout (std430, binding = 3) buffer CreatureAngles
+{
+	float Angles[];
+};
+
+layout (std430, binding = 4) buffer CreatureEyePositions
+{
+	vec2 EyePositions[];
+};
+
+layout (std430, binding = 5) buffer CreatureEyeConeRadii
+{
+	float EyeConeRadii[];
+};
+
+layout (std430, binding = 6) buffer CreatureEyeConeSights
+{
+	float EyeConeSights[];
+};
+
+layout (std430, binding = 7) buffer CreatureGeneralPurposeUint
+{
+	uint EyePupilTargetCreatureIndices[];
+};
+
+layout (std430, binding = 8) buffer CreatureGeneralPurposeFloat
+{
+	float EyePupilActivations[];
+};
+
+layout (std430, binding = 9) buffer CreatureGeneralPurposeVec2
+{
+	vec2 EyePupilC2C1PosDiffNorms[];
+};
+
+
+layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
+
+
+uniform uint uCreatureCount;
+uniform vec2 uSimDimensions;
+uniform uvec2 uGridDimensions;
+uniform uint uIndicesInTile;
+
+uniform uint uCreatureEyeNumOfCones;
+uniform uint uCreatureEyeNumOfValuesInSingleCone;
+uniform uint uCreatureEyeNumOfConesValues;
+
+uniform uint uCreatureEyeNumOfPupilValues;
+
+
+#define M_PI_HALF	1.5707963267948966192313216916397
+#define M_PI		3.1415926535897932384626433832795
+#define M_PI_TWO	6.2831853071795864769252867665590
+
+
+float ApproxAtan(float z)
+{
+	return (0.97239411 + -0.19194795 * z * z) * z;
+}
+
+float ApproxAtan2(float y, float x)
+{
+	if (x != 0.0)
+	{
+		if (abs(x) > abs(y)) {
+			float z = y / x;
+			if (x > 0.0)
+			{
+				return ApproxAtan(z);
+			}
+			if (y >= 0.0)
+			{
+				return ApproxAtan(z) + M_PI;
+			}
+			return ApproxAtan(z) - M_PI;
+		}
+		else
+		{
+			float z = x / y;
+			if (y > 0.0) {
+				return -ApproxAtan(z) + M_PI_HALF;
+			}
+			return -ApproxAtan(z) - M_PI_HALF;
+		}
+	}
+	else
+	{
+		if (y > 0.0)
+		{
+			return M_PI_HALF;
+		}
+		else if (y < 0)
+		{
+			return -M_PI_HALF;
+		}
+		return 0;
+	}
+}
+
+
+void main()
+{
+
+	uint gid = gl_GlobalInvocationID.x;
+	if (gid >= uCreatureCount)
+	{
+		return;
+	}
+
+	// Get some stuff
+	float simWidth = uSimDimensions.x;
+	float simHeight = uSimDimensions.y;
+	
+	uint gridXDim = uGridDimensions.x;
+	uint gridYDim = uGridDimensions.y;
+
+	uint tileCreatureCapacity = uIndicesInTile - 1;
+
+
+	// Find the tile our eye position is mapped to
+	// It's fine if it's out of grid bounds, x/y Start/End values will prevent out of range memory accesses
+	
+	vec2 pupilPos = EyePositions[gid];
+
+	float remappedXPupilPos = pupilPos.x + (simWidth / 2.0);
+	float remappedYPupilPos = pupilPos.y + (simHeight / 2.0);
+
+	uint xTileIndex = uint(floor(remappedXPupilPos * gridXDim / simWidth));
+	uint yTileIndex = uint(floor(remappedYPupilPos * gridYDim / simHeight));
+
+	// Find the start/end x,y indices (consider uGridDimensions in case we're near edges)
+	uint xStart = max(int(xTileIndex) - 1, 0);
+	uint xEnd = min(xTileIndex + 1, gridXDim - 1);
+	uint yStart = max(int(yTileIndex) - 1, 0);
+	uint yEnd = min(yTileIndex + 1, gridYDim - 1);
+
+
+	// Cache our values to be used during iterations
+	float eyeConeRadius = EyeConeRadii[gid];
+	vec2 aPos = Positions[gid];
+	float aAngle = Angles[gid];
+
+	// Used to figure out which creature the pupil will see given several overlapping creatures
+	float pupilClosestCreatureDistanceSeen = 0.0;
+	bool pupilLandedOnCreature = false;
+
+	// Pupil data package corresponding to closest seen creature, passed to sights program part 2 and 3
+	uint pupilTargetCreatureIndex = gid; // If the seen creature index is our own, it means we didn't see a creature!
+	float pupilActivation = 0.0;
+	vec2 pupilC2C1PosDiffNorms = vec2(0, 0);
+
+	// Cone values to be spatially indexed, initialize default values to 0.0
+	float coneSights[@CREATURE_EYE_NUM_OF_CONES_VALUES@] = float[@CREATURE_EYE_NUM_OF_CONES_VALUES@](0.0);
+
+	// Iterate on the uniform grid throughout start/end x,y indices
+	for (uint x = xStart; x <= xEnd; x++)
+	{
+		for (uint y = yStart; y <= yEnd; y++)
+		{
+			// Find the 1D tile again
+			uint tile = x + gridXDim * y;
+			
+			// Iterate all other creatures currently in the tile
+			uint tileCountIndex = tile * uIndicesInTile;
+			uint creaturesInTile = min(UGrid[tileCountIndex], tileCreatureCapacity);
+			uint lastPopulatedIndex = tileCountIndex + creaturesInTile;
+							
+			for (uint b = tileCountIndex + 1; b <= lastPopulatedIndex; b++)
+			{
+
+				uint bGID = UGrid[b];
+				if (bGID >= uCreatureCount)
+				{
+					continue;
+				}
+
+				// We can't see ourselves
+				if (bGID == gid)
+				{
+					continue;
+				}
+				
+				// Gather some positioning data about our potentially viewed creature
+				vec2 bPos = Positions[bGID];
+				float bRad = Radii[bGID];
+
+				vec2 bPosToPupilPosDiff = pupilPos - bPos;
+				float bPosToPupilPosDist = length(bPosToPupilPosDiff);
+
+				// Did the creature land in our eye cone radius?
+				if (bPosToPupilPosDist - bRad <= eyeConeRadius)
+				{
+					// The creature is within our eye...
+
+					// Did the creature land on our pupil?
+					if (bPosToPupilPosDist <= bRad)
+					{
+						// Is it closer to this creature than previously seen creatures?
+						if (bPosToPupilPosDist < pupilClosestCreatureDistanceSeen || !pupilLandedOnCreature)
+						{
+
+							pupilClosestCreatureDistanceSeen = bPosToPupilPosDist;
+							pupilLandedOnCreature = true;
+
+							// Remember the closest creature index, activation and C2C1 normalized pos diff
+							pupilTargetCreatureIndex = bGID;
+							pupilActivation = 1.0 - bPosToPupilPosDist / bRad;
+
+							vec2 c2c1PosDiff = aPos - bPos;
+							float c2c1PosDist = length(c2c1PosDiff);
+							pupilC2C1PosDiffNorms = c2c1PosDiff / c2c1PosDist;
+
+						}
+					}
+					else // The pupil is not on the creature, place it in one of our cones
+					{
+						// Find out the relative angle between our eye and the observed creature
+						vec2 bPosToPupilPosDirection = bPosToPupilPosDiff / bPosToPupilPosDist;
+						
+						// @TODO is using atan2 here maybe faster? try it!
+						float absAng = ApproxAtan2(bPosToPupilPosDirection.x, -bPosToPupilPosDirection.y);
+						float relAng = mod(absAng + aAngle, M_PI_TWO);
+
+						// Relative angle is between 0 and 2pi, map this to our cone indices
+						uint coneID = uint(floor(float(uCreatureEyeNumOfCones) * relAng / M_PI_TWO));
+						uint coneIndex = coneID * uCreatureEyeNumOfValuesInSingleCone;
+
+						// Load our data into the mapped cone
+
+						// @TODO: Consider the radius here!
+						float activation = 1.0 - bPosToPupilPosDist / eyeConeRadius;
+						coneSights[coneIndex] = activation;
+
+					}
+				}			
+			}
+		}
+	}
+	
+	
+	// Send pupil data
+	EyePupilTargetCreatureIndices[gid] = pupilTargetCreatureIndex;
+	EyePupilActivations[gid] = pupilActivation;
+	EyePupilC2C1PosDiffNorms[gid] = pupilC2C1PosDiffNorms;
+	
+	// Set cone sightings
+	uint conesSightStartIndex = gid * uCreatureEyeNumOfConesValues;
+	for (uint i = 0; i < uCreatureEyeNumOfConesValues; ++i)
+	{
+		EyeConeSights[conesSightStartIndex + i] = coneSights[i];
+	}
+}

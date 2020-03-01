@@ -1,4 +1,9 @@
 
+Project minimum requiremenets:
+	GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS >= 16
+
+
+
 
 
 	SATURATION IS INHERITED
@@ -33,6 +38,12 @@
 
 
 	NON-OBVIOUS-TODOS:
+
+	MOST IMPORTANT NOTE::: All your SSBO values are raw, un-normalized values! The only process in which raw values are converted to normalized values, or when normalizes values are converted to raw values, is during brain input, and brain output, respectively!
+	
+	try changing some brain data to GLhalf
+	try changing some indexing data to GLint64
+	Use as many fucking memory qualifiers and hints as possible to boost performance
 	PUPIL SEES SKIN PATTERN AS WELL!
 	Make eyes rely on a separate UGrid memory access! Currently probe distance is too small and increasing it fucks with performance! The new sense radius should just be the max eye cone radius
 	Make a separate UI thread - make sure that while ImGui is being drawn / other UI stuff calculated, the simulation is running! To avoid undefined behavior, decouple the UI 'data snapshotting' logic into a preliminary step, and only once data was snapshot you can divide into threads! Drawing needs to still be in the correct order... this will be hard.

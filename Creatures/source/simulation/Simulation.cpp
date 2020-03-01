@@ -26,8 +26,9 @@ InstancedDrawCallData drawCallData_CreatureBody;
 
 void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExponents, vector<GLfloat>* brainLinks, vector<GLuint>* brainStructure)
 {
-
-	// WE CURRENTLY FILL THE ENTIRE BRAIN WITH DATA! NO PARTIAL BRAINS JUST YET!
+	// @TEMP v
+	// WE CURRENTLY FILL THE ENTIRE BRAIN WITH DATA! NO PARTIAL BRAINS JUST YET! EVERYTHING IS TEMP
+	// @TEMP ^
 
 	// Fill nodes with zeros
 	brainNodes->reserve(CREATURE_BRAIN_MAX_NUM_OF_NODES);
@@ -87,11 +88,15 @@ ProgramInfo program_BorderPhysics{ 0, 0, TECH_BORDER_PHYSICS_WORKGROUP_LOCAL_SIZ
 ProgramInfo program_UniformGridBind{ 0, 0, TECH_UNIFORM_GRID_BIND_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_UniformGridUnBind{ 0, 0, TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_CreatureInteractions{ 0, 0, TECH_CREATURE_INTERACTIONS_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureSightsPart1{ 0, 0, TECH_CREATURE_SIGHTS_PART1_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureSightsPart2{ 0, 0, TECH_CREATURE_SIGHTS_PART2_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureSightsPart3{ 0, 0, TECH_CREATURE_SIGHTS_PART3_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainPushInputs{ 0, 0, TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainForwardPropagate{ 0, 0, TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainPullOutputs{ 0, 0, TECH_BRAIN_PULL_OUTPUTS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_CreatureBodyWork{ 0, 0, TECH_CREATURE_BODY_WORK_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_InitNewFrame{ 0, 0, TECH_INIT_NEW_FRAME_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_FramePreLogic{ 0, 0, TECH_FRAME_PRE_LOGIC_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_FramePostLogic{ 0, 0, TECH_FRAME_POST_LOGIC_WORKGROUP_LOCAL_SIZE };
 
 
 unsigned int programs_CreatureCountSupportedByWorkGroups = 0;
@@ -116,11 +121,15 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 	SetProgramInfoNumOfWorkGroupsNeeded(program_UniformGridBind);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_UniformGridUnBind);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureInteractions);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureSightsPart1);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureSightsPart2);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureSightsPart3);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPushInputs);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainForwardPropagate);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPullOutputs);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureBodyWork);
-	SetProgramInfoNumOfWorkGroupsNeeded(program_InitNewFrame);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_FramePreLogic);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_FramePostLogic);
 
 	// Update our newly supported creature count
 	programs_CreatureCountSupportedByWorkGroups = creature_count;
@@ -205,7 +214,7 @@ void BuildUniformGrid()
 {
 	// Start by checking whether or not we need to rebuild the grid
 	float newMaxCreatureRadius = CREATURE_MAX_RADIUS.value;
-	float newMaxCreatureSenseRadius = sqrt(2 * pow(CREATURE_EYE_MAX_PROBE_DISTANCE.value, 2)) + CREATURE_EYE_MAX_CONES_RADIUS.value;
+	float newMaxCreatureSenseRadius = CREATURE_EYE_MAX_CONES_RADIUS.value;// sqrt(2 * pow(CREATURE_EYE_MAX_PROBE_DISTANCE.value, 2)) + CREATURE_EYE_MAX_CONES_RADIUS.value;
 	float newMinCreatureRadius = CREATURE_MIN_RADIUS.value;
 	float newSimulationWidth = SIMULATION_WIDTH.value;
 	float newSimulationHeight = SIMULATION_HEIGHT.value;
@@ -284,10 +293,16 @@ void InitLogicPrograms()
 {
 	vector<pair<string, string>> replacers;
 
-	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_InitNewFrame.workGroupLocalSize)));
-	GLenum initNewFrameShaderTypes[] = { GL_COMPUTE_SHADER };
-	const char* initNewFrameShaderPaths[] = { "resources/compute shaders/init_new_frame.computeShader" };
-	program_InitNewFrame.program = CreateLinkedShaderProgram(1, initNewFrameShaderTypes, initNewFrameShaderPaths, &replacers);
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_FramePreLogic.workGroupLocalSize)));
+	GLenum framePreLogicShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* framePreLogicShaderPaths[] = { "resources/compute shaders/frame_pre_logic.computeShader" };
+	program_FramePreLogic.program = CreateLinkedShaderProgram(1, framePreLogicShaderTypes, framePreLogicShaderPaths, &replacers);
+	replacers.clear();
+
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_FramePostLogic.workGroupLocalSize)));
+	GLenum framePostLogicShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* framePostLogicShaderPaths[] = { "resources/compute shaders/frame_post_logic.computeShader" };
+	program_FramePostLogic.program = CreateLinkedShaderProgram(1, framePostLogicShaderTypes, framePostLogicShaderPaths, &replacers);
 	replacers.clear();
 
 	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureBodyWork.workGroupLocalSize)));
@@ -324,6 +339,25 @@ void InitLogicPrograms()
 	GLenum creatureInteractionsShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* creatureInteractionsShaderPaths[] = { "resources/compute shaders/creature_interactions.computeShader" };
 	program_CreatureInteractions.program = CreateLinkedShaderProgram(1, creatureInteractionsShaderTypes, creatureInteractionsShaderPaths, &replacers);
+	replacers.clear();
+
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureSightsPart1.workGroupLocalSize)));
+	replacers.push_back(make_pair("@CREATURE_EYE_NUM_OF_CONES_VALUES@", to_string(CREATURE_EYE_NUM_OF_CONES_VALUES)));
+	GLenum creatureSightsPart1ShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* creatureSightsPart1ShaderPaths[] = { "resources/compute shaders/creature_sights_part1.computeShader" };
+	program_CreatureSightsPart1.program = CreateLinkedShaderProgram(1, creatureSightsPart1ShaderTypes, creatureSightsPart1ShaderPaths, &replacers);
+	replacers.clear();
+
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureSightsPart2.workGroupLocalSize)));
+	GLenum creatureSightsPart2ShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* creatureSightsPart2ShaderPaths[] = { "resources/compute shaders/creature_sights_part2.computeShader" };
+	program_CreatureSightsPart2.program = CreateLinkedShaderProgram(1, creatureSightsPart2ShaderTypes, creatureSightsPart2ShaderPaths, &replacers);
+	replacers.clear();
+
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureSightsPart3.workGroupLocalSize)));
+	GLenum creatureSightsPart3ShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* creatureSightsPart3ShaderPaths[] = { "resources/compute shaders/creature_sights_part3.computeShader" };
+	program_CreatureSightsPart3.program = CreateLinkedShaderProgram(1, creatureSightsPart3ShaderTypes, creatureSightsPart3ShaderPaths, &replacers);
 	replacers.clear();
 
 	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_BrainPushInputs.workGroupLocalSize)));
@@ -430,7 +464,9 @@ void Simulation_Init()
 
 		InitFirstGenBrain(&data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
 
-		data.col = vec3(random(), random(), random());
+		data.skinHue = random();
+		data.skinSaturation = random();
+		data.skinValue = random();
 		data.pos = vec2(0, 0);
 		data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
 		data.rad = CREATURE_MAX_RADIUS.value;
@@ -471,8 +507,8 @@ void Simulation_Logic()
 
 
 	// Init new frame
-	programID = program_InitNewFrame.program;
-	workGroupsNeeded = program_InitNewFrame.workGroupsNeeded;
+	programID = program_FramePreLogic.program;
+	workGroupsNeeded = program_FramePreLogic.workGroupsNeeded;
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_DeformerCounts.ssbo);
@@ -525,8 +561,7 @@ void Simulation_Logic()
 	SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_NODES);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Colors.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Lives.ssbo);
+
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -557,7 +592,7 @@ void Simulation_Logic()
 	SetUniformFloat(programID, "uCreatureEyeMaxProbeDistance", CREATURE_EYE_MAX_PROBE_DISTANCE.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurpose.ssbo); // Applies physics fix vector, zerofies
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurposeVec2.ssbo); // Applies physics fix vector, zerofies
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_AngleVelocities.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.ssbo);
@@ -608,7 +643,7 @@ void Simulation_Logic()
 
 
 
-	// Creature interactions (including collisions, sensing and whatever else creature to creature interaction envelopes)
+	// Creature interactions (including collisions and whatever else creature to creature interaction envelopes)
 	programID = program_CreatureInteractions.program;
 	workGroupsNeeded = program_CreatureInteractions.workGroupsNeeded;
 	glUseProgram(programID);
@@ -623,13 +658,84 @@ void Simulation_Logic()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Harndesses.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, ugrid_SSBO);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_UniformGridTiles.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_GeneralPurpose.ssbo); // Writes physics fix vector for decoupling purposes
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_GeneralPurposeVec2.ssbo); // Writes physics fix vector for decoupling purposes
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_DeformerPositions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_DeformerRadii.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_DeformerCounts.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
+
+	// Creature sights part 1 (find which creatures we're looking at in the simulation space, cone activation)
+	// We don't load actual observed data just yet due to the GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS <= 16 limit
+	programID = program_CreatureSightsPart1.program;
+	workGroupsNeeded = program_CreatureSightsPart1.workGroupsNeeded;
+	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformVector2f(programID, "uSimDimensions", vec2(ugrid_SimWidth, ugrid_SimHeight));
+	SetUniformVector2ui(programID, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
+	SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfCones", CREATURE_EYE_NUM_OF_CONES);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfValuesInSingleCone", CREATURE_EYE_NUM_OF_VALUES_IN_SINGLE_CONE);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfConesValues", CREATURE_EYE_NUM_OF_CONES_VALUES);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Radii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, ugrid_SSBO);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_EyePositions.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_EyeConeRadii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_EyeConeSights.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_GeneralPurposeUInt.ssbo); // Write pupil creature target index
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_GeneralPurposeFloat.ssbo); // Write pupil activation
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_GeneralPurposeSecondVec2.ssbo); // Write pupil normalized direction between creatures
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+
+	// Load observed creatures' data observed by pupils
+
+	// Creature sights part 2
+	programID = program_CreatureSightsPart2.program;
+	workGroupsNeeded = program_CreatureSightsPart2.workGroupsNeeded;
+	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfPupilValues", CREATURE_EYE_NUM_OF_PUPIL_VALUES);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_EyePupilSights.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_GeneralPurposeUInt.ssbo); // Read pupil creature target index
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurposeFloat.ssbo); // Read pupil activation
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_GeneralPurposeSecondVec2.ssbo); // Read pupil normalized direction between creatures
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_ShieldDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ShieldSpans.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_ShieldStates.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_SpikeDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_SpikeStates.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_FeederDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_FeederStates.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_ForwardDirections.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+
+	// Creature sights part 3
+	programID = program_CreatureSightsPart3.program;
+	workGroupsNeeded = program_CreatureSightsPart3.workGroupsNeeded;
+	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfPupilValues", CREATURE_EYE_NUM_OF_PUPIL_VALUES);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_EyePupilSights.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_GeneralPurposeUInt.ssbo); // Read pupil creature target index
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_SkinHues.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_SkinSaturations.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_SkinValues.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_SkinPatterns.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Lives.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Energies.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_Radii.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
 
 	// Uniform grid unbind
 	programID = program_UniformGridUnBind.program;
@@ -643,6 +749,20 @@ void Simulation_Logic()
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
+
+	// End frame (convert HSV to RGB)
+	programID = program_FramePostLogic.program;
+	workGroupsNeeded = program_FramePostLogic.workGroupsNeeded;
+	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_SkinHues.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_SkinSaturations.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_SkinValues.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_SkinRGBColors.ssbo);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
 }
 
 void Simulation_Render()
@@ -652,7 +772,7 @@ void Simulation_Render()
 
 	// Creature bodies
 
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Colors.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_SkinRGBColors.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Positions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_ForwardDirections.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);

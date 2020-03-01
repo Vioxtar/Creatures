@@ -29,7 +29,8 @@ extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH 
 extern const GLenum TECH_SSBO_USAGE = GL_STATIC_DRAW;
 
 // @TODO: Query the maximum local size
-extern const uint16_t TECH_INIT_NEW_FRAME_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_FRAME_PRE_LOGIC_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_FRAME_POST_LOGIC_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_DEFAULT_COMPUTE_PROGRAM_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE = 4;
 extern const uint16_t TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE = 1536;
@@ -39,6 +40,9 @@ extern const uint16_t TECH_BORDER_PHYSICS_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_UNIFORM_GRID_BIND_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_CREATURE_INTERACTIONS_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_CREATURE_SIGHTS_PART1_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_CREATURE_SIGHTS_PART2_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_CREATURE_SIGHTS_PART3_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_CREATURE_BODY_WORK_WORKGROUP_LOCAL_SIZE = 1536;
 
 // Camera settings
@@ -66,15 +70,15 @@ extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 20;
 
 // Creature eye settings
 extern const uint16_t CREATURE_EYE_NUM_OF_CONES = 16;
-extern const uint16_t CREATURE_EYE_NUM_OF_CONE_VALUES = 1;
-extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 10;
+extern const uint16_t CREATURE_EYE_NUM_OF_VALUES_IN_SINGLE_CONE = 1;
+extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13; // Not to be changed lightly - data transfer packet relies on 3 floats!
 
 
 //////////////////////////////
 // -- TWEAKABLE SETTINGS -- //
 //////////////////////////////
 
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 20000, 0, 1000000 };
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
 extern TweakableFloatSetting SIMULATION_WIDTH = { 1000, 1, 300 };
 extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
 
@@ -108,8 +112,8 @@ extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_NODES = CREATURE_BRAIN_NUM_OF_INPU
 
 extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_LINKS = CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL > 0 ?
 
-// We have midlevels in our max structure
-(CREATURE_BRAIN_NUM_OF_INPUTS * CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL +
+	// We have midlevels in our max structure
+	(CREATURE_BRAIN_NUM_OF_INPUTS * CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL +
 	CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL * CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL * (CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS - 1) +
 	CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL * CREATURE_BRAIN_NUM_OF_OUTPUTS)
 	:
@@ -124,6 +128,8 @@ extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES = 1 + 1 + CREATU
 // Deformations - the max number of deformers is the maximum amount of circles of minimal radius that can simultaneously touch a single circle of maximal radius
 extern const GLuint CREATURE_MAX_NUM_OF_DEFORMERS = floor(M_PI / asin(CREATURE_MIN_RADIUS.min / (CREATURE_MAX_RADIUS.max + CREATURE_MIN_RADIUS.min)));
 
+// Eye settings
+extern const uint16_t CREATURE_EYE_NUM_OF_CONES_VALUES = CREATURE_EYE_NUM_OF_CONES * CREATURE_EYE_NUM_OF_VALUES_IN_SINGLE_CONE;
 
 
 ////////////////////////////////////

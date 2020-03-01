@@ -10,15 +10,6 @@ layout (std430, binding = 1) buffer CreatureBrainsNodes
 	float BrainsNodes[];
 };
 
-layout (std430, binding = 2) buffer CreatureColors
-{
-	float Colors[];
-};
-
-layout (std430, binding = 3) buffer CreatureLives
-{
-	float Lives[];
-};
 
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
@@ -56,8 +47,8 @@ void main()
 	//Lives[gid] = max(0.1, min(BrainsNodes[firstOutputIndex + 3], 1));
 	
 	//Lives[gid] -= Colors[colIndex] * 0.001;
-	if (Lives[gid] < 0.0)
-	{
-		Lives[gid] = 1.0;
-	}
+	//if (Lives[gid] < 0.0)
+	//{
+	//	Lives[gid] = 1.0;
+	//}
 }

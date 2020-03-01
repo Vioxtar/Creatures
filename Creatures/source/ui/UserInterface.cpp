@@ -5,6 +5,7 @@
 int currWindowWidth;
 int currWindowHeight;
 
+// Used for space translations
 float widthDiff;
 float heightDiff;
 
@@ -26,7 +27,6 @@ vec2 ViewportSpaceToCameraSpace(vec2 pos)
 	
 	return pos;
 }
-
 vec2 CameraSpaceToSimulationSpace(vec2 pos)
 {
 	mat4 simSpaceToCameraSpace = GetSimSpaceToCameraTransform();
@@ -34,7 +34,6 @@ vec2 CameraSpaceToSimulationSpace(vec2 pos)
 	vec4 simPosition = cameraSpaceToSimSpace * vec4(pos.x, pos.y, 1.0, 1.0);
 	return simPosition;
 }
-
 vec2 ViewportSpaceToSimulationSpace(vec2 pos)
 {
 	return CameraSpaceToSimulationSpace(ViewportSpaceToCameraSpace(pos));
@@ -52,14 +51,12 @@ vec2 CameraSpaceToViewportSpace(vec2 pos)
 
 	return pos;
 }
-
 vec2 SimulationSpaceToCameraSpace(vec2 pos)
 {
 	mat4 simSpaceToCameraSpace = GetSimSpaceToCameraTransform();
 	vec4 camPosition = simSpaceToCameraSpace * vec4(pos.x, pos.y, 1.0, 1.0);
 	return camPosition;
 }
-
 vec2 SimulationSpaceToViewportSpace(vec2 pos)
 {
 	return CameraSpaceToViewportSpace(SimulationSpaceToCameraSpace(pos));
@@ -187,7 +184,8 @@ bool DearImGuiUsingKeyboard()
 // -- MISC -- //
 ////////////////
 
-bool mousePressed = false;
+bool lmbPressed = false;
+bool rmbPressed = false;
 double currMouseXPos, currMouseYPos = 0;
 
 vec2 GetMouseSimPos()
@@ -268,7 +266,7 @@ void glfw_cursor_position_callback(GLFWwindow* window, double x, double y)
 
 	if (DearImGuiUsingMouse()) return;
 
-	if (mousePressed)
+	if (rmbPressed)
 	{
 		vec2 oldMouseSimPos = ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
 		vec2 newMouseSimPos = ViewportSpaceToSimulationSpace(vec2(x, y));
@@ -282,27 +280,31 @@ void glfw_cursor_position_callback(GLFWwindow* window, double x, double y)
 
 void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-	// Regardless of DearImGui, update our own mousePressed variable
+	// Regardless of DearImGui, update our own mousePressed variables
 	if (button == GLFW_MOUSE_BUTTON_LEFT)
 	{
-		mousePressed = action == GLFW_PRESS;
+		lmbPressed = action == GLFW_PRESS;
+	}
+	if (button == GLFW_MOUSE_BUTTON_RIGHT)
+	{
+		rmbPressed = action == GLFW_PRESS;
 	}
 
 	if (DearImGuiUsingMouse()) return;
 
-	if (button == GLFW_MOUSE_BUTTON_LEFT)
+	if (button == GLFW_MOUSE_BUTTON_RIGHT)
 	{
-		Camera_Enable_Glide(!mousePressed);
+		Camera_Enable_Glide(!rmbPressed);
 	}
 
-	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 	{
 		CreatureUniqueID creatureID;
 		bool creatureClicked = SelectCreatureByDistanceToMouse(creatureID);
 
 		if (creatureClicked)
 		{
-			TrackCreature(creatureID);
+			StartTrackingCreature(creatureID);
 		}
 	}
 }

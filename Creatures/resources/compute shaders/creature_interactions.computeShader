@@ -30,7 +30,7 @@ layout (std430, binding = 5) buffer CreatureTiles
 	int Tiles[];
 };
 
-layout (std430, binding = 6) buffer CreatureGeneralPurpose
+layout (std430, binding = 6) buffer CreatureGeneralPurposeVec2
 {
 	vec2 PhysicsFixes[];
 };
@@ -150,6 +150,11 @@ void main()
 				if (distSquared < RadiiSum * RadiiSum)
 				{
 					
+					/////////////////////////////
+					// -- COLLISION PHYSICS -- //
+					/////////////////////////////
+
+
 					// Note on gliders: for easier computations, we don't check if creatures passed through each other (happens when
 					// their velocities are bigger in magnitude than their radii). This is fine, however what we're not willing to have
 					// are gliders: creature A is a glider when A passes through creature B, places itself on the OTHER side of creature B,
@@ -192,8 +197,16 @@ void main()
 					PhysicsFixes[bGID] += c2PosSub;
 
 
-					// Register deformers
+					//////////////////////////////////
+					// -- COLLISION INTERACTIONS -- //
+					//////////////////////////////////
+					// @TODO: Maybe actually have both threads do this work separately?
 
+
+
+					//////////////////////////////////
+					// -- COLLISION DEFORMATIONS -- //
+					//////////////////////////////////
 
 					uint aCurrentDeformersCount = atomicAdd(DeformerCounts[gid], 1);
 					if (aCurrentDeformersCount < uMaxNumOfDeformers)

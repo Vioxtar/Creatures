@@ -14,7 +14,10 @@ struct CreatureData
 	vector<GLfloat> brainNodes;
 	vector<vec2> brainBiasesExponents;
 	vector<GLuint> brainStructure;
-	vec3 col;
+	GLfloat skinHue;
+	GLfloat skinSaturation;
+	GLfloat skinValue;
+	vec3 skinRGBColors;
 	vec2 pos;
 	vec2 vel;
 	GLfloat rad;
@@ -74,6 +77,7 @@ extern CreatureAttributesSSBOInfo creature_EyeMuscles;
 extern CreatureAttributesSSBOInfo creature_EyePositions;
 extern CreatureAttributesSSBOInfo creature_EyeConeRadii;
 extern CreatureAttributesSSBOInfo creature_EyePupilSights;
+extern CreatureAttributesSSBOInfo creature_EyePupilTargetCreatureIndices;
 extern CreatureAttributesSSBOInfo creature_EyeConeSights;
 
 // Physics
@@ -99,10 +103,18 @@ extern CreatureAttributesSSBOInfo creature_Horninesses;
 // Creature misc
 extern CreatureAttributesSSBOInfo creature_Generations;
 extern CreatureAttributesSSBOInfo creature_UniformGridTiles;
-extern CreatureAttributesSSBOInfo creature_GeneralPurpose;
+
+// General purpose data packets
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeVec2;
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeSecondVec2;
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeFloat;
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeUInt;
 
 // Appearances
-extern CreatureAttributesSSBOInfo creature_Colors;
+extern CreatureAttributesSSBOInfo creature_SkinHues;
+extern CreatureAttributesSSBOInfo creature_SkinSaturations;
+extern CreatureAttributesSSBOInfo creature_SkinValues;
+extern CreatureAttributesSSBOInfo creature_SkinRGBColors;
 extern CreatureAttributesSSBOInfo creature_SkinPatterns;
 
 // Creature-localized devices (feeders, shields, sensors)

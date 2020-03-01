@@ -1,0 +1,116 @@
+#version 460 core
+
+layout (std430, binding = 0) buffer CreatureEyePupilSights
+{
+	float EyePupilSights[];
+};
+
+layout (std430, binding = 1) buffer CreatureGeneralPurposeUint
+{
+	uint EyePupilTargetCreatureIndices[];
+};
+
+layout (std430, binding = 2) buffer CreatureGeneralPurposeFloat
+{
+	float EyePupilActivations[];
+};
+
+layout (std430, binding = 3) buffer CreatureGeneralPurposeSecondVec2
+{
+	vec2 EyePupilC2C1PosDiffNorms[];
+};
+
+layout (std430, binding = 4) buffer CreatureShieldDirections
+{
+	vec2 ShieldDirections[];
+};
+
+layout (std430, binding = 5) buffer CreatureShieldSpans
+{
+	float ShieldSpans[];
+};
+
+layout (std430, binding = 6) buffer CreatureShieldStates
+{
+	float ShieldStates[];
+};
+
+layout (std430, binding = 7) buffer CreatureSpikeDirections
+{
+	vec2 SpikeDirections[];
+};
+
+layout (std430, binding = 8) buffer CreatureSpikeStates
+{
+	float SpikeStates[];
+};
+
+layout (std430, binding = 9) buffer CreatureFeederDirections
+{
+	vec2 FeederDirections[];
+};
+
+layout (std430, binding = 10) buffer CreatureFeederStates
+{
+	float FeederStates[];
+};
+
+layout (std430, binding = 11) buffer CreatureForwardDirections
+{
+	vec2 ForwardDirections[];
+};
+
+
+
+layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
+
+
+uniform uint uCreatureCount;
+uniform uint uCreatureEyeNumOfPupilValues;
+
+void main()
+{
+
+	uint gid = gl_GlobalInvocationID.x;
+	if (gid >= uCreatureCount)
+	{
+		return;
+	}
+
+	// Set default values to-be-written
+	float pupilActivation = 0.0;
+	float pupilShieldProminence = 0.0;
+	float pupilSpikeProminence = 0.0;
+	float pupilFeederProminence = 0.0;
+	float pupilForwardAimProminence = 0.0;
+
+
+	// Obtain our pupil creature target
+	uint bGID = EyePupilTargetCreatureIndices[gid];
+	
+	// If bGID == gid it means the pupil didn't see anything
+	if (bGID != gid)
+	{
+		// Get some data about our seen creature
+		vec2 c2c1PosDiffNorm = EyePupilC2C1PosDiffNorms[gid];
+
+		// Set pupil sight values
+		pupilActivation = EyePupilActivations[gid];
+		pupilShieldProminence = 0.5 * ShieldStates[bGID] + 0.5 * (max(dot(c2c1PosDiffNorm, ShieldDirections[bGID]), 0) > ShieldSpans[bGID] ? 1.0 : 0.0);;
+		pupilSpikeProminence = 0.5 * SpikeStates[bGID] + 0.5 * max(dot(c2c1PosDiffNorm, SpikeDirections[bGID]), 0);
+		pupilFeederProminence = 0.5 * FeederStates[bGID] + 0.5 * max(dot(c2c1PosDiffNorm, FeederDirections[bGID]), 0);
+		pupilForwardAimProminence = max(dot(c2c1PosDiffNorm, ForwardDirections[bGID]), 0);
+	}
+
+
+	// Write data
+
+	uint pupilSightStartIndex = gid * uCreatureEyeNumOfPupilValues;
+
+	EyePupilSights[pupilSightStartIndex + 0] = pupilActivation;
+	EyePupilSights[pupilSightStartIndex + 1] = pupilShieldProminence;
+	EyePupilSights[pupilSightStartIndex + 2] = pupilSpikeProminence; 
+	EyePupilSights[pupilSightStartIndex + 3] = pupilFeederProminence;
+	EyePupilSights[pupilSightStartIndex + 4] = pupilForwardAimProminence;
+
+}

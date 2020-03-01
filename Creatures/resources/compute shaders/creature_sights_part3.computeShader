@@ -1,0 +1,120 @@
+#version 460 core
+
+layout (std430, binding = 0) buffer CreatureEyePupilSights
+{
+	float EyePupilSights[];
+};
+
+layout (std430, binding = 1) buffer CreatureGeneralPurposeUint
+{
+	uint EyePupilTargetCreatureIndices[];
+};
+
+layout (std430, binding = 2) buffer CreatureSkinHues
+{
+	float SkinHues[];
+};
+
+layout (std430, binding = 3) buffer CreatureSkinSaturations
+{
+	float SkinSaturations[];
+};
+
+layout (std430, binding = 4) buffer CreatureSkinValues
+{
+	float SkinValues[];
+};
+
+layout (std430, binding = 5) buffer CreatureSkinPatterns
+{
+	vec2 SkinPatterns[];
+};
+
+layout (std430, binding = 6) buffer CreatureLives
+{
+	float Lives[];
+};
+
+layout (std430, binding = 7) buffer CreatureEnergies
+{
+	float Energies[];
+};
+
+layout (std430, binding = 8) buffer CreatureRadii
+{
+	float Radii[];
+};
+
+
+
+
+layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
+
+
+uniform uint uCreatureCount;
+uniform uint uCreatureEyeNumOfPupilValues;
+
+void main()
+{
+
+	uint gid = gl_GlobalInvocationID.x;
+	if (gid >= uCreatureCount)
+	{
+		return;
+	}
+
+
+	// Set default values to-be-written
+	float pupilSkinHueDifference = 0.0
+	float pupilSkinValue = 0.0;
+	float pupilSkinSaturation = 0.0;
+	float pupilLife = 0.0;
+	float pupilEnergy = 0.0;
+	float pupilRadius = 0.0;
+	float pupilSkinPatternX = 0.0;
+	float pupilSkinPatternY = 0.0;
+
+
+	// Obtain our pupil creature target
+	uint bGID = EyePupilTargetCreatureIndices[gid];
+	
+	// If bGID == gid it means the pupil didn't see anything
+	if (bGID != gid)
+	{
+		// Get some stuff about ourselves
+		float aHue = SkinHues[aGID];
+
+		// Get some data about our seen creature
+		float bHue = SkinHues[bGID];
+		vec2 bSkinPattern = SkinPatterns[bGID];
+
+		// Set pupil sight values
+
+		pupilSkinHueDifference = abs(aHue - bHue); // Raw distance between hue values
+		pupilSkinHueDifference = pupilSkinHueDifference > 0.5 ? 1.0 - pupilSkinHueDifference : pupilSkinHueDifference; // Can't be more than 0.5, if it is we're getting closer from the other side (hue is cyclic)
+		pupilSkinHueDifference *= 2.0; // Max hue difference up until now was 0.5, map that to 1.0
+
+		pupilSkinValue = SkinValues[bGID];
+		pupilSkinSaturation = SkinSaturations[bGID];
+		pupilLife = Lives[bGID];
+		pupilEnergy = Energies[bGID];
+		pupilRadius = Radii[bGID];
+		pupilSkinPatternX = bSkinPattern.x;
+		pupilSkinPatternY = bSkinPattern.y;
+	}
+
+
+	// Write data
+
+	uint pupilSightStartIndex = gid * uCreatureEyeNumOfPupilValues;
+
+	EyePupilSights[pupilSightStartIndex + 5] =	pupilSkinHueDifference;
+	EyePupilSights[pupilSightStartIndex + 6] =	pupilSkinValue;
+	EyePupilSights[pupilSightStartIndex + 7] =	pupilSkinSaturation;
+	EyePupilSights[pupilSightStartIndex + 8] =	pupilLife;
+	EyePupilSights[pupilSightStartIndex + 9] =	pupilEnergy;
+	EyePupilSights[pupilSightStartIndex + 10] = pupilRadius;
+	EyePupilSights[pupilSightStartIndex + 11] = pupilSkinPatternX;
+	EyePupilSights[pupilSightStartIndex + 12] = pupilSkinPatternY;
+
+}

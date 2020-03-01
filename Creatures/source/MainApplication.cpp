@@ -15,7 +15,7 @@
 #include "ui/Camera.h"
 
 
-//#define ENABLE_DEBUG
+#define ENABLE_DEBUG
 
 
 int main()
@@ -93,7 +93,13 @@ int main()
 	GLint maxWorkGroupInvocations;
 	glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &maxWorkGroupInvocations);
 	cout << "Max number of workgroup invocations: " << maxWorkGroupInvocations << endl;
-	
+	GLint maxSSBOBinds;
+	glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &maxSSBOBinds);
+	cout << "Max number of SSBO binds: " << maxSSBOBinds << endl;
+	GLint maxComputeStorageBlocks;
+	glGetIntegerv(GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS, &maxComputeStorageBlocks);
+	cout << "maxComputeStorageBlocks: " << maxComputeStorageBlocks << endl;
+
 	// @DEBUG
 	double lastTime = 0;
 	int frameCount = 0;

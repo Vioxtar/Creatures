@@ -36,7 +36,7 @@ extern CreatureAttributesSSBOInfo creature_EyeMuscles{ 0, sizeof(vec2) };
 extern CreatureAttributesSSBOInfo creature_EyePositions{ 0, sizeof(vec2) };
 extern CreatureAttributesSSBOInfo creature_EyeConeRadii{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_EyePupilSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES };
-extern CreatureAttributesSSBOInfo creature_EyeConeSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONE_VALUES * CREATURE_EYE_NUM_OF_CONES };
+extern CreatureAttributesSSBOInfo creature_EyeConeSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONES_VALUES };
 
 // Physics
 extern CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };
@@ -61,10 +61,18 @@ extern CreatureAttributesSSBOInfo creature_Horninesses{ 0, sizeof(GLfloat) };
 // Creature misc
 extern CreatureAttributesSSBOInfo creature_Generations{ 0, sizeof(GLuint) };
 extern CreatureAttributesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLint) };
-extern CreatureAttributesSSBOInfo creature_GeneralPurpose{ 0, sizeof(vec2) };
+
+// General purpose data packets
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeVec2{ 0, sizeof(vec2) };
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeSecondVec2{ 0, sizeof(vec2) };
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeFloat{ 0, sizeof(GLfloat) };
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeUInt{ 0, sizeof(GLuint) };
 
 // Appearances
-extern CreatureAttributesSSBOInfo creature_Colors{ 0, sizeof(vec3) };
+extern CreatureAttributesSSBOInfo creature_SkinHues{ 0, sizeof(GLfloat) };
+extern CreatureAttributesSSBOInfo creature_SkinSaturations{ 0, sizeof(GLfloat) };
+extern CreatureAttributesSSBOInfo creature_SkinValues{ 0, sizeof(GLfloat) };
+extern CreatureAttributesSSBOInfo creature_SkinRGBColors{ 0, sizeof(vec3) };
 extern CreatureAttributesSSBOInfo creature_SkinPatterns{ 0, sizeof(vec2) };
 
 // Creature-localized devices (feeders, shields, sensors)
@@ -80,11 +88,6 @@ extern CreatureAttributesSSBOInfo creature_ShieldStates{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_ShieldLocalAngles{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_ShieldSpans{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_ShieldDirections{ 0, sizeof(vec2) };
-
-// @TODO: actually implement this placeholder
-//extern CreatureAttributesSSBOInfo creature_SensorsStates{ 0, sizeof(GLfloat) };
-//extern CreatureAttributesSSBOInfo creature_SensorsLocalAngles{ 0, sizeof(GLfloat) };
-//extern reatureAttributesSSBOInfo creature_SensorsDirections{ 0, sizeof(vec2) };
 
 // Deformations
 extern CreatureAttributesSSBOInfo creature_DeformerPositions{ 0, sizeof(vec2) * CREATURE_MAX_NUM_OF_DEFORMERS };
@@ -107,7 +110,7 @@ void ResetDynamicAttributeSizes()
 	creature_DeformerRadii.attributeBytesSize = sizeof(GLfloat) * CREATURE_MAX_NUM_OF_DEFORMERS;
 
 	creature_EyePupilSights.attributeBytesSize = sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES;
-	creature_EyeConeSights.attributeBytesSize = sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONE_VALUES * CREATURE_EYE_NUM_OF_CONES;
+	creature_EyeConeSights.attributeBytesSize = sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONES_VALUES;
 }
 
 
@@ -142,8 +145,13 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Horninesses);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Generations);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_UniformGridTiles);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurpose);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_Colors);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeVec2);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeFloat);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeUInt);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinHues);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinSaturations);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinValues);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinRGBColors);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinPatterns);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SpikeStates);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SpikeLocalAngles);
@@ -155,9 +163,6 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldLocalAngles);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldSpans);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldDirections);
-	//creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsStates);
-	//creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsLocalAngles);
-	//creatureAttributesSSBOInfosRefs.push_back(&creature_SensorsDirections);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_DeformerPositions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_DeformerRadii);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_DeformerCounts);
@@ -250,10 +255,12 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_BrainsNodes, newCreatureIndex, newCreatureData.brainNodes.data());
 	SetCreatureAttribute(creature_BrainsBiasesExponents, newCreatureIndex, newCreatureData.brainBiasesExponents.data());
 	SetCreatureAttribute(creature_BrainsStructures, newCreatureIndex, newCreatureData.brainStructure.data());
-	SetCreatureAttribute(creature_Colors, newCreatureIndex, &newCreatureData.col);
+	SetCreatureAttribute(creature_SkinHues, newCreatureIndex, &newCreatureData.skinHue);
+	SetCreatureAttribute(creature_SkinSaturations, newCreatureIndex, &newCreatureData.skinSaturation);
+	SetCreatureAttribute(creature_SkinValues, newCreatureIndex, &newCreatureData.skinValue);
 	SetCreatureAttribute(creature_Positions, newCreatureIndex, &newCreatureData.pos);
 	SetCreatureAttribute(creature_Velocities, newCreatureIndex, &newCreatureData.vel);
-	SetCreatureAttribute(creature_GeneralPurpose, newCreatureIndex, NULL);
+	SetCreatureAttribute(creature_GeneralPurposeVec2, newCreatureIndex, NULL);
 	SetCreatureAttribute(creature_Radii, newCreatureIndex, &newCreatureData.rad);
 	SetCreatureAttribute(creature_Lives, newCreatureIndex, &newCreatureData.life);
 	SetCreatureAttribute(creature_Angles, newCreatureIndex, &newCreatureData.angle);

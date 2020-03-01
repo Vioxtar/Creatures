@@ -81,8 +81,11 @@
     <None Include="resources\graphical shaders\creature_body.fragmentShader" />
     <None Include="resources\graphical shaders\creature_body.vertexShader" />
     <None Include="resources\compute shaders\creature_interactions.computeShader" />
-    <None Include="resources\compute shaders\init_new_frame.computeShader" />
     <None Include="resources\compute shaders\creature_body_work.computeShader" />
+    <None Include="resources\compute shaders\frame_pre_logic.computeShader" />
+    <None Include="resources\compute shaders\frame_post_logic.computeShader" />
+    <None Include="resources\compute shaders\creature_sights_part1.computeShader" />
+    <None Include="resources\compute shaders\creature_sights_part2.computeShader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\OpenGLErrorDebugger.h">

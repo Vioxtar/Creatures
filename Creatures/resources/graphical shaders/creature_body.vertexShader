@@ -1,9 +1,9 @@
 #version 460 core
 layout (location = 0) in vec2 aVertexLocalPos;
 
-layout (std430, binding = 0) buffer CreatureColors
+layout (std430, binding = 0) buffer CreatureSkinRGBColors
 {
-	float Colors[];
+	float SkinRGBColors[];
 };
 
 layout (std430, binding = 1) buffer CreaturePositions
@@ -80,10 +80,9 @@ out vec2 oSpikeEuclideanPos;
 out vec2 oFeederEuclideanPos;
 
 // Per instance values
-// @TODO: Find if there's a way to pass these to the fragment shader actually per instance
-out vec4 oVertexColor;
-out vec2 oSkinPattern;
-out float oLife;
+flat out vec4 oVertexColor;
+flat out vec2 oSkinPattern;
+flat out float oLife;
 
 
 void main()
@@ -98,7 +97,7 @@ void main()
 	float creatureLife = Lives[gl_InstanceID];
 	vec2 creatureSkinPattern = SkinPatterns[gl_InstanceID];
 	vec2 creatureForwardDir = ForwardDirections[gl_InstanceID];
-	vec3 creatureColor = vec3(Colors[colIndex], Colors[colIndex + 1], Colors[colIndex + 2]);
+	vec3 creatureColor = vec3(SkinRGBColors[colIndex], SkinRGBColors[colIndex + 1], SkinRGBColors[colIndex + 2]);
 	vec2 creatureSpikeDir = SpikeDirections[gl_InstanceID];
 	vec2 creatureFeederDir = FeederDirections[gl_InstanceID];
 	vec2 creatureShieldDir = ShieldDirections[gl_InstanceID];
@@ -108,8 +107,8 @@ void main()
 	float cosAng = cos(creatureAngle);
 	float sinAng = sin(creatureAngle);
 	vec2 rotatedLocalVertPos = vec2(
-		cosAng * aVertexLocalPos.x - sinAng * aVertexLocalPos.y,
-		sinAng * aVertexLocalPos.x + cosAng * aVertexLocalPos.y
+		cosAng * aVertexLocalPos.x + sinAng * aVertexLocalPos.y,
+		-sinAng * aVertexLocalPos.x + cosAng * aVertexLocalPos.y
 	);
 
 

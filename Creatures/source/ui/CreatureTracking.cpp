@@ -159,7 +159,7 @@ public:
 };
 
 
-void TrackCreature(CreatureUniqueID creatureID)
+void StartTrackingCreature(CreatureUniqueID creatureID)
 {
 	// Create new tracker, add to active trackers map
 	activeCreatureTrackers.emplace(creatureID, creatureID);
