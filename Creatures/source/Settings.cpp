@@ -78,9 +78,9 @@ extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13; // Not to be change
 // -- TWEAKABLE SETTINGS -- //
 //////////////////////////////
 
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 1000, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 50000, 0, 1000000 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 450, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 450, 1, 300 };
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
@@ -97,7 +97,7 @@ extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.2, 0.1, 0.3 };
 
 // Creature eye settings
 extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 10.0, 0.1, 30.0 };
-extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 5.0, 0.1, 5.0 };
+extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 3.0, 0.1, 3.0 };
 
 
 

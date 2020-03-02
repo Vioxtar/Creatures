@@ -35,6 +35,7 @@ extern CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) *
 extern CreatureAttributesSSBOInfo creature_EyeMuscles{ 0, sizeof(vec2) };
 extern CreatureAttributesSSBOInfo creature_EyePositions{ 0, sizeof(vec2) };
 extern CreatureAttributesSSBOInfo creature_EyeConeRadii{ 0, sizeof(GLfloat) };
+extern CreatureAttributesSSBOInfo creature_EyePupilConeCoverageFraction{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_EyePupilSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES };
 extern CreatureAttributesSSBOInfo creature_EyeConeSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONES_VALUES };
 
@@ -127,6 +128,7 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_EyeMuscles);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_EyePositions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_EyeConeRadii);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_EyePupilConeCoverageFraction);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_EyePupilSights);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_EyeConeSights);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Positions);
@@ -278,6 +280,7 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_ShieldSpans, newCreatureIndex, &newCreatureData.shieldSpan);
 	SetCreatureAttribute(creature_EyeMuscles, newCreatureIndex, &newCreatureData.eyeMuscles);
 	SetCreatureAttribute(creature_EyeConeRadii, newCreatureIndex, &newCreatureData.eyeConeRadius);
+	SetCreatureAttribute(creature_EyePupilConeCoverageFraction, newCreatureIndex, &newCreatureData.eyePupilConeCoverageFraction);
 
 	// Map creature unique ID to creature index
 	creature_UniqueIDsToSSBOIndex.emplace(creature_NextUniqueIDToBeAssigned, newCreatureIndex);

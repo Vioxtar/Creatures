@@ -6,6 +6,61 @@ Project minimum requiremenets:
 
 
 
+	// SOLUTION FOR INTERACTIONS START
+
+	Creature interactions
+	
+	Collision detection
+
+		Total: 15 storage blocks
+			poses
+			velos
+			meat (for mass)
+			radii
+			hardness
+			ugrid
+			tiles
+			physfix
+			deformPos (already there)
+			deformRad (already there)
+			colliders(deformers)Count // data msngr
+			colliderIndices // data msngr
+			colliderPosDiffDirs // data msngr
+			stickStates
+			stickDirs
+
+	Energy flow (12)
+		collidersCount[]
+		colliderIndices[]
+		colliderPosDiffDirs[]
+		Meat
+		Spike States
+		Spike Directions
+		Shield States
+		Shield Directions
+		Shield Spans
+		Feeder states
+		feeder directions
+		energies
+
+	Reproduction (5)
+		collidersCount[]
+		colliderIndices[]
+		colliderPosDiffDirs[]
+		Hornyness
+		ReproductionLogger
+		ForwardDir
+
+
+		// SOLUTION FOR INTERACTIONS END
+
+
+
+
+
+
+
+
 	SATURATION IS INHERITED
 	LIFE CAN BE LESS BORDER OPACITY
 	OPACITY IS ENERGY
@@ -40,7 +95,7 @@ Project minimum requiremenets:
 	NON-OBVIOUS-TODOS:
 
 	MOST IMPORTANT NOTE::: All your SSBO values are raw, un-normalized values! The only process in which raw values are converted to normalized values, or when normalizes values are converted to raw values, is during brain input, and brain output, respectively!
-	
+	Keep UGrid tiles small, and instead increase x/y start/end values!
 	try changing some brain data to GLhalf
 	try changing some indexing data to GLint64
 	Use as many fucking memory qualifiers and hints as possible to boost performance

@@ -465,15 +465,15 @@ void Simulation_Init()
 		InitFirstGenBrain(&data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
 
 		data.skinHue = random();
-		data.skinSaturation = random();
+		data.skinSaturation = 1.0;
 		data.skinValue = random();
 		data.pos = vec2(0, 0);
 		data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
 		data.rad = CREATURE_MAX_RADIUS.value;
 		data.life = random();
 		data.angle = random() * 2 * M_PI;
-		data.angleVel = (random() - 0.5) * 0.002;
-		data.forwardThrust = random()* random() * 0.001;
+		data.angleVel = (random() - 0.5) * 0.0075;
+		data.forwardThrust = random()* random() * 0.000015;
 		data.turnThrust = 0.0;
 		data.hardness = random();
 		data.skin = vec2(random(), random());
@@ -483,6 +483,7 @@ void Simulation_Init()
 		data.shieldSpan = random() * M_PI * 0.35;
 		data.eyeMuscles = vec2((random() - 0.5) * 2, (random() - 0.5) * 2);
 		data.eyeConeRadius = CREATURE_EYE_MAX_CONES_RADIUS.max;
+		data.eyePupilConeCoverageFraction = random();
 		CreatureData_AddCreature(data);
 	}
 
@@ -685,9 +686,10 @@ void Simulation_Logic()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_EyePositions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_EyeConeRadii.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_EyeConeSights.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_GeneralPurposeUInt.ssbo); // Write pupil creature target index
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_GeneralPurposeFloat.ssbo); // Write pupil activation
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_GeneralPurposeSecondVec2.ssbo); // Write pupil normalized direction between creatures
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_EyePupilConeCoverageFraction.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_GeneralPurposeUInt.ssbo); // Write pupil creature target index
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_GeneralPurposeFloat.ssbo); // Write pupil activation
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_GeneralPurposeSecondVec2.ssbo); // Write pupil normalized direction between creatures
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);

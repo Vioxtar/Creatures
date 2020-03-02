@@ -44,12 +44,14 @@ class CreatureTracker
 
 	void ShowOverlay()
 	{
+		float simToViewportScale = SimulationScaleToViewportScale(1.0);
+
 		if (overlay_Halo)
 		{
 			// Draw a halo around our creature
 			ImGui::GetBackgroundDrawList()->AddCircle(
 				SimulationSpaceToViewportSpace(creatureSnapShot.pos),
-				SimulationScaleToViewportScale(creatureSnapShot.rad) + UI_CREATURE_TRACKER_HALO_RADIUS_PIXEL_BIAS,
+				simToViewportScale * creatureSnapShot.rad + UI_CREATURE_TRACKER_HALO_RADIUS_PIXEL_BIAS,
 				IM_COL32(0, 255, 0, 100),
 				UI_CREATURE_TRACKER_HALO_NUM_OF_SEGMENTS,
 				UI_CREATURE_TRACKER_HALO_PIXEL_THICKNESS
@@ -92,19 +94,40 @@ class CreatureTracker
 				SimulationSpaceToViewportSpace(creatureSnapShot.pos + (creatureSnapShot.rightDir - creatureSnapShot.forwardDir) * CREATURE_EYE_MAX_PROBE_DISTANCE.value),
 				SimulationSpaceToViewportSpace(creatureSnapShot.pos + (-creatureSnapShot.rightDir - creatureSnapShot.forwardDir) * CREATURE_EYE_MAX_PROBE_DISTANCE.value),
 				SimulationSpaceToViewportSpace(creatureSnapShot.pos + (-creatureSnapShot.rightDir + creatureSnapShot.forwardDir) * CREATURE_EYE_MAX_PROBE_DISTANCE.value),
-				IM_COL32(255, 255, 0, 100),
+				IM_COL32(255, 255, 0, 50),
 				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 			);
 
 			vec2 viewportEyePos = SimulationSpaceToViewportSpace(creatureSnapShot.eyePos);
-			float viewportEyeConeRadius = SimulationScaleToViewportScale(creatureSnapShot.eyeConeRadius);
-			
+			float viewportEyeConeRadius = simToViewportScale * creatureSnapShot.eyeConeRadius;
+			float eyePupilConeCoverageFraction = creatureSnapShot.eyePupilConeCoverageFraction;
+			float viewportEyePupilRadius = eyePupilConeCoverageFraction * viewportEyeConeRadius;
+
 			// Draw eye cone ring
 			ImGui::GetBackgroundDrawList()->AddCircle(
 				viewportEyePos,
 				viewportEyeConeRadius,
-				IM_COL32(0, 255, 0, 35),
+				IM_COL32(0, 255, 0, 15),
 				int(viewportEyeConeRadius),
+				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
+			);
+
+			// Draw eye pupil ring
+			ImGui::GetBackgroundDrawList()->AddCircle(
+				viewportEyePos,
+				viewportEyePupilRadius,
+				IM_COL32(0, 255, 0, 15),
+				int(viewportEyePupilRadius),
+				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
+			);
+
+			// Draw eye pupil activation
+			float pupilActivation = creatureSnapShot.eyePupilSights[0];
+			ImGui::GetBackgroundDrawList()->AddCircle(
+				viewportEyePos,
+				viewportEyePupilRadius * pupilActivation,
+				IM_COL32(0, 255, 0, 100),
+				int(viewportEyePupilRadius),
 				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 			);
 
@@ -113,22 +136,28 @@ class CreatureTracker
 			float creatureAngle = creatureSnapShot.angle;
 			for (unsigned int i = 0; i < CREATURE_EYE_NUM_OF_CONES; ++i)
 			{
-				// Draw cone line
-				float lineAng = M_PI + i * angAdd - creatureAngle;
+				float iAng = i * angAdd;
+
+				// Draw cone border lines
+				float lineAng = M_PI + iAng - creatureAngle;
 				vec2 coneLineDir = vec2(sin(lineAng), cos(lineAng));
 				ImGui::GetBackgroundDrawList()->AddLine(
-					viewportEyePos,
+					viewportEyePos + coneLineDir * viewportEyePupilRadius,
 					viewportEyePos + coneLineDir * viewportEyeConeRadius,
-					IM_COL32(0, 255, 0, 20),
+					IM_COL32(0, 255, 0, 15),
 					UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 				);
 
-				// Draw cone activation
-				float activationAng = M_PI + i * angAdd + (angAdd / 2) - creatureAngle;
+				// Draw cone activation lines
+				float activationAng = M_PI + iAng + (angAdd / 2) - creatureAngle;
 				vec2 coneActivationDir = vec2(sin(activationAng), cos(activationAng));
+				vec2 p1 = viewportEyePos + coneActivationDir * viewportEyePupilRadius;
+				vec2 p2 = viewportEyePos + coneActivationDir * viewportEyeConeRadius;
+				float activation = creatureSnapShot.eyeConeSights.data()[i];
+				float oneMinusActivation = 1.0 - activation;
 				ImGui::GetBackgroundDrawList()->AddLine(
-					viewportEyePos,
-					viewportEyePos + coneActivationDir * viewportEyeConeRadius * creatureSnapShot.eyeConeSights.data()[i],
+					p1,
+					p1 * oneMinusActivation + p2 * activation,
 					IM_COL32(0, 255, 0, 100),
 					UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 				);

@@ -35,17 +35,22 @@ layout (std430, binding = 6) buffer CreatureEyeConeSights
 	float EyeConeSights[];
 };
 
-layout (std430, binding = 7) buffer CreatureGeneralPurposeUint
+layout (std430, binding = 7) buffer CreatureEyePupilConeCoverageFractions
+{
+	float EyePupilConeCoverageFractions[];
+};
+
+layout (std430, binding = 8) buffer CreatureGeneralPurposeUint
 {
 	uint EyePupilTargetCreatureIndices[];
 };
 
-layout (std430, binding = 8) buffer CreatureGeneralPurposeFloat
+layout (std430, binding = 9) buffer CreatureGeneralPurposeFloat
 {
 	float EyePupilActivations[];
 };
 
-layout (std430, binding = 9) buffer CreatureGeneralPurposeSecondVec2
+layout (std430, binding = 10) buffer CreatureGeneralPurposeSecondVec2
 {
 	vec2 EyePupilC2C1PosDiffNorms[];
 };
@@ -152,8 +157,11 @@ void main()
 
 	// Cache our values to be used during iterations
 	float eyeConeRadius = EyeConeRadii[gid];
+	float eyePupilRadius = EyePupilConeCoverageFractions[gid] * eyeConeRadius;
+	float eyeConeMinusPupilRadius = eyeConeRadius - eyePupilRadius;
 	vec2 aPos = Positions[gid];
 	float aAngle = Angles[gid];
+
 
 	// Used to figure out which creature the pupil will see given several overlapping creatures
 	float pupilClosestCreatureDistanceSeen = 0.0;
@@ -201,14 +209,15 @@ void main()
 
 				vec2 bPosToPupilPosDiff = pupilPos - bPos;
 				float bPosToPupilPosDist = length(bPosToPupilPosDiff);
+				float bPosToPupilPosDistMinusBRad = bPosToPupilPosDist - bRad;
 
 				// Did the creature land in our eye cone radius?
-				if (bPosToPupilPosDist <= eyeConeRadius)
+				if (bPosToPupilPosDistMinusBRad <= eyeConeRadius)
 				{
 					// The creature is within our eye...
 
 					// Did the creature land on our pupil?
-					if (bPosToPupilPosDist <= bRad)
+					if (bPosToPupilPosDist <= eyePupilRadius)
 					{
 						// Is it closer to this creature than previously seen creatures?
 						if (bPosToPupilPosDist < pupilClosestCreatureDistanceSeen || !pupilLandedOnCreature)
@@ -219,7 +228,9 @@ void main()
 
 							// Remember the closest creature index, activation and C2C1 normalized pos diff
 							pupilTargetCreatureIndex = bGID;
-							pupilActivation = 1.0 - bPosToPupilPosDist / bRad;
+							pupilActivation = 1.0 - bPosToPupilPosDist / eyePupilRadius;
+							
+							// @TODO: Debug pupil activation correctness
 
 							vec2 c2c1PosDiff = aPos - bPos;
 							float c2c1PosDist = length(c2c1PosDiff);
@@ -232,7 +243,6 @@ void main()
 						// Find out the relative angle between our eye and the observed creature
 						vec2 bPosToPupilPosDirection = bPosToPupilPosDiff / bPosToPupilPosDist;
 						
-						// @TODO is using atan2 here maybe faster? try it!
 						float absAng = ApproxAtan2(bPosToPupilPosDirection.x, -bPosToPupilPosDirection.y);
 						float relAng = mod(absAng + aAngle, M_PI_TWO);
 
@@ -241,9 +251,8 @@ void main()
 						uint coneIndex = coneID * uCreatureEyeNumOfValuesInSingleCone;
 
 						// Load our data into the mapped cone
-
-						// @TODO: Consider the radius here!
-						float activation = 1.0 - bPosToPupilPosDist / eyeConeRadius;
+						float distanceToConeRadius = bPosToPupilPosDistMinusBRad - eyePupilRadius;
+						float activation = max(0, min(1.0 - (distanceToConeRadius) / (eyeConeMinusPupilRadius), 1));
 						coneSights[coneIndex] = max(activation, coneSights[coneIndex]);
 
 					}

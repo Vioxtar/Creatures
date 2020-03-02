@@ -15,6 +15,7 @@ struct CreatureData
 	vector<vec2> brainBiasesExponents;
 	vector<GLuint> brainStructure;
 	vector<GLfloat> eyeConeSights;
+	vector<GLfloat> eyePupilSights;
 	GLfloat skinHue;
 	GLfloat skinSaturation;
 	GLfloat skinValue;
@@ -38,6 +39,7 @@ struct CreatureData
 	vec2 eyePos;
 	vec2 eyeMuscles;
 	GLfloat eyeConeRadius;
+	GLfloat eyePupilConeCoverageFraction;
 };
 
 
@@ -78,6 +80,7 @@ extern CreatureAttributesSSBOInfo creature_BrainsStructures;
 extern CreatureAttributesSSBOInfo creature_EyeMuscles;
 extern CreatureAttributesSSBOInfo creature_EyePositions;
 extern CreatureAttributesSSBOInfo creature_EyeConeRadii;
+extern CreatureAttributesSSBOInfo creature_EyePupilConeCoverageFraction;
 extern CreatureAttributesSSBOInfo creature_EyePupilSights;
 extern CreatureAttributesSSBOInfo creature_EyePupilTargetCreatureIndices;
 extern CreatureAttributesSSBOInfo creature_EyeConeSights;

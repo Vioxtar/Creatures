@@ -46,7 +46,7 @@ float ActivationFunction(float x, float exponent)
 
 void main()
 {
-
+	
 	uint gid = gl_GlobalInvocationID.x;
 	if (gid >= uCreatureCount)
 	{

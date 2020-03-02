@@ -47,5 +47,12 @@ CreatureData GetCreatureSnapshot(CreatureUniqueID creatureID)
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_EyeConeSights.ssbo);
 	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, creature_EyeConeSights.attributeBytesSize * ssboIndex, creature_EyeConeSights.attributeBytesSize, snapShot.eyeConeSights.data());
 
+	snapShot.eyePupilSights.reserve(CREATURE_EYE_NUM_OF_PUPIL_VALUES);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_EyePupilSights.ssbo);
+	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, creature_EyePupilSights.attributeBytesSize * ssboIndex, creature_EyePupilSights.attributeBytesSize, snapShot.eyePupilSights.data());
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_EyePupilConeCoverageFraction.ssbo);
+	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, creature_EyePupilConeCoverageFraction.attributeBytesSize * ssboIndex, creature_EyePupilConeCoverageFraction.attributeBytesSize, &snapShot.eyePupilConeCoverageFraction);
+
 	return snapShot;
 }
