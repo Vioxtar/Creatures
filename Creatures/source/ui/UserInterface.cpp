@@ -62,6 +62,7 @@ vec2 SimulationSpaceToViewportSpace(vec2 pos)
 	return CameraSpaceToViewportSpace(SimulationSpaceToCameraSpace(pos));
 }
 
+
 float SimulationScaleToViewportScale(float scaleVal)
 {
 	// Scale factor is the distance between the viewport equivalents of (1,0) and (0,0)

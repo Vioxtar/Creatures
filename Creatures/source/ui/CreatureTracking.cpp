@@ -22,8 +22,6 @@ class CreatureTracker
 
 	void Show()
 	{
-		// Show overlay even if we're minimized
-		ShowOverlay();
 
 		if (!ImGui::Begin(windowTitle.c_str(), &active))
 		{
@@ -31,24 +29,23 @@ class CreatureTracker
 			return;
 		}
 
-		if (ImGui::CollapsingHeader("Overlay Display"))
-		{
-			ImGui::Checkbox("Halo", &overlay_Halo);
-			ImGui::Checkbox("Forward Direction", &overlay_ForwardDir);
-			ImGui::Checkbox("Right Direction", &overlay_RightDir);
-			ImGui::Checkbox("Eyes", &overlay_Eye);
-		}
+
+
+		ShowMisc();
+		ShowBrain();
+		ShowEyes();
 
 		ImGui::End();
 	}
 
-	void ShowOverlay()
+	void ShowMisc()
 	{
 		float simToViewportScale = SimulationScaleToViewportScale(1.0);
 
+		// Draw creature halo
+		ImGui::Checkbox("Halo", &overlay_Halo);
 		if (overlay_Halo)
 		{
-			// Draw a halo around our creature
 			ImGui::GetBackgroundDrawList()->AddCircle(
 				SimulationSpaceToViewportSpace(creatureSnapShot.pos),
 				simToViewportScale * creatureSnapShot.rad + UI_CREATURE_TRACKER_HALO_RADIUS_PIXEL_BIAS,
@@ -58,6 +55,8 @@ class CreatureTracker
 			);
 		}
 
+		// Draw creature forward direction
+		ImGui::Checkbox("Forward Direction", &overlay_ForwardDir);
 		if (overlay_ForwardDir)
 		{
 			vec2 p1 = SimulationSpaceToViewportSpace(creatureSnapShot.pos);
@@ -72,6 +71,8 @@ class CreatureTracker
 			);
 		}
 
+		// Draw creature right direction
+		ImGui::Checkbox("Right Direction", &overlay_RightDir);
 		if (overlay_RightDir)
 		{
 			vec2 p1 = SimulationSpaceToViewportSpace(creatureSnapShot.pos);
@@ -84,6 +85,57 @@ class CreatureTracker
 				IM_COL32(0, 255, 0, 100),
 				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 			);
+		}
+	}
+
+	void ShowBrain()
+	{
+		if (ImGui::CollapsingHeader("Brain"))
+		{
+			ImGui::Text("To be implemented!");
+		}
+	}
+
+	void ShowEyes()
+	{
+		float simToViewportScale = SimulationScaleToViewportScale(1.0);
+
+		if (ImGui::CollapsingHeader("Eye"))
+		{
+			
+			
+			ImGui::Checkbox("Show Eye Overlay", &overlay_Eye);
+			
+			if (ImGui::TreeNode("Eye Pupil Sightings"))
+			{
+				float barWidth = UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_WIDTH;
+				float barHeight = UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_HEIGHT;
+				vec2 barDimensions = vec2(barWidth, barHeight);
+
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[0], barDimensions, "Activation");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[1], barDimensions, "Shield Prominence");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[2], barDimensions, "Spike Prominence");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[3], barDimensions, "Feeder Prominence");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[4], barDimensions, "Forward Aim Prominence");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[5], barDimensions, "Skin Hue Difference");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[6], barDimensions, "Skin Value");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[7], barDimensions, "Skin Saturation");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[8], barDimensions, "Skin Pattern X");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[9], barDimensions, "Skin Pattern Y");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[10], barDimensions, "Life");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[11], barDimensions, "Energy");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[12], barDimensions, "Radius");
+
+				ImGui::TreePop();
+			}
+
+			if (ImGui::TreeNode("Eye Cones Sightings"))
+			{
+
+
+				ImGui::TreePop();
+			}
+
 		}
 
 		if (overlay_Eye)

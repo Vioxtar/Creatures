@@ -23,6 +23,9 @@ extern const unsigned int UI_CREATURE_TRACKER_HALO_ALPHA = 10;
 extern const unsigned int UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS = 2;
 extern const unsigned int UI_CREATURE_TRACKER_DIRECTION_PIXEL_DISTANCE = 20;
 
+extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_HEIGHT = 20;
+extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_WIDTH = 200;
+
 
 // Technical settings
 extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 500;
@@ -78,9 +81,9 @@ extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13; // Not to be change
 // -- TWEAKABLE SETTINGS -- //
 //////////////////////////////
 
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 50000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 450, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 450, 1, 300 };
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 1500, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 1500, 1, 300 };
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
