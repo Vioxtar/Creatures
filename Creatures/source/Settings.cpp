@@ -82,8 +82,8 @@ extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13; // Not to be change
 //////////////////////////////
 
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 1500, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 1500, 1, 300 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 100, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 100, 1, 300 };
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };

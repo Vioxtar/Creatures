@@ -131,8 +131,6 @@ class CreatureTracker
 
 			if (ImGui::TreeNode("Eye Cones Sightings"))
 			{
-
-
 				ImGui::TreePop();
 			}
 
