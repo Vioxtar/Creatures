@@ -36,19 +36,19 @@ layout (std430, binding = 6) buffer CreatureSkinPatterns
 	vec2 SkinPatterns[];
 };
 
-layout (std430, binding = 7) buffer CreatureDeformerPositions
+layout (std430, binding = 7) buffer CreatureCollidersPositions
 {
-	vec2 DeformerPositions[];
+	vec2 CollidersPositions[];
 };
 
-layout (std430, binding = 8) buffer CreatureDeformerRadii
+layout (std430, binding = 8) buffer CreatureCollidersRadii
 {
-	float DeformerRadii[];
+	float CollidersRadii[];
 };
 
-layout (std430, binding = 9) buffer CreatureDeformerCounts
+layout (std430, binding = 9) buffer CreatureCollidersCounts
 {
-	uint DeformerCounts[];
+	uint CollidersCounts[];
 };
 
 layout (std430, binding = 10) buffer CreatureSpikeDirections
@@ -68,7 +68,7 @@ layout (std430, binding = 12) buffer CreatureShieldDirections
 
 
 uniform mat4 uTransform;
-uniform uint uMaxNumOfDeformers;
+uniform uint uMaxNumOfColliders;
 
 
 // Per vertex values
@@ -120,15 +120,15 @@ void main()
 
 	// Iterate deformers to deform the mesh
 	float pushBack = 0.0;
-	uint deformersCount = min(DeformerCounts[gl_InstanceID], uMaxNumOfDeformers);
-	uint deformersStartIndex = gl_InstanceID * uMaxNumOfDeformers;
+	uint deformersCount = min(CollidersCounts[gl_InstanceID], uMaxNumOfColliders);
+	uint deformersStartIndex = gl_InstanceID * uMaxNumOfColliders;
 	for (uint deformer = 0; deformer < deformersCount; deformer++)	{
 		
 		uint deformerIndex = deformersStartIndex + deformer;
 		
 		// Find our deformer's position and radius
-		vec2 deformerPos = DeformerPositions[deformerIndex];
-		float deformerRad = DeformerRadii[deformerIndex];
+		vec2 deformerPos = CollidersPositions[deformerIndex];
+		float deformerRad = CollidersRadii[deformerIndex];
 
 		vec2 deformerPosToVert = vertPos - deformerPos;
 		float deformerPosToVertDistance = length(deformerPosToVert);

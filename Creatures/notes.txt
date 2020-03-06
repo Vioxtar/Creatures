@@ -21,11 +21,13 @@ Project minimum requiremenets:
 			ugrid
 			tiles
 			physfix
-			deformPos (already there)
-			deformRad (already there)
+		
 			colliders(deformers)Count // data msngr
 			colliderIndices // data msngr
 			colliderPosDiffDirs // data msngr
+			colliderPositions (already there)
+			colliderRadii (already there)
+
 			stickStates
 			stickDirs
 

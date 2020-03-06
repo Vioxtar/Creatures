@@ -109,6 +109,13 @@ extern CreatureAttributesSSBOInfo creature_Horninesses;
 extern CreatureAttributesSSBOInfo creature_Generations;
 extern CreatureAttributesSSBOInfo creature_UniformGridTiles;
 
+// Colliders
+extern CreatureAttributesSSBOInfo creature_CollidersCounts;
+extern CreatureAttributesSSBOInfo creature_CollidersIndices;
+extern CreatureAttributesSSBOInfo creature_CollidersToPosDirs;
+extern CreatureAttributesSSBOInfo creature_CollidersPositions;
+extern CreatureAttributesSSBOInfo creature_CollidersRadii;
+
 // General purpose data packets
 extern CreatureAttributesSSBOInfo creature_GeneralPurposeVec2;
 extern CreatureAttributesSSBOInfo creature_GeneralPurposeSecondVec2;
@@ -135,13 +142,3 @@ extern CreatureAttributesSSBOInfo creature_ShieldStates;
 extern CreatureAttributesSSBOInfo creature_ShieldLocalAngles;
 extern CreatureAttributesSSBOInfo creature_ShieldSpans;
 extern CreatureAttributesSSBOInfo creature_ShieldDirections;
-
-// @TODO: actually implement this placeholder
-//extern CreatureAttributesSSBOInfo creature_SensorsStates;
-//extern CreatureAttributesSSBOInfo creature_SensorsLocalAngles;
-//extern reatureAttributesSSBOInfo creature_SensorsDirections;
-
-// Deformations
-extern CreatureAttributesSSBOInfo creature_DeformerPositions;
-extern CreatureAttributesSSBOInfo creature_DeformerRadii;
-extern CreatureAttributesSSBOInfo creature_DeformerCounts;

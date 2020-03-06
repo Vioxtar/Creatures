@@ -42,7 +42,9 @@ extern const uint16_t TECH_UPDATE_CREATURE_PLACEMENTS_WORKGROUP_LOCAL_SIZE = 153
 extern const uint16_t TECH_BORDER_PHYSICS_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_UNIFORM_GRID_BIND_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE = 1536;
-extern const uint16_t TECH_CREATURE_INTERACTIONS_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_CREATURE_INTERACTIONS_PART1_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_CREATURE_INTERACTIONS_PART2_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_CREATURE_INTERACTIONS_PART3_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_CREATURE_SIGHTS_PART1_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_CREATURE_SIGHTS_PART2_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_CREATURE_SIGHTS_PART3_WORKGROUP_LOCAL_SIZE = 1536;
@@ -82,8 +84,8 @@ extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13; // Not to be change
 //////////////////////////////
 
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_WIDTH = { 100, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 100, 1, 300 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 1000, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
 
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
@@ -128,8 +130,8 @@ extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES = CREATURE_BRAIN_M
 extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES = 1 + 1 + CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS + 1; // [NumOfLevels, NumOfInputs, NumOfMidLevels, NumOfOutputs]
 
 
-// Deformations - the max number of deformers is the maximum amount of circles of minimal radius that can simultaneously touch a single circle of maximal radius
-extern const GLuint CREATURE_MAX_NUM_OF_DEFORMERS = floor(M_PI / asin(CREATURE_MIN_RADIUS.min / (CREATURE_MAX_RADIUS.max + CREATURE_MIN_RADIUS.min)));
+// The max number of colliders is the maximum amount of circles of minimal radius that can simultaneously touch a single circle of maximal radius
+extern const GLuint CREATURE_MAX_NUM_OF_COLLIDERS = floor(M_PI / asin(CREATURE_MIN_RADIUS.min / (CREATURE_MAX_RADIUS.max + CREATURE_MIN_RADIUS.min)));
 
 // Eye settings
 extern const uint16_t CREATURE_EYE_NUM_OF_CONES_VALUES = CREATURE_EYE_NUM_OF_CONES * CREATURE_EYE_NUM_OF_VALUES_IN_SINGLE_CONE;

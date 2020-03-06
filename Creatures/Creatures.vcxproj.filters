@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\MainApplication.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\utils\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -69,6 +66,9 @@
     <ClCompile Include="source\ui\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\MainApplication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\compute shaders\border_physics.computeShader" />
@@ -80,13 +80,15 @@
     <None Include="resources\compute shaders\update_creature_placements.computeShader" />
     <None Include="resources\graphical shaders\creature_body.fragmentShader" />
     <None Include="resources\graphical shaders\creature_body.vertexShader" />
-    <None Include="resources\compute shaders\creature_interactions.computeShader" />
     <None Include="resources\compute shaders\creature_body_work.computeShader" />
     <None Include="resources\compute shaders\frame_pre_logic.computeShader" />
     <None Include="resources\compute shaders\frame_post_logic.computeShader" />
     <None Include="resources\compute shaders\creature_sights_part1.computeShader" />
     <None Include="resources\compute shaders\creature_sights_part2.computeShader" />
     <None Include="resources\compute shaders\creature_sights_part3.computeShader" />
+    <None Include="resources\compute shaders\creature_interactions_part1.computeShader" />
+    <None Include="resources\compute shaders\creature_interactions_part2.computeShader" />
+    <None Include="resources\compute shaders\creature_interactions_part3.computeShader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\OpenGLErrorDebugger.h">

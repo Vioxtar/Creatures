@@ -15,41 +15,55 @@ layout (std430, binding = 2) buffer CreatureRadii
 	float Radii[];
 };
 
-layout (std430, binding = 3) buffer CreatureHardnesses
+layout (std430, binding = 3) buffer CreatureMeats
+{
+	float Meats[];
+};
+
+layout (std430, binding = 4) buffer CreatureHardnesses
 {
 	float Hardnesses[];
 };
 
-layout (std430, binding = 4) buffer UniformGrid
+layout (std430, binding = 5) buffer UniformGrid
 {
 	uint UGrid[];
 };
 
-layout (std430, binding = 5) buffer CreatureTiles
+layout (std430, binding = 6) buffer CreatureTiles
 {
 	int Tiles[];
 };
 
-layout (std430, binding = 6) buffer CreatureGeneralPurposeVec2
+layout (std430, binding = 7) buffer CreatureGeneralPurposeVec2
 {
 	vec2 PhysicsFixes[];
 };
 
-layout (std430, binding = 7) buffer CreatureDeformerPositions
+layout (std430, binding = 8) buffer CreatureCollidersCounts
 {
-	vec2 DeformerPositions[];
+	uint CollidersCounts[];
 };
 
-layout (std430, binding = 8) buffer CreatureDeformerRadii
+layout (std430, binding = 9) buffer CreatureCollidersIndices
 {
-	float DeformerRadii[];
+	uint CollidersIndices[];
 };
 
-layout (std430, binding = 9) buffer CreatureDeformerCounts
+layout (std430, binding = 10) buffer CreatureCollidersToPosDirs
 {
-	uint DeformerCounts[];
+	vec2 CollidersToPosDirs[];
 };
 
+layout (std430, binding = 11) buffer CreatureCollidersPositions
+{
+	vec2 CollidersPositions[];
+};
+
+layout (std430, binding = 12) buffer CreatureCollidersRadii
+{
+	float CollidersRadii[];
+};
 
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
@@ -58,8 +72,8 @@ layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 uniform uint uCreatureCount;
 uniform uvec2 uGridDimensions;
 uniform uint uIndicesInTile;
+uniform uint uMaxNumOfColliders;
 uniform vec2 uRandom;
-uniform uint uMaxNumOfDeformers;
 
 void main()
 {
@@ -101,8 +115,9 @@ void main()
 	vec2 aOldPos = aPos - aVel;
 	float aRad = Radii[gid];
 	float aHardness = Hardnesses[gid];
-	
-	uint aDeformersStartIndex = gid * uMaxNumOfDeformers;
+	float aMeat = Meats[gid];
+
+	uint aCollidersStartIndex = gid * uMaxNumOfColliders;
 	
 	// Iterate on the uniform grid throughout start/end x,y indices
 	for (uint x = xStart; x <= xEnd; x++)
@@ -134,6 +149,7 @@ void main()
 
 				vec2 bPos = Positions[bGID];
 				float bRad = Radii[bGID];
+				float bMeat = Meats[bGID];
 
 				vec2 c1c2PosDiff = bPos - aPos;
 				float distSquared = dot(c1c2PosDiff, c1c2PosDiff);
@@ -144,7 +160,7 @@ void main()
 					// Both creatures are inside each other, give each other a small push...
 					PhysicsFixes[gid] += uRandom * aRad;
 					PhysicsFixes[bGID] -= uRandom * bRad;
-					continue;
+					continue; // @TODO: Continuing here is problematic because we're not registering colliders and stuff
 				}
 
 				float RadiiSum = aRad + bRad;
@@ -173,6 +189,8 @@ void main()
 					
 					// Proceed as usual...
 				
+
+
 					float dist = sqrt(distSquared);
 					float violation = RadiiSum - dist;
 
@@ -184,7 +202,7 @@ void main()
 					float velCollideFactor = pow(dot(velDiff, velDiff), 0.25);
 					float push = pow(hardnessFactor * velCollideFactor, 1.0 - penetrationPercentage) * violation;
 			
-
+					// @TODO: Place meat values here
 					float m1 = 1;
 					float m2 = 1;
 					float m1Frac = m1 / (m1 + m2);
@@ -198,35 +216,37 @@ void main()
 					PhysicsFixes[bGID] += c2PosSub;
 
 
-					//////////////////////////////////
-					// -- COLLISION INTERACTIONS -- //
-					//////////////////////////////////
-					// @TODO: Maybe actually have both threads do this work separately?
 
+					// Register colliders
 
+					vec2 c1c2Dir = c1c2PosDiff / dist;
+					vec2 c2c1Dir = -c1c2Dir;
 
-					//////////////////////////////////
-					// -- COLLISION DEFORMATIONS -- //
-					//////////////////////////////////
-
-					uint aCurrentDeformersCount = atomicAdd(DeformerCounts[gid], 1);
-					if (aCurrentDeformersCount < uMaxNumOfDeformers)
+					uint aCurrentCollidersCount = atomicAdd(CollidersCounts[gid], 1);
+					if (aCurrentCollidersCount < uMaxNumOfColliders)
 					{
 						// We have enough room, add b to a
-						uint deformerPlacementIndex = aDeformersStartIndex + aCurrentDeformersCount;
-						DeformerPositions[deformerPlacementIndex] = bPos;
-						DeformerRadii[deformerPlacementIndex] = bRad;
+						uint colliderPlacementIndex = aCollidersStartIndex + aCurrentCollidersCount;
+
+						CollidersIndices[colliderPlacementIndex] = bGID;
+						CollidersToPosDirs[colliderPlacementIndex] = c2c1Dir;
+						CollidersPositions[colliderPlacementIndex] = bPos;
+						CollidersRadii[colliderPlacementIndex] = bRad;
+
 					}
 
 
-					uint bDeformersStartIndex = bGID * uMaxNumOfDeformers;
-					uint bCurrentDeformersCount = atomicAdd(DeformerCounts[bGID], 1);
-					if (bCurrentDeformersCount < uMaxNumOfDeformers)
+					uint bCollidersStartIndex = bGID * uMaxNumOfColliders;
+					uint bCurrentCollidersCount = atomicAdd(CollidersCounts[bGID], 1);
+					if (bCurrentCollidersCount < uMaxNumOfColliders)
 					{
 						// We have enough room, add a to b
-						uint deformerPlacementIndex = bDeformersStartIndex + bCurrentDeformersCount;
-						DeformerPositions[deformerPlacementIndex] = aPos;
-						DeformerRadii[deformerPlacementIndex] = aRad;
+						uint colliderPlacementIndex = bCollidersStartIndex + bCurrentCollidersCount;
+						
+						CollidersIndices[colliderPlacementIndex] = gid;
+						CollidersToPosDirs[colliderPlacementIndex] = c1c2Dir;
+						CollidersPositions[colliderPlacementIndex] = aPos;
+						CollidersRadii[colliderPlacementIndex] = aRad;
 					}
 				}
 			}
