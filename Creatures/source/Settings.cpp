@@ -76,7 +76,7 @@ extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 20;
 // Creature eye settings
 extern const uint16_t CREATURE_EYE_NUM_OF_CONES = 32;
 extern const uint16_t CREATURE_EYE_NUM_OF_VALUES_IN_SINGLE_CONE = 1;
-extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13; // Not to be changed lightly - data transfer packet relies on 3 floats!
+extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13;
 
 
 //////////////////////////////
@@ -106,7 +106,7 @@ extern TweakableFloatSetting RENDER_CLEAR_COLOR_B = { 0.1, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEVICE_AIM_DOT_THRESHOLD = { 0.9, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS = { 0.0, 0.0, 1.0 };
 
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.4, 0.3, 0.5 };
@@ -120,9 +120,9 @@ extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 3.0, 0.1, 3.0 };
 
 
 
-///////////////////////////////
-// -- SUBSEQUENT SETTINGS -- //
-///////////////////////////////
+///////////////////////////////////////////
+// -- ASSISTING & SUBSEQUENT SETTINGS -- //
+///////////////////////////////////////////
 
 // These should not be edited lightly
 

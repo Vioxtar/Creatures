@@ -123,7 +123,7 @@ void main()
 
 
 		// Are we aiming our feeder at B?
-		if (-dot(aFeederDirection, bColliderToUsDir) > uDeviceAimDotThreshold || true)
+		if (-dot(aFeederDirection, bColliderToUsDir) > uDeviceAimDotThreshold)
 		{
 			// Does B have a shield?
 			vec2 bShieldDirection = ShieldDirections[bGID];
@@ -145,7 +145,7 @@ void main()
 		// Is B spiking us?
 		float bSpikeState = SpikeStates[bGID];
 		vec2 bSpikeDirection = SpikeDirections[bGID];
-		if (dot(bSpikeDirection, bColliderToUsDir) > uDeviceAimDotThreshold || true)
+		if (dot(bSpikeDirection, bColliderToUsDir) > uDeviceAimDotThreshold)
 		{
 			// Do we have a shield?
 			if (-dot(bSpikeDirection, aShieldDirection) < 1.0 - aShieldSpan)

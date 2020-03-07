@@ -162,9 +162,9 @@ extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS;
 
 
 
-///////////////////////////////
-// -- SUBSEQUENT SETTINGS -- //
-///////////////////////////////
+///////////////////////////////////////////
+// -- ASSISTING & SUBSEQUENT SETTINGS -- //
+///////////////////////////////////////////
 
 // Calculate buffer size extern constants (used to define the size of each structure/node/link creature attributes)
 extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_NODES;

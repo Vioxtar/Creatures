@@ -784,7 +784,7 @@ void Simulation_Logic()
 
 	// Load observed creatures' data observed by pupils
 
-	// Creature sights part 2
+	// Creature sights part 2 - devices
 	programID = program_CreatureSightsPart2.program;
 	workGroupsNeeded = program_CreatureSightsPart2.workGroupsNeeded;
 	glUseProgram(programID);
@@ -807,7 +807,7 @@ void Simulation_Logic()
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
-	// Creature sights part 3
+	// Creature sights part 3 - appearances
 	programID = program_CreatureSightsPart3.program;
 	workGroupsNeeded = program_CreatureSightsPart3.workGroupsNeeded;
 	glUseProgram(programID);
