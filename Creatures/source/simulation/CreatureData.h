@@ -44,6 +44,11 @@ struct CreatureData
 	GLfloat energy;
 	GLfloat meat;
 
+	// Devices
+	vec4 spike;
+	vec4 feeder;
+	vec4 shield;
+
 	// Movement
 	GLfloat forwardThrust;
 	GLfloat turnThrust;
@@ -150,15 +155,11 @@ extern CreatureAttributesSSBOInfo creature_SkinRGBColors;
 extern CreatureAttributesSSBOInfo creature_SkinPatterns;
 
 // Creature-localized devices (feeders, shields, sensors)
-extern CreatureAttributesSSBOInfo creature_SpikeStates;
 extern CreatureAttributesSSBOInfo creature_SpikeLocalAngles;
-extern CreatureAttributesSSBOInfo creature_SpikeDirections;
+extern CreatureAttributesSSBOInfo creature_Spikes;
 
-extern CreatureAttributesSSBOInfo creature_FeederStates;
 extern CreatureAttributesSSBOInfo creature_FeederLocalAngles;
-extern CreatureAttributesSSBOInfo creature_FeederDirections;
+extern CreatureAttributesSSBOInfo creature_Feeders;
 
-extern CreatureAttributesSSBOInfo creature_ShieldStates;
 extern CreatureAttributesSSBOInfo creature_ShieldLocalAngles;
-extern CreatureAttributesSSBOInfo creature_ShieldSpans;
-extern CreatureAttributesSSBOInfo creature_ShieldDirections;
+extern CreatureAttributesSSBOInfo creature_Shields;

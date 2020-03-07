@@ -40,9 +40,9 @@ layout (std430, binding = 7) buffer CreatureSpikeLocalAngles
 	float SpikeLocalAngles[];
 };
 
-layout (std430, binding = 8) buffer CreatureSpikeDirections
+layout (std430, binding = 8) buffer CreatureSpikes
 {
-	vec2 SpikeDirections[];
+	vec4 Spikes[];
 };
 
 layout (std430, binding = 9) buffer CreatureFeederLocalAngles
@@ -50,9 +50,9 @@ layout (std430, binding = 9) buffer CreatureFeederLocalAngles
 	float FeederLocalAngles[];
 };
 
-layout (std430, binding = 10) buffer CreatureFeederDirections
+layout (std430, binding = 10) buffer CreatureFeeders
 {
-	vec2 FeederDirections[];
+	vec4 Feeders[];
 };
 
 layout (std430, binding = 11) buffer CreatureShieldLocalAngles
@@ -60,9 +60,9 @@ layout (std430, binding = 11) buffer CreatureShieldLocalAngles
 	float ShieldLocalAngles[];
 };
 
-layout (std430, binding = 12) buffer CreatureShieldDirections
+layout (std430, binding = 12) buffer CreatureShields
 {
-	vec2 ShieldDirections[];
+	vec4 Shields[];
 };
 
 layout (std430, binding = 13) buffer CreatureEyeMuscles
@@ -132,13 +132,16 @@ void main()
 	RightDirections[gid] = rightDir;
 
 	float spikeGlobalAngle = creatureAngle + SpikeLocalAngles[gid];
-	SpikeDirections[gid] = vec2(sin(spikeGlobalAngle), cos(spikeGlobalAngle));
+	vec4 spike = Spikes[gid];
+	Spikes[gid] = vec4(sin(spikeGlobalAngle), cos(spikeGlobalAngle), spike.zw);
 
 	float feederGlobalAngle = creatureAngle + FeederLocalAngles[gid];
-	FeederDirections[gid] = vec2(sin(feederGlobalAngle), cos(feederGlobalAngle));
+	vec4 feeder = Feeders[gid];
+	Feeders[gid] = vec4(sin(feederGlobalAngle), cos(feederGlobalAngle), feeder.zw);
 
 	float shieldGlobalAngle = creatureAngle + ShieldLocalAngles[gid];
-	ShieldDirections[gid] = vec2(sin(shieldGlobalAngle), cos(shieldGlobalAngle));
+	vec4 shield = Shields[gid];
+	Shields[gid] = vec4(sin(shieldGlobalAngle), cos(shieldGlobalAngle), shield.zw);
 
 
 	// Eye positions

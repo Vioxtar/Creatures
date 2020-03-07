@@ -56,24 +56,19 @@ layout (std430, binding = 10) buffer CreatureCollidersCounts
 	uint CollidersCounts[];
 };
 
-layout (std430, binding = 11) buffer CreatureSpikeDirections
+layout (std430, binding = 11) buffer CreatureSpikes
 {
-	vec2 SpikeDirections[];
+	vec4 Spikes[];
 };
 
-layout (std430, binding = 12) buffer CreatureFeederDirections
+layout (std430, binding = 12) buffer CreatureFeeders
 {
-	vec2 FeederDirections[];
+	vec4 Feeders[];
 };
 
-layout (std430, binding = 13) buffer CreatureShieldDirections
+layout (std430, binding = 13) buffer CreatureShields
 {
-	vec2 ShieldDirections[];
-};
-
-layout (std430, binding = 14) buffer CreatureShieldSpans
-{
-	float ShieldSpans[];
+	vec4 Shields[];
 };
 
 
@@ -93,6 +88,9 @@ out vec2 oFeederEuclideanPos;
 flat out vec4 oVertexColor;
 flat out vec2 oSkinPattern;
 flat out float oEnergy;
+flat out float oSpikeState;
+flat out float oFeederState;
+flat out float oShieldState;
 flat out float oShieldSpan;
 
 void main()
@@ -108,10 +106,22 @@ void main()
 	vec2 creatureSkinPattern = SkinPatterns[gl_InstanceID];
 	vec2 creatureForwardDir = ForwardDirections[gl_InstanceID];
 	vec3 creatureColor = vec3(SkinRGBColors[colIndex], SkinRGBColors[colIndex + 1], SkinRGBColors[colIndex + 2]);
-	vec2 creatureSpikeDir = SpikeDirections[gl_InstanceID];
-	vec2 creatureFeederDir = FeederDirections[gl_InstanceID];
-	vec2 creatureShieldDir = ShieldDirections[gl_InstanceID];
-	float creatureShieldSpan = ShieldSpans[gl_InstanceID];
+	
+	vec4 creatureSpike = Spikes[gl_InstanceID];
+	vec4 creatureFeeder = Feeders[gl_InstanceID];
+	vec4 creatureShield = Shields[gl_InstanceID];
+	
+	vec2 creatureSpikeDir = creatureSpike.xy;
+	float creatureSpikeState = creatureSpike.z;
+
+	vec2 creatureFeederDir = creatureFeeder.xy;
+	float creatureFeederState = creatureFeeder.z;
+	
+	vec2 creatureShieldDir = creatureShield.xy;
+	float creatureShieldState = creatureShield.z;
+	float creatureShieldSpan = creatureShield.w;
+
+
 
 	// Rotate by creature angle
 	float cosAng = cos(creatureAngle);
@@ -171,7 +181,10 @@ void main()
 	oVertexColor = vec4(creatureColor.xyz, 1.0);
 	oSkinPattern = creatureSkinPattern;
 	oEnergy = creatureEnergy;
+	oShieldState = creatureShieldState;
 	oShieldSpan = creatureShieldSpan;
+	oFeederState = creatureFeederState;
+	oSpikeState = creatureSpikeState;
 
 	// Per vertex
 	oVertexSquaredDistance = dot(rotatedLocalVertPos, rotatedLocalVertPos);

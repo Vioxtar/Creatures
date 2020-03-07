@@ -20,42 +20,22 @@ layout (std430, binding = 3) buffer CreatureGeneralPurposeSecondVec2
 	vec2 EyePupilC2C1PosDiffNorms[];
 };
 
-layout (std430, binding = 4) buffer CreatureShieldDirections
+layout (std430, binding = 4) buffer CreatureShields
 {
-	vec2 ShieldDirections[];
+	vec4 Shields[];
 };
 
-layout (std430, binding = 5) buffer CreatureShieldSpans
+layout (std430, binding = 5) buffer CreatureSpikes
 {
-	float ShieldSpans[];
+	vec4 Spikes[];
 };
 
-layout (std430, binding = 6) buffer CreatureShieldStates
+layout (std430, binding = 6) buffer CreatureFeeders
 {
-	float ShieldStates[];
+	vec4 Feeders[];
 };
 
-layout (std430, binding = 7) buffer CreatureSpikeDirections
-{
-	vec2 SpikeDirections[];
-};
-
-layout (std430, binding = 8) buffer CreatureSpikeStates
-{
-	float SpikeStates[];
-};
-
-layout (std430, binding = 9) buffer CreatureFeederDirections
-{
-	vec2 FeederDirections[];
-};
-
-layout (std430, binding = 10) buffer CreatureFeederStates
-{
-	float FeederStates[];
-};
-
-layout (std430, binding = 11) buffer CreatureForwardDirections
+layout (std430, binding = 7) buffer CreatureForwardDirections
 {
 	vec2 ForwardDirections[];
 };
@@ -93,13 +73,26 @@ void main()
 	{
 		// Get some data about our seen creature
 		vec2 c2c1PosDiffNorm = EyePupilC2C1PosDiffNorms[gid];
+		vec4 bSpike = Spikes[bGID];
+		vec4 bFeeder = Feeders[bGID];
+		vec4 bShield = Shields[bGID];
+		
+		vec2 bSpikeDirection = bSpike.xy;
+		float bSpikeState = bSpike.z;
+		vec2 bFeederDirection = bFeeder.xy;
+		float bFeederState = bFeeder.z;
+		vec2 bShieldDirection = bShield.xy;
+		float bShieldState = bShield.z;
+		float bShieldSpan = bShield.w;
+
+		vec2 bForwardDirection = ForwardDirections[bGID];
 
 		// Set pupil sight values
 		pupilActivation = EyePupilActivations[gid];
-		pupilShieldProminence = 0.5 * ShieldStates[bGID] + 0.5 * (max(dot(c2c1PosDiffNorm, ShieldDirections[bGID]), 0) > ShieldSpans[bGID] ? 1.0 : 0.0);;
-		pupilSpikeProminence = 0.5 * SpikeStates[bGID] + 0.5 * max(dot(c2c1PosDiffNorm, SpikeDirections[bGID]), 0);
-		pupilFeederProminence = 0.5 * FeederStates[bGID] + 0.5 * max(dot(c2c1PosDiffNorm, FeederDirections[bGID]), 0);
-		pupilForwardAimProminence = max(dot(c2c1PosDiffNorm, ForwardDirections[bGID]), 0);
+		pupilShieldProminence = 0.5 * bShieldState + 0.5 * (max(dot(c2c1PosDiffNorm, bShieldDirection), 0) > bShieldSpan ? 1.0 : 0.0);;
+		pupilSpikeProminence = 0.5 * bSpikeState + 0.5 * max(dot(c2c1PosDiffNorm, bSpikeDirection), 0);
+		pupilFeederProminence = 0.5 * bFeederState + 0.5 * max(dot(c2c1PosDiffNorm, bFeederDirection), 0);
+		pupilForwardAimProminence = max(dot(c2c1PosDiffNorm, bForwardDirection), 0);
 	}
 
 

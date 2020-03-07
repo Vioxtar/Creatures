@@ -12,6 +12,9 @@ in vec2 oFeederEuclideanPos;
 flat in vec4 oVertexColor;
 flat in vec2 oSkinPattern;
 flat in float oEnergy;
+flat in float oSpikeState;
+flat in float oFeederState;
+flat in float oShieldState;
 flat in float oShieldSpan;
 
 out vec4 FragColor;
@@ -41,7 +44,7 @@ void main()
     // Display shield
     float shieldColMul =
         oShieldDirectionDot / oVertexSquaredDistance > (1.0 - oShieldSpan) &&
-        oVertexSquaredDistance > 0.75
+        oVertexSquaredDistance > 1.0 - 0.25 * oShieldState
         ? 1.25
         : 1.0;
 
@@ -50,7 +53,7 @@ void main()
     float spikeXMul = oSpikeEuclideanPos.x * 2.0; // Make the base of the triangle narrower
     float spikeColMul =
         spikeYDist < 0.25 &&
-        abs(spikeXMul) < spikeYDist
+        abs(spikeXMul) < spikeYDist * oSpikeState
         ? 1.25
         : 1.0;
 
@@ -59,7 +62,7 @@ void main()
     float feederXMul = oFeederEuclideanPos.x * 2.0; // Make the base of the triangle narrower
     float feederColMul =
         feederYDist < 0.25 &&
-        abs(feederXMul) < 0.25 - feederYDist
+        abs(feederXMul) < 0.25 - feederYDist * oFeederState
         ? 1.25
         : 1.0;
 

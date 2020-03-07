@@ -86,18 +86,14 @@ extern CreatureAttributesSSBOInfo creature_SkinRGBColors{ 0, sizeof(vec3) };
 extern CreatureAttributesSSBOInfo creature_SkinPatterns{ 0, sizeof(vec2) };
 
 // Creature-localized devices (feeders, shields, sensors)
-extern CreatureAttributesSSBOInfo creature_SpikeStates{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_SpikeLocalAngles{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_SpikeDirections{ 0, sizeof(vec2) };
+extern CreatureAttributesSSBOInfo creature_Spikes{ 0, sizeof(vec4) };
 
-extern CreatureAttributesSSBOInfo creature_FeederStates{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_FeederLocalAngles{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_FeederDirections{ 0, sizeof(vec2) };
+extern CreatureAttributesSSBOInfo creature_Feeders{ 0, sizeof(vec4) };
 
-extern CreatureAttributesSSBOInfo creature_ShieldStates{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_ShieldLocalAngles{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_ShieldSpans{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_ShieldDirections{ 0, sizeof(vec2) };
+extern CreatureAttributesSSBOInfo creature_Shields{ 0, sizeof(vec4) };
 
 
 
@@ -161,16 +157,12 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinValues);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinRGBColors);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinPatterns);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_SpikeStates);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Spikes);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SpikeLocalAngles);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_SpikeDirections);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_FeederStates);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Feeders);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_FeederLocalAngles);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_FeederDirections);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldStates);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Shields);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldLocalAngles);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldSpans);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldDirections);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersCounts);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersIndicesAndPlacements);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersToPosDirs);
@@ -286,7 +278,9 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_SpikeLocalAngles, newCreatureIndex, &newCreatureData.spikeLocalAngle);
 	SetCreatureAttribute(creature_FeederLocalAngles, newCreatureIndex, &newCreatureData.feederLocalAngle);
 	SetCreatureAttribute(creature_ShieldLocalAngles, newCreatureIndex, &newCreatureData.shieldLocalAngle);
-	SetCreatureAttribute(creature_ShieldSpans, newCreatureIndex, &newCreatureData.shieldSpan);
+	SetCreatureAttribute(creature_Spikes, newCreatureIndex, &newCreatureData.spike);
+	SetCreatureAttribute(creature_Feeders, newCreatureIndex, &newCreatureData.feeder);
+	SetCreatureAttribute(creature_Shields, newCreatureIndex, &newCreatureData.shield);
 	SetCreatureAttribute(creature_EyeMuscles, newCreatureIndex, &newCreatureData.eyeMuscles);
 	SetCreatureAttribute(creature_EyeConeRadii, newCreatureIndex, &newCreatureData.eyeConeRadius);
 	SetCreatureAttribute(creature_EyePupilConeCoverageFraction, newCreatureIndex, &newCreatureData.eyePupilConeCoverageFraction);

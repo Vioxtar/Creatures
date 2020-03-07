@@ -15,47 +15,27 @@ layout (std430, binding = 2) buffer CreatureCollidersToPosDirs
 	vec2 CollidersToPosDirs[];
 };
 
-layout (std430, binding = 3) buffer CreatureSpikeStates
+layout (std430, binding = 3) buffer CreatureSpikes
 {
-	float SpikeStates[];
+	vec4 Spikes[];
 };
 
-layout (std430, binding = 4) buffer CreatureSpikeDirections
+layout (std430, binding = 4) buffer CreatureFeeders
 {
-	vec2 SpikeDirections[];
+	vec4 Feeders[];
 };
 
-layout (std430, binding = 5) buffer CreatureFeederStates
+layout (std430, binding = 5) buffer CreatureShields
 {
-	float FeederStates[];
+	vec4 Shields[];
 };
 
-layout (std430, binding = 6) buffer CreatureFeederDirections
-{
-	vec2 FeederDirections[];
-};
-
-layout (std430, binding = 7) buffer CreatureShieldStates
-{
-	float ShieldStates[];
-};
-
-layout (std430, binding = 8) buffer CreatureShieldDirections
-{
-	vec2 ShieldDirections[];
-};
-
-layout (std430, binding = 9) buffer CreatureShieldSpans
-{
-	float ShieldSpans[];
-};
-
-layout (std430, binding = 10) buffer CreatureCollidersGivenEnergy
+layout (std430, binding = 6) buffer CreatureCollidersGivenEnergy
 {
 	float CollidersGivenEnergy[];
 };
 
-layout (std430, binding = 11) buffer CreatureEnergies
+layout (std430, binding = 7) buffer CreatureEnergies
 {
 	float Energies[];
 };
@@ -87,11 +67,13 @@ void main()
 
 
 	// Gather some information about ourselves
-	float aFeederState = FeederStates[gid];
-	vec2 aFeederDirection = FeederDirections[gid];
-	float aShieldState = ShieldStates[gid];
-	vec2 aShieldDirection = ShieldDirections[gid];
-	float aShieldSpan = ShieldSpans[gid];
+	vec4 aFeeder = Feeders[gid];
+	vec4 aShield = Shields[gid];
+	float aFeederState = aFeeder.z;
+	vec2 aFeederDirection = aFeeder.xy;
+	float aShieldState = aShield.z;
+	vec2 aShieldDirection = aShield.xy;
+	float aShieldSpan = aShield.w;
 
 
 	// The energy we have to dispense
@@ -120,14 +102,15 @@ void main()
 		// The amount of energy we'll be giving b at the end
 		float energyToGiveB = 0.0;
 		
-
+		// @TODO: Shield effectivness drops the more it spans!
 
 		// Are we aiming our feeder at B?
 		if (-dot(aFeederDirection, bColliderToUsDir) > uDeviceAimDotThreshold)
 		{
 			// Does B have a shield?
-			vec2 bShieldDirection = ShieldDirections[bGID];
-			float bShieldSpan = ShieldSpans[bGID];
+			vec4 bShield = Shields[bGID];
+			vec2 bShieldDirection = bShield.xy;
+			float bShieldSpan = bShield.w;
 			if (-dot(aFeederDirection, bShieldDirection) < 1.0 - bShieldSpan)
 			{
 				// Not shielding
@@ -136,15 +119,16 @@ void main()
 			else
 			{
 				// Shielding
-				float bShieldState = ShieldStates[bGID];
+				float bShieldState = bShield.z;
 				energyToGiveB += aFeederState * uCreatureFeederEffectiveness * (1.0 - bShieldState * uCreatureShieldEffectiveness);
 			}
 		}
 
 
 		// Is B spiking us?
-		float bSpikeState = SpikeStates[bGID];
-		vec2 bSpikeDirection = SpikeDirections[bGID];
+		vec4 bSpike = Spikes[bGID];
+		float bSpikeState = bSpike.z;
+		vec2 bSpikeDirection = bSpike.xy;
 		if (dot(bSpikeDirection, bColliderToUsDir) > uDeviceAimDotThreshold)
 		{
 			// Do we have a shield?
