@@ -74,7 +74,7 @@ extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS = 3;
 extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 20;
 
 // Creature eye settings
-extern const uint16_t CREATURE_EYE_NUM_OF_CONES = 16;
+extern const uint16_t CREATURE_EYE_NUM_OF_CONES = 32;
 extern const uint16_t CREATURE_EYE_NUM_OF_VALUES_IN_SINGLE_CONE = 1;
 extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13; // Not to be changed lightly - data transfer packet relies on 3 floats!
 
@@ -83,22 +83,36 @@ extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13; // Not to be change
 // -- TWEAKABLE SETTINGS -- //
 //////////////////////////////
 
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
+
+// Simulation space settings
 extern TweakableFloatSetting SIMULATION_WIDTH = { 1000, 1, 300 };
 extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
 
+// Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 1.0, 0.0, 1.0 };
+
+// Simulation creature settings
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 1.0, 0.0, 100.0 };
 
 // Render settings
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_R = { 0.1, 0.0, 1.0 };
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_G = { 0.1, 0.0, 1.0 };
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_B = { 0.1, 0.0, 1.0 };
 
+// Creature device settings
+extern TweakableFloatSetting CREATURE_DEVICE_AIM_DOT_THRESHOLD = { 0.9, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
+
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.4, 0.3, 0.5 };
 extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.2, 0.1, 0.3 };
+extern TweakableFloatSetting CREATURE_MAX_ENERGY_CAPACITY = { 1.0, 0.1, 10000.0 };
+extern TweakableFloatSetting CREATURE_MAX_MEAT_CAPACITY = { 1.0, 0.1, 10000.0 };
 
 // Creature eye settings
 extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 10.0, 0.1, 30.0 };

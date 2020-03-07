@@ -67,7 +67,52 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainStructure->emplace_back(CREATURE_BRAIN_NUM_OF_OUTPUTS);
 }
 
+/////////////////////////////
+// -- CREATURE CREATION -- //
+/////////////////////////////
 
+void AddFirstGenerationCreature()
+{
+	CreatureData data;
+
+	InitFirstGenBrain(&data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
+	
+	data.skinPattern = vec2(random(), random());
+	data.skinHue = random();
+	data.skinSaturation = 1.0;
+	data.skinValue = random();
+
+	data.pos = vec2(0, 0);
+	data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
+	data.angle = random() * 2 * M_PI;
+	data.angleVel = (random() - 0.5) * 0.02;
+
+	data.hardness = random();
+	data.rad = CREATURE_MAX_RADIUS.value;
+	
+	data.life = random();
+	data.energy = random();
+	data.meat = SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT.value;
+
+	data.forwardThrust = random() * random() * 0.0015;
+	data.turnThrust = 0.0;
+
+	data.eyeMuscles = vec2((random() - 0.5) * 2, (random() - 0.5) * 2);
+	data.eyeConeRadius = CREATURE_EYE_MAX_CONES_RADIUS.max;
+	data.eyePupilConeCoverageFraction = random();
+
+	data.spikeLocalAngle = random() * 2 * M_PI;
+	data.feederLocalAngle = random() * 2 * M_PI;
+	data.shieldLocalAngle = random() * 2 * M_PI;
+	data.shieldSpan = random() * 0.3;
+
+	CreatureData_AddCreature(data);
+}
+
+void AddOffspringCreature(unsigned int parent1Index, unsigned int parent2Index)
+{
+
+}
 
 
 ////////////////////////////////////////////
@@ -476,31 +521,7 @@ void Simulation_Init()
 	// Add some creatures (TEMP)
 	for (int i = 0; i < SIMULATION_NUM_OF_CREATURES_ON_INIT.value; i++)
 	{
-		CreatureData data;
-
-		InitFirstGenBrain(&data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
-
-		data.skinHue = random();
-		data.skinSaturation = 1.0;
-		data.skinValue = random();
-		data.pos = vec2(0, 0);
-		data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
-		data.rad = CREATURE_MAX_RADIUS.value;
-		data.life = random();
-		data.angle = random() * 2 * M_PI;
-		data.angleVel = (random() - 0.5) * 0.0075;
-		data.forwardThrust = random()* random() * 0.000015;
-		data.turnThrust = 0.0;
-		data.hardness = random();
-		data.skin = vec2(random(), random());
-		data.spikeLocalAngle = random() * 2 * M_PI;
-		data.feederLocalAngle = random() * 2 * M_PI;
-		data.shieldLocalAngle = random() * 2 * M_PI;
-		data.shieldSpan = random() * M_PI * 0.35;
-		data.eyeMuscles = vec2((random() - 0.5) * 2, (random() - 0.5) * 2);
-		data.eyeConeRadius = CREATURE_EYE_MAX_CONES_RADIUS.max;
-		data.eyePupilConeCoverageFraction = random();
-		CreatureData_AddCreature(data);
+		AddFirstGenerationCreature();
 	}
 
 }
@@ -579,7 +600,6 @@ void Simulation_Logic()
 	SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_NODES);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.ssbo);
-
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -660,8 +680,7 @@ void Simulation_Logic()
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
-
-	// Creature interactions part 1
+	// Creature interactions part 1 - collision detection and registration, physics fix
 	programID = program_CreatureInteractionsPart1.program;
 	workGroupsNeeded = program_CreatureInteractionsPart1.workGroupsNeeded;
 	glUseProgram(programID);
@@ -679,28 +698,60 @@ void Simulation_Logic()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_UniformGridTiles.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_GeneralPurposeVec2.ssbo); // Writes physics fix vector for decoupling purposes
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_CollidersCounts.ssbo); // Count colliders
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_CollidersIndices.ssbo); // Remember colliders
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_CollidersToPosDirs.ssbo); // Remember direction of colliders
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_CollidersPositions.ssbo); // Remember positions of colliders
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_CollidersRadii.ssbo); // Remember radius of colliders
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_CollidersIndicesAndPlacements.ssbo); // Remember colliders (for interaction part 2/3)
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_CollidersToPosDirs.ssbo); // Remember direction of colliders (for interaction part 2/3)
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_CollidersPositions.ssbo); // Remember positions of colliders (for deformations)
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_CollidersRadii.ssbo); // Remember radius of colliders (for deformations)
 	// @TODO: Add stick states/dirs
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-	// Creature interactions part 2
+
+	// Creature interactions part 2 - device based energy flow calculation
 	programID = program_CreatureInteractionsPart2.program;
 	workGroupsNeeded = program_CreatureInteractionsPart2.workGroupsNeeded;
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformUInteger(programID, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
+	SetUniformFloat(programID, "uDeviceAimDotThreshold", CREATURE_DEVICE_AIM_DOT_THRESHOLD.value);
+	SetUniformFloat(programID, "uCreatureFeederEffectiveness", CREATURE_DEVICE_FEEDER_EFFECTIVENESS.value);
+	SetUniformFloat(programID, "uCreatureSpikeEffectiveness", CREATURE_DEVICE_SPIKE_EFFECTIVENESS.value);
+	SetUniformFloat(programID, "uCreatureShieldEffectiveness", CREATURE_DEVICE_SHIELD_EFFECTIVENESS.value);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_CollidersCounts.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_CollidersIndicesAndPlacements.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_CollidersToPosDirs.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_SpikeStates.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_SpikeDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_FeederStates.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_FeederDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_ShieldStates.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_ShieldDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_ShieldSpans.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_CollidersGivenEnergy.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_Energies.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-	// Creature interactions part 3
+
+	// Creature interactions part 3 - device based energy flow submission and reproduction
 	programID = program_CreatureInteractionsPart3.program;
 	workGroupsNeeded = program_CreatureInteractionsPart3.workGroupsNeeded;
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformUInteger(programID, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
+	SetUniformFloat(programID, "uCreatureMaxEnergyCapacity", CREATURE_MAX_ENERGY_CAPACITY.value);
+	SetUniformFloat(programID, "uCreatureMaxMeatCapacity", CREATURE_MAX_MEAT_CAPACITY.value);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_CollidersCounts.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_CollidersGivenEnergy.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_CollidersToPosDirs.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Energies.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Meats.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
 	// Creature sights part 1 (find which creatures we're looking at in the simulation space, cone activation)
@@ -817,13 +868,15 @@ void Simulation_Render()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Radii.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Lives.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_SkinPatterns.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_CollidersPositions.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_CollidersRadii.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_CollidersCounts.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_SpikeDirections.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_FeederDirections.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_ShieldDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Energies.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_SkinPatterns.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_CollidersPositions.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_CollidersRadii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_CollidersCounts.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_SpikeDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_FeederDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 13, creature_ShieldDirections.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 14, creature_ShieldSpans.ssbo);
 
 
 	glBindVertexArray(drawCallData_CreatureBody.VAO);

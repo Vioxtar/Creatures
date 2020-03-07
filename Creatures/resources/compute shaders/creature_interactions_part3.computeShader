@@ -1,11 +1,43 @@
 #version 460 core
 
+layout (std430, binding = 0) buffer CreatureCollidersCounts
+{
+	uint CollidersCounts[];
+};
+
+layout (std430, binding = 1) buffer CreatureCollidersGivenEnergy
+{
+	float CollidersGivenEnergy[];
+};
+
+layout (std430, binding = 2) buffer CreatureCollidersToPosDirs
+{
+	vec2 CollidersToPosDirs[];
+};
+
+layout (std430, binding = 3) buffer CreatureEnergies
+{
+	float Energies[];
+};
+
+layout (std430, binding = 4) buffer CreatureMeats
+{
+	float Meats[];
+};
+
+layout (std430, binding = 5) buffer CreatureForwardDirections
+{
+	vec2 ForwardDirections[];
+};
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 
 uniform uint uCreatureCount;
+uniform uint uMaxNumOfColliders;
 
+uniform float uCreatureMaxEnergyCapacity;
+uniform float uCreatureMaxMeatCapacity;
 
 void main()
 {
@@ -16,5 +48,24 @@ void main()
 		return;
 	}
 
+	uint collidersStartIndex = gid * uMaxNumOfColliders;
+
+	// Iterate our given energies and add it to our actual energy
+	float givenEnergy = 0.0;
+	uint collidersCount = min(CollidersCounts[gid], uMaxNumOfColliders);
+	for (uint i = 0; i < collidersCount; ++i)
+	{
+		float energyGivenByCollider = CollidersGivenEnergy[collidersStartIndex + i];
+		CollidersGivenEnergy[collidersStartIndex + i] = 0.0;
+		givenEnergy += energyGivenByCollider;
+	}
+	
+	// If we're above the energy limit, translate our energy to meat
+	float givenMeat = max(givenEnergy - uCreatureMaxEnergyCapacity, 0);
+	givenEnergy -= givenMeat;
+	
+	// Submit
+	Energies[gid] = min(Energies[gid] + givenEnergy, uCreatureMaxEnergyCapacity);
+	Meats[gid] = min(Meats[gid] + givenMeat, uCreatureMaxMeatCapacity);
 
 }

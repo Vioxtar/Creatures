@@ -1,11 +1,77 @@
 #version 460 core
 
+layout (std430, binding = 0) buffer CreatureCollidersCounts
+{
+	uint CollidersCounts[];
+};
+
+layout (std430, binding = 1) buffer CreatureCollidersIndicesAndPlacements
+{
+	uvec2 CollidersIndicesAndPlacements[];
+};
+
+layout (std430, binding = 2) buffer CreatureCollidersToPosDirs
+{
+	vec2 CollidersToPosDirs[];
+};
+
+layout (std430, binding = 3) buffer CreatureSpikeStates
+{
+	float SpikeStates[];
+};
+
+layout (std430, binding = 4) buffer CreatureSpikeDirections
+{
+	vec2 SpikeDirections[];
+};
+
+layout (std430, binding = 5) buffer CreatureFeederStates
+{
+	float FeederStates[];
+};
+
+layout (std430, binding = 6) buffer CreatureFeederDirections
+{
+	vec2 FeederDirections[];
+};
+
+layout (std430, binding = 7) buffer CreatureShieldStates
+{
+	float ShieldStates[];
+};
+
+layout (std430, binding = 8) buffer CreatureShieldDirections
+{
+	vec2 ShieldDirections[];
+};
+
+layout (std430, binding = 9) buffer CreatureShieldSpans
+{
+	float ShieldSpans[];
+};
+
+layout (std430, binding = 10) buffer CreatureCollidersGivenEnergy
+{
+	float CollidersGivenEnergy[];
+};
+
+layout (std430, binding = 11) buffer CreatureEnergies
+{
+	float Energies[];
+};
+
+
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 
 uniform uint uCreatureCount;
+uniform uint uMaxNumOfColliders;
+uniform float uDeviceAimDotThreshold;
 
+uniform float uCreatureFeederEffectiveness;
+uniform float uCreatureSpikeEffectiveness;
+uniform float uCreatureShieldEffectiveness;
 
 void main()
 {
@@ -16,5 +82,92 @@ void main()
 		return;
 	}
 
+	// Iterate colliders, and only handle out-flowing energies (consider our feeding, their spike)
+	// Remember that it's guaranteed that if creature B is A's collider, then A is B's collider as well
+
+
+	// Gather some information about ourselves
+	float aFeederState = FeederStates[gid];
+	vec2 aFeederDirection = FeederDirections[gid];
+	float aShieldState = ShieldStates[gid];
+	vec2 aShieldDirection = ShieldDirections[gid];
+	float aShieldSpan = ShieldSpans[gid];
+
+
+	// The energy we have to dispense
+	float energyLeft = Energies[gid];
+
+	// Start collider iterations
+	uint collidersStartIndex = gid * uMaxNumOfColliders;
+	uint collidersCount = min(CollidersCounts[gid], uMaxNumOfColliders);
+	for (uint i = 0; i < collidersCount; ++i)
+	{
+
+		// If we're out of energy, bail - we have nothing to give (but what about meats...?)
+		if (energyLeft <= 0.0)
+		{
+			break;
+		}
+
+		// Acquire collider index and our placement set by said collider
+		uvec2 colliderIndexAndPlacement = CollidersIndicesAndPlacements[collidersStartIndex + i];
+		uint bGID = colliderIndexAndPlacement.x;
+		uint ourColliderPlacementIndexGivenByB = colliderIndexAndPlacement.y;
+
+		// Find the direction from them to us
+		vec2 bColliderToUsDir = CollidersToPosDirs[collidersStartIndex + i];
+
+		// The amount of energy we'll be giving b at the end
+		float energyToGiveB = 0.0;
+		
+
+
+		// Are we aiming our feeder at B?
+		if (-dot(aFeederDirection, bColliderToUsDir) > uDeviceAimDotThreshold || true)
+		{
+			// Does B have a shield?
+			vec2 bShieldDirection = ShieldDirections[bGID];
+			float bShieldSpan = ShieldSpans[bGID];
+			if (-dot(aFeederDirection, bShieldDirection) < 1.0 - bShieldSpan)
+			{
+				// Not shielding
+				energyToGiveB += aFeederState * uCreatureFeederEffectiveness;
+			}
+			else
+			{
+				// Shielding
+				float bShieldState = ShieldStates[bGID];
+				energyToGiveB += aFeederState * uCreatureFeederEffectiveness * (1.0 - bShieldState * uCreatureShieldEffectiveness);
+			}
+		}
+
+
+		// Is B spiking us?
+		float bSpikeState = SpikeStates[bGID];
+		vec2 bSpikeDirection = SpikeDirections[bGID];
+		if (dot(bSpikeDirection, bColliderToUsDir) > uDeviceAimDotThreshold || true)
+		{
+			// Do we have a shield?
+			if (-dot(bSpikeDirection, aShieldDirection) < 1.0 - aShieldSpan)
+			{
+				// Not shielding
+				energyToGiveB += bSpikeState * uCreatureSpikeEffectiveness;
+			}
+			else
+			{
+				// Shielding
+				energyToGiveB += bSpikeState * uCreatureSpikeEffectiveness * (1.0 - aShieldState * uCreatureShieldEffectiveness);
+			}
+		}
+
+
+		// Give B our energy
+		energyToGiveB = min(energyToGiveB, energyLeft);
+		energyLeft -= energyToGiveB;
+
+		CollidersGivenEnergy[ourColliderPlacementIndexGivenByB] = energyToGiveB;
+	}
+
+	Energies[gid] = energyLeft;
 
 }

@@ -11,7 +11,8 @@ in vec2 oFeederEuclideanPos;
 // Per instance values
 flat in vec4 oVertexColor;
 flat in vec2 oSkinPattern;
-flat in float oLife;
+flat in float oEnergy;
+flat in float oShieldSpan;
 
 out vec4 FragColor;
 out float gl_FragDepth;
@@ -38,9 +39,8 @@ void main()
         : 1.0;
    
     // Display shield
-    float shieldSpan = 0.25;
     float shieldColMul =
-        oShieldDirectionDot / oVertexSquaredDistance > (1.0 - shieldSpan) &&
+        oShieldDirectionDot / oVertexSquaredDistance > (1.0 - oShieldSpan) &&
         oVertexSquaredDistance > 0.75
         ? 1.25
         : 1.0;
@@ -75,8 +75,8 @@ void main()
         feederColMul;
     
     
-    // Opaqueness reflects life
-    FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oLife) * 5.0), oLife + 0.1);
+    // Opaqueness reflects energy
+    FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oEnergy) * 5.0), oEnergy + 0.1);
     FragColor.a *= 0.975; // Still make everything ever so slightly transparent
 
     // May not be needed

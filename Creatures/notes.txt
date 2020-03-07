@@ -6,6 +6,29 @@ Project minimum requiremenets:
 
 
 
+	How to energy interactions
+
+	use coherent modifier + barrier() function somehow, or...
+
+
+	collider indices are no longer uint, but isntead uvec2: (bGID, placementIndexInB'sCollidersIndices) so that A can tweak B's collidersEnergyFlow:
+
+	In A's thread:
+
+	for all uvec2(bGID, placement) in A's collider indices:
+		ColliderEnergyFlows[bGID + placement] = A's give or take
+
+	Each thread asks: Did I feed someone? Was I spiked by someone?
+	And so each thread only handles outward flow of energy!
+
+
+
+	.... Actually I'ma probably have to go with the uvec2 idea, all coherent + barrier() can give me is the option not to spread it to part 3...
+
+
+
+
+
 	// SOLUTION FOR INTERACTIONS START
 
 	Creature interactions

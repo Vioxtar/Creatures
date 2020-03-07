@@ -45,9 +45,9 @@ layout (std430, binding = 8) buffer CreatureCollidersCounts
 	uint CollidersCounts[];
 };
 
-layout (std430, binding = 9) buffer CreatureCollidersIndices
+layout (std430, binding = 9) buffer CreatureCollidersIndicesAndPlacements
 {
-	uint CollidersIndices[];
+	uvec2 CollidersIndicesAndPlacements[];
 };
 
 layout (std430, binding = 10) buffer CreatureCollidersToPosDirs
@@ -219,35 +219,37 @@ void main()
 
 					// Register colliders
 
-					vec2 c1c2Dir = c1c2PosDiff / dist;
-					vec2 c2c1Dir = -c1c2Dir;
 
 					uint aCurrentCollidersCount = atomicAdd(CollidersCounts[gid], 1);
-					if (aCurrentCollidersCount < uMaxNumOfColliders)
+					uint bCurrentCollidersCount = atomicAdd(CollidersCounts[bGID], 1);
+
+					if (aCurrentCollidersCount >= uMaxNumOfColliders || bCurrentCollidersCount >= uMaxNumOfColliders)
 					{
-						// We have enough room, add b to a
-						uint colliderPlacementIndex = aCollidersStartIndex + aCurrentCollidersCount;
-
-						CollidersIndices[colliderPlacementIndex] = bGID;
-						CollidersToPosDirs[colliderPlacementIndex] = c2c1Dir;
-						CollidersPositions[colliderPlacementIndex] = bPos;
-						CollidersRadii[colliderPlacementIndex] = bRad;
-
+						continue; // At least one creature is out of collider room, cancel both collider registering
 					}
 
 
 					uint bCollidersStartIndex = bGID * uMaxNumOfColliders;
-					uint bCurrentCollidersCount = atomicAdd(CollidersCounts[bGID], 1);
-					if (bCurrentCollidersCount < uMaxNumOfColliders)
-					{
-						// We have enough room, add a to b
-						uint colliderPlacementIndex = bCollidersStartIndex + bCurrentCollidersCount;
-						
-						CollidersIndices[colliderPlacementIndex] = gid;
-						CollidersToPosDirs[colliderPlacementIndex] = c1c2Dir;
-						CollidersPositions[colliderPlacementIndex] = aPos;
-						CollidersRadii[colliderPlacementIndex] = aRad;
-					}
+					
+					vec2 c1c2Dir = c1c2PosDiff / dist;
+					vec2 c2c1Dir = -c1c2Dir;
+
+					uint aColliderBPlacementIndex = aCollidersStartIndex + aCurrentCollidersCount;
+					uint bColliderAPlacementIndex = bCollidersStartIndex + bCurrentCollidersCount;
+
+
+					// Add b to a
+					CollidersIndicesAndPlacements[aColliderBPlacementIndex] = uvec2(bGID, bColliderAPlacementIndex);
+					CollidersToPosDirs[aColliderBPlacementIndex] = c2c1Dir;
+					CollidersPositions[aColliderBPlacementIndex] = bPos;
+					CollidersRadii[aColliderBPlacementIndex] = bRad;
+
+					// Add a to b
+					CollidersIndicesAndPlacements[bColliderAPlacementIndex] = uvec2(gid, aColliderBPlacementIndex);
+					CollidersToPosDirs[bColliderAPlacementIndex] = c1c2Dir;
+					CollidersPositions[bColliderAPlacementIndex] = aPos;
+					CollidersRadii[bColliderAPlacementIndex] = aRad;
+
 				}
 			}
 		}

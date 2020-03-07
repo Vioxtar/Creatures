@@ -126,22 +126,35 @@ SimSettingsChangedSubscriber SimulationSettingsChangedSubscribe(SimSettingsChang
 // -- TWEAKABLE SETTINGS -- //
 //////////////////////////////
 
-// Simulation settings
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT;
+// Simulation space settings
 extern TweakableFloatSetting SIMULATION_WIDTH;
 extern TweakableFloatSetting SIMULATION_HEIGHT;
+
+// Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION;
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE;
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE;
+
+// Simulation creature settings
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT;
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT;
 
 // Render settings
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_R;
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_G;
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_B;
 
+// Creature device settings
+extern TweakableFloatSetting CREATURE_DEVICE_AIM_DOT_THRESHOLD;
+extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_EFFECTIVENESS;
+extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_EFFECTIVENESS;
+extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS;
+
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS;
 extern TweakableFloatSetting CREATURE_MIN_RADIUS;
+extern TweakableFloatSetting CREATURE_MAX_ENERGY_CAPACITY;
+extern TweakableFloatSetting CREATURE_MAX_MEAT_CAPACITY;
 
 // Creature eye settings
 extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE;

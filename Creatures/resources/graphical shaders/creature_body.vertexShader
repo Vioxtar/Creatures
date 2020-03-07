@@ -31,39 +31,49 @@ layout (std430, binding = 5) buffer CreatureLives
 	float Lives[];
 };
 
-layout (std430, binding = 6) buffer CreatureSkinPatterns
+layout (std430, binding = 6) buffer CreatureEnergies
+{
+	float Energies[];
+};
+
+layout (std430, binding = 7) buffer CreatureSkinPatterns
 {
 	vec2 SkinPatterns[];
 };
 
-layout (std430, binding = 7) buffer CreatureCollidersPositions
+layout (std430, binding = 8) buffer CreatureCollidersPositions
 {
 	vec2 CollidersPositions[];
 };
 
-layout (std430, binding = 8) buffer CreatureCollidersRadii
+layout (std430, binding = 9) buffer CreatureCollidersRadii
 {
 	float CollidersRadii[];
 };
 
-layout (std430, binding = 9) buffer CreatureCollidersCounts
+layout (std430, binding = 10) buffer CreatureCollidersCounts
 {
 	uint CollidersCounts[];
 };
 
-layout (std430, binding = 10) buffer CreatureSpikeDirections
+layout (std430, binding = 11) buffer CreatureSpikeDirections
 {
 	vec2 SpikeDirections[];
 };
 
-layout (std430, binding = 11) buffer CreatureFeederDirections
+layout (std430, binding = 12) buffer CreatureFeederDirections
 {
 	vec2 FeederDirections[];
 };
 
-layout (std430, binding = 12) buffer CreatureShieldDirections
+layout (std430, binding = 13) buffer CreatureShieldDirections
 {
 	vec2 ShieldDirections[];
+};
+
+layout (std430, binding = 14) buffer CreatureShieldSpans
+{
+	float ShieldSpans[];
 };
 
 
@@ -82,8 +92,8 @@ out vec2 oFeederEuclideanPos;
 // Per instance values
 flat out vec4 oVertexColor;
 flat out vec2 oSkinPattern;
-flat out float oLife;
-
+flat out float oEnergy;
+flat out float oShieldSpan;
 
 void main()
 {
@@ -94,14 +104,14 @@ void main()
 	vec2 creatureCenterPos = Positions[gl_InstanceID];
 	float creatureRadius = Radii[gl_InstanceID];
 	float creatureAngle = Angles[gl_InstanceID];
-	float creatureLife = Lives[gl_InstanceID];
+	float creatureEnergy = Energies[gl_InstanceID];
 	vec2 creatureSkinPattern = SkinPatterns[gl_InstanceID];
 	vec2 creatureForwardDir = ForwardDirections[gl_InstanceID];
 	vec3 creatureColor = vec3(SkinRGBColors[colIndex], SkinRGBColors[colIndex + 1], SkinRGBColors[colIndex + 2]);
 	vec2 creatureSpikeDir = SpikeDirections[gl_InstanceID];
 	vec2 creatureFeederDir = FeederDirections[gl_InstanceID];
 	vec2 creatureShieldDir = ShieldDirections[gl_InstanceID];
-
+	float creatureShieldSpan = ShieldSpans[gl_InstanceID];
 
 	// Rotate by creature angle
 	float cosAng = cos(creatureAngle);
@@ -160,7 +170,8 @@ void main()
 	// Per instance
 	oVertexColor = vec4(creatureColor.xyz, 1.0);
 	oSkinPattern = creatureSkinPattern;
-	oLife = creatureLife;
+	oEnergy = creatureEnergy;
+	oShieldSpan = creatureShieldSpan;
 
 	// Per vertex
 	oVertexSquaredDistance = dot(rotatedLocalVertPos, rotatedLocalVertPos);

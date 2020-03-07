@@ -10,36 +10,55 @@ using namespace glm;
 
 struct CreatureData
 {
+	// Brain
 	vector<GLfloat> brainLinks;
 	vector<GLfloat> brainNodes;
 	vector<vec2> brainBiasesExponents;
 	vector<GLuint> brainStructure;
+
+	// Sensor input data
 	vector<GLfloat> eyeConeSights;
 	vector<GLfloat> eyePupilSights;
+	
+	// Appearance
+	vec2 skinPattern;
 	GLfloat skinHue;
 	GLfloat skinSaturation;
 	GLfloat skinValue;
 	vec3 skinRGBColors;
+
+	// Placement
 	vec2 pos;
 	vec2 vel;
-	GLfloat rad;
-	GLfloat life;
 	GLfloat angle;
 	GLfloat angleVel;
 	vec2 forwardDir;
 	vec2 rightDir;
+
+	// Body state
+	GLfloat hardness;
+	GLfloat rad;
+	
+	// Body parameters
+	GLfloat life;
+	GLfloat energy;
+	GLfloat meat;
+
+	// Movement
 	GLfloat forwardThrust;
 	GLfloat turnThrust;
-	GLfloat hardness;
-	vec2 skin;
+	
+	// Eyes
+	vec2 eyeMuscles;
+	GLfloat eyeConeRadius;
+	GLfloat eyePupilConeCoverageFraction;
+	vec2 eyePos;
+
+	// Device placements
 	GLfloat spikeLocalAngle;
 	GLfloat feederLocalAngle;
 	GLfloat shieldLocalAngle;
 	GLfloat shieldSpan;
-	vec2 eyePos;
-	vec2 eyeMuscles;
-	GLfloat eyeConeRadius;
-	GLfloat eyePupilConeCoverageFraction;
 };
 
 
@@ -111,10 +130,11 @@ extern CreatureAttributesSSBOInfo creature_UniformGridTiles;
 
 // Colliders
 extern CreatureAttributesSSBOInfo creature_CollidersCounts;
-extern CreatureAttributesSSBOInfo creature_CollidersIndices;
+extern CreatureAttributesSSBOInfo creature_CollidersIndicesAndPlacements;
 extern CreatureAttributesSSBOInfo creature_CollidersToPosDirs;
 extern CreatureAttributesSSBOInfo creature_CollidersPositions;
 extern CreatureAttributesSSBOInfo creature_CollidersRadii;
+extern CreatureAttributesSSBOInfo creature_CollidersGivenEnergy;
 
 // General purpose data packets
 extern CreatureAttributesSSBOInfo creature_GeneralPurposeVec2;

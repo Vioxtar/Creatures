@@ -65,10 +65,11 @@ extern CreatureAttributesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLint) };
 
 // Colliders
 extern CreatureAttributesSSBOInfo creature_CollidersCounts{ 0, sizeof(GLuint) };
-extern CreatureAttributesSSBOInfo creature_CollidersIndices{ 0, sizeof(GLuint) * CREATURE_MAX_NUM_OF_COLLIDERS };
+extern CreatureAttributesSSBOInfo creature_CollidersIndicesAndPlacements{ 0, sizeof(uvec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
 extern CreatureAttributesSSBOInfo creature_CollidersToPosDirs{ 0, sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
 extern CreatureAttributesSSBOInfo creature_CollidersPositions{ 0, sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
 extern CreatureAttributesSSBOInfo creature_CollidersRadii{ 0, sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS };
+extern CreatureAttributesSSBOInfo creature_CollidersGivenEnergy{ 0, sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS };
 
 
 // General purpose data packets
@@ -109,10 +110,11 @@ void ResetDynamicAttributeSizes()
 	creature_BrainsBiasesExponents.attributeBytesSize = sizeof(vec2) * CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES;
 	creature_BrainsStructures.attributeBytesSize = sizeof(GLuint) * CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES;
 
-	creature_CollidersIndices.attributeBytesSize = sizeof(GLuint) * CREATURE_MAX_NUM_OF_COLLIDERS;
+	creature_CollidersIndicesAndPlacements.attributeBytesSize = sizeof(uvec2) * CREATURE_MAX_NUM_OF_COLLIDERS;
 	creature_CollidersToPosDirs.attributeBytesSize = sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS;
 	creature_CollidersPositions.attributeBytesSize = sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS;
 	creature_CollidersRadii.attributeBytesSize = sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS;
+	creature_CollidersGivenEnergy.attributeBytesSize = sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS;
 
 	creature_EyePupilSights.attributeBytesSize = sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES;
 	creature_EyeConeSights.attributeBytesSize = sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONES_VALUES;
@@ -170,10 +172,11 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldSpans);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldDirections);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersCounts);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersIndices);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersIndicesAndPlacements);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersToPosDirs);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersPositions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersRadii);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersGivenEnergy);
 }
 
 
@@ -279,7 +282,7 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_TurnThrusts, newCreatureIndex, &newCreatureData.turnThrust);
 	SetCreatureAttribute(creature_Harndesses, newCreatureIndex, &newCreatureData.hardness);
 	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, NULL);
-	SetCreatureAttribute(creature_SkinPatterns, newCreatureIndex, &newCreatureData.skin);
+	SetCreatureAttribute(creature_SkinPatterns, newCreatureIndex, &newCreatureData.skinPattern);
 	SetCreatureAttribute(creature_SpikeLocalAngles, newCreatureIndex, &newCreatureData.spikeLocalAngle);
 	SetCreatureAttribute(creature_FeederLocalAngles, newCreatureIndex, &newCreatureData.feederLocalAngle);
 	SetCreatureAttribute(creature_ShieldLocalAngles, newCreatureIndex, &newCreatureData.shieldLocalAngle);
@@ -287,6 +290,8 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_EyeMuscles, newCreatureIndex, &newCreatureData.eyeMuscles);
 	SetCreatureAttribute(creature_EyeConeRadii, newCreatureIndex, &newCreatureData.eyeConeRadius);
 	SetCreatureAttribute(creature_EyePupilConeCoverageFraction, newCreatureIndex, &newCreatureData.eyePupilConeCoverageFraction);
+	SetCreatureAttribute(creature_Energies, newCreatureIndex, &newCreatureData.energy);
+	SetCreatureAttribute(creature_Meats, newCreatureIndex, &newCreatureData.meat);
 
 	// Map creature unique ID to creature index
 	creature_UniqueIDsToSSBOIndex.emplace(creature_NextUniqueIDToBeAssigned, newCreatureIndex);

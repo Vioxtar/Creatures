@@ -99,6 +99,9 @@ int main()
 	GLint maxComputeStorageBlocks;
 	glGetIntegerv(GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS, &maxComputeStorageBlocks);
 	cout << "maxComputeStorageBlocks: " << maxComputeStorageBlocks << endl;
+	GLint maxVertexStorageBlocks;
+	glGetIntegerv(GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS, &maxVertexStorageBlocks);
+	cout << "maxVertexStorageBlocks: " << maxVertexStorageBlocks << endl;
 
 	// @DEBUG
 	double lastTime = 0;
