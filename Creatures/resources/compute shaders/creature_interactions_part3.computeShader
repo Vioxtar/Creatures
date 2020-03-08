@@ -38,7 +38,6 @@ uniform uint uMaxNumOfColliders;
 
 void main()
 {
-
 	uint gid = gl_GlobalInvocationID.x;
 	if (gid >= uCreatureCount)
 	{
@@ -65,6 +64,6 @@ void main()
 	}
 	
 	// Submit
-	Energies[gid] = givenEnergy;
+	Energies[gid] += givenEnergy;
 
 }

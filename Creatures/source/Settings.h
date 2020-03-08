@@ -78,6 +78,9 @@ extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR;
 // Render settings
 extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES;
 
+// Creature misc settings
+extern const float CREATURE_DEFAULT_BODY_MASS;
+
 // Creature brain settings
 extern const uint16_t CREATURE_BRAIN_NUM_OF_INPUTS;
 extern const uint16_t CREATURE_BRAIN_NUM_OF_OUTPUTS;
@@ -154,8 +157,32 @@ extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS;
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS;
 extern TweakableFloatSetting CREATURE_MIN_RADIUS;
-extern TweakableFloatSetting CREATURE_MAX_ENERGY_CAPACITY;
-extern TweakableFloatSetting CREATURE_MAX_MEAT_CAPACITY;
+
+extern TweakableFloatSetting CREATURE_MAX_ENERGY;
+extern TweakableFloatSetting CREATURE_MAX_MEAT;
+extern TweakableFloatSetting CREATURE_MAX_LIFE;
+
+extern TweakableFloatSetting CREATURE_ENERGY_TO_MEAT_CONVERSION_RATE;
+extern TweakableFloatSetting CREATURE_MEAT_TO_ENERGY_CONVERSION_RATE;
+extern TweakableFloatSetting CREATURE_ENERGY_TO_LIFE_CONVERSION_RATE;
+
+extern TweakableFloatSetting CREATURE_RADIUS_INTERPOLATION_RATE;
+extern TweakableFloatSetting CREATURE_RADIUS_PERCENTAGE_MEAT_WEIGHT;
+extern TweakableFloatSetting CREATURE_RADIUS_PERCENTAGE_MUSCLE_WEIGHT;
+
+extern TweakableFloatSetting CREATURE_LIFE_DRAIN_ON_NO_ENERGY;
+
+// Creature death settings
+extern TweakableFloatSetting CREATURE_DEATH_WITH_MEAT_SHRINK_RATE;
+extern TweakableFloatSetting CREATURE_DEATH_WITHOUT_MEAT_SHRINK_RATE;
+extern TweakableFloatSetting CREATURE_DEATH_EXISTENCE_RADIUS_THRESHOLD;
+
+extern TweakableFloatSetting CREATURE_DEATH_HARDNESS_TARGET;
+extern TweakableFloatSetting CREATURE_DEATH_HARDNESS_INTERPOLATION_RATE;
+extern TweakableFloatSetting CREATURE_DEATH_DEVICE_ZEROFICATION_INTERPOLATION_RATE;
+
+extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_TARGET;
+extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_INTERPOLATION_RATE;
 
 // Creature eye settings
 extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE;

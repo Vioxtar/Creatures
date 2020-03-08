@@ -67,6 +67,9 @@ extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 5;
 // Render settings
 extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES = 60;
 
+// Creature misc settings
+extern const float CREATURE_DEFAULT_BODY_MASS = 0.01;
+
 // Creature brain settings
 extern const uint16_t CREATURE_BRAIN_NUM_OF_INPUTS = 36;
 extern const uint16_t CREATURE_BRAIN_NUM_OF_OUTPUTS = 12;
@@ -91,11 +94,11 @@ extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 1.0, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
 
 // Simulation creature settings
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 1.0, 0.0, 100.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 5.0, 0.0, 100.0 };
 
 // Render settings
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_R = { 0.1, 0.0, 1.0 };
@@ -103,17 +106,41 @@ extern TweakableFloatSetting RENDER_CLEAR_COLOR_G = { 0.1, 0.0, 1.0 };
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_B = { 0.1, 0.0, 1.0 };
 
 // Creature device settings
-extern TweakableFloatSetting CREATURE_DEVICE_AIM_DOT_THRESHOLD = { 0.75, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_LIFE_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_MEAT_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_AIM_DOT_THRESHOLD = { 0.9, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_EFFECTIVENESS = { 0.01, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_LIFE_EFFECTIVENESS = { 0.01, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_MEAT_EFFECTIVENESS = { 0.01, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
 
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.4, 0.3, 0.5 };
-extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.2, 0.1, 0.3 };
-extern TweakableFloatSetting CREATURE_MAX_ENERGY_CAPACITY = { 1.0, 0.1, 10000.0 };
-extern TweakableFloatSetting CREATURE_MAX_MEAT_CAPACITY = { 1.0, 0.1, 10000.0 };
+extern TweakableFloatSetting CREATURE_MIN_RADIUS = { 0.1, 0.1, 0.3 };
+
+extern TweakableFloatSetting CREATURE_MAX_ENERGY = { 5.0, 0.1, 10.0 };
+extern TweakableFloatSetting CREATURE_MAX_MEAT = { 5.0, 0.1, 10.0 };
+extern TweakableFloatSetting CREATURE_MAX_LIFE = { 5.0, 0.1, 10.0 };
+
+extern TweakableFloatSetting CREATURE_ENERGY_TO_MEAT_CONVERSION_RATE = { 0.01, 0.1, 1.0 };
+extern TweakableFloatSetting CREATURE_MEAT_TO_ENERGY_CONVERSION_RATE = { 0.01, 0.1, 1.0 };
+extern TweakableFloatSetting CREATURE_ENERGY_TO_LIFE_CONVERSION_RATE = { 0.05, 0.1, 1.0 };
+
+extern TweakableFloatSetting CREATURE_RADIUS_INTERPOLATION_RATE = { 0.1, 0.001, 1.0 };
+extern TweakableFloatSetting CREATURE_RADIUS_PERCENTAGE_MEAT_WEIGHT = { 0.7, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_RADIUS_PERCENTAGE_MUSCLE_WEIGHT = { 0.3, 0.0, 1.0 };
+
+extern TweakableFloatSetting CREATURE_LIFE_DRAIN_ON_NO_ENERGY = { 0.01, 0.0, 1.0 };
+
+// Creature death settings
+extern TweakableFloatSetting CREATURE_DEATH_WITH_MEAT_SHRINK_RATE = { 0.001, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_WITHOUT_MEAT_SHRINK_RATE = { 0.01, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_EXISTENCE_RADIUS_THRESHOLD = { 0.01, 0.0, 1.0 };
+
+extern TweakableFloatSetting CREATURE_DEATH_HARDNESS_TARGET = { 1.0, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_HARDNESS_INTERPOLATION_RATE = { 0.05, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_DEVICE_ZEROFICATION_INTERPOLATION_RATE = { 0.1, 0.0, 1.0 };
+
+extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_TARGET = { 1.0, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_INTERPOLATION_RATE = { 0.01, 0.0, 1.0 };
 
 // Creature eye settings
 extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 10.0, 0.1, 30.0 };

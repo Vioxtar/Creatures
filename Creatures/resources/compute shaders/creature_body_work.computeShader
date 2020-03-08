@@ -30,9 +30,82 @@ layout (std430, binding = 5) buffer CreatureLives
 	float Lives[];
 };
 
+layout (std430, binding = 6) buffer CreatureEnergies
+{
+	float Energies[];
+};
+
+layout (std430, binding = 7) buffer CreatureMeats
+{
+	float Meats[];
+};
+
+layout (std430, binding = 8) buffer CreatureRadii
+{
+	float Radii[];
+};
+
+layout (std430, binding = 9) buffer CreatureHardnesses
+{
+	float Hardnesses[];
+};
+
+layout (std430, binding = 10) buffer CreatureSpikes
+{
+	vec4 Spikes[];
+};
+
+layout (std430, binding = 11) buffer CreatureFeeders
+{
+	vec4 Feeders[];
+};
+
+layout (std430, binding = 12) buffer CreatureShields
+{
+	vec4 Shields[];
+};
+
+layout (std430, binding = 13) buffer CreatureSkinvValues
+{
+	float SkinValues[];
+};
+
+layout (std430, binding = 14) buffer CreatureSkinSaturations
+{
+	float SkinSaturations[];
+};
+
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
+
 uniform uint uCreatureCount;
+
+uniform float uCreatureMaxEnergy;
+uniform float uCreatureMaxMeat;
+uniform float uCreatureMaxLife;
+
+uniform float uCreatureEnergyToMeatConversionRate;
+uniform float uCreatureMeatToEnergyConversionRate;
+uniform float uCreatureEnergyToLifeConversionRate;
+
+uniform float uCreatureMaxRadius;
+uniform float uCreatureMinRadius;
+uniform float uCreatureRadiusInterpolationRate;
+uniform float uCreatureRadiusPercentageMeatWeight;
+uniform float uCreatureRadiusPercentageMuscleWeight;
+
+uniform float uCreatureLifeDrainOnNoEnergy;
+
+uniform float uCreatureDeathWithMeatShrinkRate;
+uniform float uCreatureDeathWithoutMeatShrinkRate;
+
+uniform float uCreatureDeathExistenceRadiusThreshold;
+uniform float uCreatureDeathHardnessTarget;
+uniform float uCreatureDeathHardnessInterpolationRate;
+uniform float uCreatureDeathDeviceZeroficationInterpolationRate;
+
+uniform float uCreatureDeathSkinValueTarget;
+uniform float uCreatureDeathSkinValueInterpolationRate;
 
 void main()
 {
@@ -42,11 +115,123 @@ void main()
 		return;
 	}
 
-	if (Lives[gid] <= 0.0)
-	{
-		return;
-	}
+	float life = Lives[gid];
+	bool alive = life > 0.0;
+	
 
-	AngleVelocities[gid] += TurnThrusts[gid];
-	Velocities[gid] += ForwardDirections[gid] * ForwardThrusts[gid];
+	// Dead or alive, saturation reflects our life
+	float lifePercentage = life / uCreatureMaxLife;
+	SkinSaturations[gid] = lifePercentage;
+
+
+	if (alive)
+	{
+		// Life <-> Energy <-> Meat conversions
+
+		float energy = Energies[gid];
+		float meat = Meats[gid];
+
+		// Energy to life
+		if (life < uCreatureMaxLife)
+		{
+			float maxLifeDiff = uCreatureMaxLife - life;
+			float lifeAdd = min(maxLifeDiff, min(uCreatureEnergyToLifeConversionRate, energy));
+			life += lifeAdd;
+			energy -= lifeAdd;
+		}
+
+		// Meat to energy
+		if (energy < uCreatureMaxEnergy)
+		{
+			float maxEnergyDiff = uCreatureMaxEnergy - energy;
+			float energyAdd = min(maxEnergyDiff, min(uCreatureMeatToEnergyConversionRate, meat));
+			energy += energyAdd;
+			meat -= energyAdd;
+		}
+
+		// Energy to meat
+		if (energy > uCreatureMaxEnergy)
+		{
+			float excessEnergy = energy - uCreatureMaxEnergy;
+			float meatAdd = min(excessEnergy, uCreatureEnergyToMeatConversionRate);
+			meat += meatAdd;
+			energy -= excessEnergy;
+		}
+
+		// No energy results in life drain
+		if (energy <= 0.0)
+		{
+			life -= uCreatureLifeDrainOnNoEnergy;
+		}
+
+
+
+		// Radius control
+		float radius = Radii[gid];
+
+		float meatPercentage = meat / uCreatureMaxMeat;
+		float radiusMusclePercentage = 1.0; // @TODO
+		float targetRadiusPercentage =
+			uCreatureRadiusPercentageMeatWeight * meatPercentage +
+			uCreatureRadiusPercentageMuscleWeight * radiusMusclePercentage;
+
+		float targetRadius = uCreatureMinRadius + (uCreatureMaxRadius - uCreatureMinRadius) * targetRadiusPercentage;
+		float newRadius = radius * (1.0 - uCreatureRadiusInterpolationRate) + uCreatureRadiusInterpolationRate * targetRadius;
+		Radii[gid] = newRadius;
+
+
+
+		// Movement
+
+		float turnThrust = TurnThrusts[gid];
+		vec2 forwardDir = ForwardDirections[gid];
+		float forwardThrust = ForwardThrusts[gid];
+
+		AngleVelocities[gid] += turnThrust;
+		Velocities[gid] += forwardDir * forwardThrust;
+
+
+
+		// Write back energy/life/meat values, make sure they're clamped, even though they should already be clamped
+		Energies[gid] = max(0, min(energy, uCreatureMaxEnergy));
+		Lives[gid] = max(0, min(life, uCreatureMaxLife));
+		Meats[gid] = max(0, min(meat, uCreatureMaxMeat));
+	}
+	else
+	{
+		// Shrink radius
+		float radiusShrinkRate = Meats[gid] > 0.0 ? uCreatureDeathWithMeatShrinkRate : uCreatureDeathWithoutMeatShrinkRate;
+		
+		float radius = Radii[gid];
+		radius *= (1.0 - radiusShrinkRate);
+
+		Radii[gid] = radius;
+
+		// If we're below the creature existence radius threshold, remove ourselves from the simulation
+		if (radius < uCreatureDeathExistenceRadiusThreshold)
+		{
+			// @TODO: Creature removal
+			return;
+		}
+
+		// We're dead but we're still in the simulation, interpolate hardness and device values to that of a creature corpse
+		
+		float hardness = Hardnesses[gid];
+		Hardnesses[gid] = hardness * (1.0 - uCreatureDeathHardnessInterpolationRate) + uCreatureDeathHardnessTarget * uCreatureDeathHardnessInterpolationRate;
+
+		vec4 spike = Spikes[gid];
+		vec4 feeder = Feeders[gid];
+		vec4 shield = Shields[gid];
+
+		spike.z *= (1.0 - uCreatureDeathDeviceZeroficationInterpolationRate);
+		feeder.z *= (1.0 - uCreatureDeathDeviceZeroficationInterpolationRate);
+		shield.z *= (1.0 - uCreatureDeathDeviceZeroficationInterpolationRate);
+
+		Spikes[gid] = spike;
+		Feeders[gid] = feeder;
+		Shields[gid] = shield;
+
+		float skinValue = SkinValues[gid];
+		SkinValues[gid] = skinValue * (1.0 - uCreatureDeathSkinValueInterpolationRate) + uCreatureDeathSkinValueTarget * uCreatureDeathSkinValueInterpolationRate;
+	}	
 }

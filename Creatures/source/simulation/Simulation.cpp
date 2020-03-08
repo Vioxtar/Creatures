@@ -87,15 +87,15 @@ void AddFirstGenerationCreature()
 	data.angle = random() * 2 * M_PI;
 	data.angleVel = (random() - 0.5) * 0.02;
 
-	data.hardness = random() * random() * random() * random() * random();
+	data.hardness = 1.0;
 	data.rad = CREATURE_MAX_RADIUS.value;
 	
-	data.life = random();
-	data.energy = random();
+	data.life = CREATURE_MAX_LIFE.value;
+	data.energy = CREATURE_MAX_ENERGY.value;
 	data.meat = SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT.value;
 
 	data.forwardThrust = random() * random() * 0.0015;
-	data.turnThrust = 0.0;
+	data.turnThrust = (random() - 0.5) * 0.0015;
 
 	float spikeState = random();
 	float feederState = random();
@@ -619,12 +619,41 @@ void Simulation_Logic()
 	workGroupsNeeded = program_CreatureBodyWork.workGroupsNeeded;
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformFloat(programID, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
+	SetUniformFloat(programID, "uCreatureMaxMeat", CREATURE_MAX_MEAT.value);
+	SetUniformFloat(programID, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
+	SetUniformFloat(programID, "uCreatureEnergyToMeatConversionRate", CREATURE_ENERGY_TO_MEAT_CONVERSION_RATE.value);
+	SetUniformFloat(programID, "uCreatureMeatToEnergyConversionRate", CREATURE_MEAT_TO_ENERGY_CONVERSION_RATE.value);
+	SetUniformFloat(programID, "uCreatureEnergyToLifeConversionRate", CREATURE_ENERGY_TO_LIFE_CONVERSION_RATE.value);
+	SetUniformFloat(programID, "uCreatureMaxRadius", CREATURE_MAX_RADIUS.value);
+	SetUniformFloat(programID, "uCreatureMinRadius", CREATURE_MIN_RADIUS.value);
+	SetUniformFloat(programID, "uCreatureRadiusInterpolationRate", CREATURE_RADIUS_INTERPOLATION_RATE.value);
+	SetUniformFloat(programID, "uCreatureRadiusPercentageMeatWeight", CREATURE_RADIUS_PERCENTAGE_MEAT_WEIGHT.value);
+	SetUniformFloat(programID, "uCreatureRadiusPercentageMuscleWeight", CREATURE_RADIUS_PERCENTAGE_MUSCLE_WEIGHT.value);
+	SetUniformFloat(programID, "uCreatureLifeDrainOnNoEnergy", CREATURE_LIFE_DRAIN_ON_NO_ENERGY.value);
+	SetUniformFloat(programID, "uCreatureDeathWithMeatShrinkRate", CREATURE_DEATH_WITH_MEAT_SHRINK_RATE.value);
+	SetUniformFloat(programID, "uCreatureDeathWithoutMeatShrinkRate", CREATURE_DEATH_WITHOUT_MEAT_SHRINK_RATE.value);
+	SetUniformFloat(programID, "uCreatureDeathExistenceRadiusThreshold", CREATURE_DEATH_EXISTENCE_RADIUS_THRESHOLD.value);
+	SetUniformFloat(programID, "uCreatureDeathHardnessTarget", CREATURE_DEATH_HARDNESS_TARGET.value);
+	SetUniformFloat(programID, "uCreatureDeathHardnessInterpolationRate", CREATURE_DEATH_HARDNESS_INTERPOLATION_RATE.value);
+	SetUniformFloat(programID, "uCreatureDeathDeviceZeroficationInterpolationRate", CREATURE_DEATH_DEVICE_ZEROFICATION_INTERPOLATION_RATE.value);
+	SetUniformFloat(programID, "uCreatureDeathSkinValueTarget", CREATURE_DEATH_SKIN_VALUE_TARGET.value);
+	SetUniformFloat(programID, "uCreatureDeathSkinValueInterpolationRate", CREATURE_DEATH_SKIN_VALUE_INTERPOLATION_RATE.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Velocities.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_AngleVelocities.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_ForwardDirections.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_ForwardThrusts.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_TurnThrusts.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Lives.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Energies.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Meats.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_Radii.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_Harndesses.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_Spikes.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_Feeders.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_Shields.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 13, creature_SkinValues.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 14, creature_SkinSaturations.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -653,7 +682,6 @@ void Simulation_Logic()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_Shields.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 13, creature_EyeMuscles.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 14, creature_EyePositions.ssbo);
-
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -699,6 +727,7 @@ void Simulation_Logic()
 	SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
 	SetUniformUInteger(programID, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
 	SetUniformVector2f(programID, "uRandom", vec2(random() - 0.5, random() - 0.5)); // Used to resolve creatures absolutely clipped in each other
+	SetUniformFloat(programID, "uCreatureDefaultBodyMass", CREATURE_DEFAULT_BODY_MASS); // Used to avoid 0 mass on collisions
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.ssbo);
@@ -750,8 +779,6 @@ void Simulation_Logic()
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformUInteger(programID, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
-	SetUniformFloat(programID, "uCreatureMaxEnergyCapacity", CREATURE_MAX_ENERGY_CAPACITY.value);
-	SetUniformFloat(programID, "uCreatureMaxMeatCapacity", CREATURE_MAX_MEAT_CAPACITY.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_CollidersCounts.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_CollidersGivenEnergy.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_CollidersToPosDirs.ssbo);
@@ -889,6 +916,7 @@ void Simulation_Render()
 	glUseProgram(drawCallData_CreatureBody.program);
 	SetUniformMatrix4(drawCallData_CreatureBody.program, "uTransform", GetSimSpaceToCameraTransform());
 	SetUniformUInteger(drawCallData_CreatureBody.program, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
+	SetUniformFloat(drawCallData_CreatureBody.program, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
 	glDrawElementsInstanced(GL_TRIANGLES, drawCallData_CreatureBody.numOfIndices, GL_UNSIGNED_INT, 0, numOfInstances);
 	glBindVertexArray(0);
 }
