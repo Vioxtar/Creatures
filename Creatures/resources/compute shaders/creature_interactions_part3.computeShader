@@ -56,8 +56,10 @@ void main()
 	for (uint i = 0; i < collidersCount; ++i)
 	{
 		float energyGivenByCollider = CollidersGivenEnergy[collidersStartIndex + i];
-		CollidersGivenEnergy[collidersStartIndex + i] = 0.0;
 		givenEnergy += energyGivenByCollider;
+
+		// Zerofiy the given energy
+		CollidersGivenEnergy[collidersStartIndex + i] = 0.0;
 	}
 	
 	// If we're above the energy limit, translate our energy to meat

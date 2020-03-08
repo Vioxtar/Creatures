@@ -147,7 +147,8 @@ extern TweakableFloatSetting RENDER_CLEAR_COLOR_B;
 // Creature device settings
 extern TweakableFloatSetting CREATURE_DEVICE_AIM_DOT_THRESHOLD;
 extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_EFFECTIVENESS;
-extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_EFFECTIVENESS;
+extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_LIFE_EFFECTIVENESS;
+extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_MEAT_EFFECTIVENESS;
 extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS;
 
 // Creature body settings

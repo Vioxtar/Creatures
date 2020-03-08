@@ -35,11 +35,20 @@ layout (std430, binding = 6) buffer CreatureCollidersGivenEnergy
 	float CollidersGivenEnergy[];
 };
 
-layout (std430, binding = 7) buffer CreatureEnergies
+layout (std430, binding = 7) buffer CreatureLives
+{
+	float Lives[];
+};
+
+layout (std430, binding = 8) buffer CreatureEnergies
 {
 	float Energies[];
 };
 
+layout (std430, binding = 9) buffer CreatureMeats
+{
+	float Meats[];
+};
 
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
@@ -50,7 +59,8 @@ uniform uint uMaxNumOfColliders;
 uniform float uDeviceAimDotThreshold;
 
 uniform float uCreatureFeederEffectiveness;
-uniform float uCreatureSpikeEffectiveness;
+uniform float uCreatureSpikeVersusLifeEffectiveness;
+uniform float uCreatureSpikeVersusMeatEffectiveness;
 uniform float uCreatureShieldEffectiveness;
 
 void main()
@@ -62,96 +72,153 @@ void main()
 		return;
 	}
 
-	// Iterate colliders, and only handle out-flowing energies (consider our feeding, their spike)
-	// Remember that it's guaranteed that if creature B is A's collider, then A is B's collider as well
-
-
-	// Gather some information about ourselves
-	vec4 aFeeder = Feeders[gid];
-	vec4 aShield = Shields[gid];
-	float aFeederState = aFeeder.z;
-	vec2 aFeederDirection = aFeeder.xy;
-	float aShieldState = aShield.z;
-	vec2 aShieldDirection = aShield.xy;
-	float aShieldSpan = aShield.w;
-
-
-	// The energy we have to dispense
-	float energyLeft = Energies[gid];
-
-	// Start collider iterations
 	uint collidersStartIndex = gid * uMaxNumOfColliders;
 	uint collidersCount = min(CollidersCounts[gid], uMaxNumOfColliders);
-	for (uint i = 0; i < collidersCount; ++i)
+
+	if (collidersCount <= 0)
 	{
-
-		// If we're out of energy, bail - we have nothing to give (but what about meats...?)
-		if (energyLeft <= 0.0)
-		{
-			break;
-		}
-
-		// Acquire collider index and our placement set by said collider
-		uvec2 colliderIndexAndPlacement = CollidersIndicesAndPlacements[collidersStartIndex + i];
-		uint bGID = colliderIndexAndPlacement.x;
-		uint ourColliderPlacementIndexGivenByB = colliderIndexAndPlacement.y;
-
-		// Find the direction from them to us
-		vec2 bColliderToUsDir = CollidersToPosDirs[collidersStartIndex + i];
-
-		// The amount of energy we'll be giving b at the end
-		float energyToGiveB = 0.0;
-		
-		// @TODO: Shield effectivness drops the more it spans!
-
-		// Are we aiming our feeder at B?
-		if (-dot(aFeederDirection, bColliderToUsDir) > uDeviceAimDotThreshold)
-		{
-			// Does B have a shield?
-			vec4 bShield = Shields[bGID];
-			vec2 bShieldDirection = bShield.xy;
-			float bShieldSpan = bShield.w;
-			if (-dot(aFeederDirection, bShieldDirection) < 1.0 - bShieldSpan)
-			{
-				// Not shielding
-				energyToGiveB += aFeederState * uCreatureFeederEffectiveness;
-			}
-			else
-			{
-				// Shielding
-				float bShieldState = bShield.z;
-				energyToGiveB += aFeederState * uCreatureFeederEffectiveness * (1.0 - bShieldState * uCreatureShieldEffectiveness);
-			}
-		}
-
-
-		// Is B spiking us?
-		vec4 bSpike = Spikes[bGID];
-		float bSpikeState = bSpike.z;
-		vec2 bSpikeDirection = bSpike.xy;
-		if (dot(bSpikeDirection, bColliderToUsDir) > uDeviceAimDotThreshold)
-		{
-			// Do we have a shield?
-			if (-dot(bSpikeDirection, aShieldDirection) < 1.0 - aShieldSpan)
-			{
-				// Not shielding
-				energyToGiveB += bSpikeState * uCreatureSpikeEffectiveness;
-			}
-			else
-			{
-				// Shielding
-				energyToGiveB += bSpikeState * uCreatureSpikeEffectiveness * (1.0 - aShieldState * uCreatureShieldEffectiveness);
-			}
-		}
-
-
-		// Give B our energy
-		energyToGiveB = min(energyToGiveB, energyLeft);
-		energyLeft -= energyToGiveB;
-
-		CollidersGivenEnergy[ourColliderPlacementIndexGivenByB] = energyToGiveB;
+		return; // Nothing to do here
 	}
 
-	Energies[gid] = energyLeft;
+	float life = Lives[gid];
+	bool alive = life > 0.0;
 
+	if (alive)
+	{
+
+		// We're alive, handle:
+		// 1. Getting spiked by B (reduce our life)
+		// 2. Feeding B (reduce our life, give energy to B)
+
+		// Gather some information about ourselves
+		vec4 aFeeder = Feeders[gid];
+		vec4 aShield = Shields[gid];
+		float aFeederState = aFeeder.z;
+		vec2 aFeederDirection = aFeeder.xy;
+		float aShieldState = aShield.z;
+		vec2 aShieldDirection = aShield.xy;
+		float aShieldSpan = aShield.w;
+
+		float lifeLeft = life; // Reduced by getting spiked
+		float energyLeft = Energies[gid]; // Reduced by feeding
+
+		// Start collider iterations
+		for (uint i = 0; i < collidersCount; ++i)
+		{
+
+			if (lifeLeft <= 0.0 && energyLeft <= 0.0)
+			{
+				break; // Nothing to be done here
+			}
+
+			// Acquire collider index
+			uvec2 colliderIndexAndPlacement = CollidersIndicesAndPlacements[collidersStartIndex + i];
+			uint bGID = colliderIndexAndPlacement.x;
+
+			// Find the direction from B to us
+			vec2 bColliderToUsDir = CollidersToPosDirs[collidersStartIndex + i];
+
+
+
+			// Is B spiking us? If so, reduce our life
+
+			vec4 bSpike = Spikes[bGID];
+			float bSpikeState = bSpike.z;
+			vec2 bSpikeDirection = bSpike.xy;
+			bool gettingSpikedByB = dot(bSpikeDirection, bColliderToUsDir) > uDeviceAimDotThreshold;
+			if (gettingSpikedByB)
+			{
+				float shieldFactor = (-dot(bSpikeDirection, aShieldDirection) >= 1.0 - aShieldSpan)
+					? aShieldState * uCreatureShieldEffectiveness // @TODO: Drops if span rises!
+					: 0.0;
+
+				float spikeFactor = bSpikeState * uCreatureSpikeVersusLifeEffectiveness;
+
+				float lifeReduction = min(spikeFactor * (1.0 - shieldFactor), lifeLeft);
+				lifeLeft -= lifeReduction;
+			}
+
+
+
+			// Are we feeding B? If so, give B our energy
+			bool feedingB = -dot(aFeederDirection, bColliderToUsDir) > uDeviceAimDotThreshold;
+			if (feedingB)
+			{
+				// Does B have a shield?
+				vec4 bShield = Shields[bGID];
+				vec2 bShieldDirection = bShield.xy;
+				float bShieldState = bShield.z;
+				float bShieldSpan = bShield.w;
+				
+
+				float shieldFactor = (-dot(aFeederDirection, bShieldDirection) >= 1.0 - bShieldSpan)
+					? bShieldState * uCreatureShieldEffectiveness // @TODO: Drops if span rises!
+					: 0.0;
+
+				float feederFactor = aFeederState * uCreatureFeederEffectiveness;
+
+				float energyToGiveB = min(feederFactor * (1.0 - shieldFactor), energyLeft);
+				energyLeft -= energyToGiveB;
+
+				uint ourColliderPlacementIndexGivenByB = colliderIndexAndPlacement.y;
+				CollidersGivenEnergy[ourColliderPlacementIndexGivenByB] = energyToGiveB;
+			}
+					   			 		  
+		}
+
+
+		// Write new life and energy values
+		Energies[gid] = energyLeft;
+		Lives[gid] = lifeLeft;
+
+
+	} else {
+
+
+		// We're dead, we reduce our meat and give energy in return
+		// We're dead, handle:
+		// 1. Getting spiked by B (reduce our meat, give energy to B)
+
+		float meatLeft = Meats[gid];
+
+		// Start collider iterations
+		for (uint i = 0; i < collidersCount; ++i)
+		{
+			if (meatLeft <= 0.0)
+			{
+				break; // Nothing to do here
+			}
+
+			// Acquire collider index
+			uvec2 colliderIndexAndPlacement = CollidersIndicesAndPlacements[collidersStartIndex + i];
+			uint bGID = colliderIndexAndPlacement.x;
+
+			// Find the direction from B to us
+			vec2 bColliderToUsDir = CollidersToPosDirs[collidersStartIndex + i];
+
+			// Is B spiking us? If so, reduce our meat and give B energy in return
+
+			vec4 bSpike = Spikes[bGID];
+			float bSpikeState = bSpike.z;
+			vec2 bSpikeDirection = bSpike.xy;
+			bool gettingSpikedByB = dot(bSpikeDirection, bColliderToUsDir) > uDeviceAimDotThreshold;
+			if (gettingSpikedByB)
+			{
+				// We don't care about our shields - we're dead!
+
+				float spikeFactor = bSpikeState * uCreatureSpikeVersusMeatEffectiveness;
+
+				float meatReduction = min(spikeFactor, meatLeft);
+				meatLeft -= meatReduction;
+
+				float energyToGiveB = meatReduction; // @TODO: Meat to energy conversion scalar?
+
+				uint ourColliderPlacementIndexGivenByB = colliderIndexAndPlacement.y;
+				CollidersGivenEnergy[ourColliderPlacementIndexGivenByB] = energyToGiveB;
+			}
+		}
+
+		// Write new meat values
+		Meats[gid] = meatLeft;
+	}
 }

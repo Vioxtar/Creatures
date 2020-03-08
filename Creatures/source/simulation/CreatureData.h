@@ -19,13 +19,18 @@ struct CreatureData
 	// Sensor input data
 	vector<GLfloat> eyeConeSights;
 	vector<GLfloat> eyePupilSights;
+
+	// Devices
+	vec4 spike;
+	vec4 feeder;
+	vec4 shield;
 	
 	// Appearance
+	vec3 skinRGBColors;
 	vec2 skinPattern;
 	GLfloat skinHue;
 	GLfloat skinSaturation;
 	GLfloat skinValue;
-	vec3 skinRGBColors;
 
 	// Placement
 	vec2 pos;
@@ -44,11 +49,6 @@ struct CreatureData
 	GLfloat energy;
 	GLfloat meat;
 
-	// Devices
-	vec4 spike;
-	vec4 feeder;
-	vec4 shield;
-
 	// Movement
 	GLfloat forwardThrust;
 	GLfloat turnThrust;
@@ -63,7 +63,6 @@ struct CreatureData
 	GLfloat spikeLocalAngle;
 	GLfloat feederLocalAngle;
 	GLfloat shieldLocalAngle;
-	GLfloat shieldSpan;
 };
 
 

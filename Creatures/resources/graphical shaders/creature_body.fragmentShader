@@ -62,7 +62,7 @@ void main()
     float feederXMul = oFeederEuclideanPos.x * 2.0; // Make the base of the triangle narrower
     float feederColMul =
         feederYDist < 0.25 &&
-        abs(feederXMul) < 0.25 - feederYDist * oFeederState
+        abs(feederXMul) < (0.25 - feederYDist) * oFeederState
         ? 1.25
         : 1.0;
 

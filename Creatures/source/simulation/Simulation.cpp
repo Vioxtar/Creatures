@@ -87,7 +87,7 @@ void AddFirstGenerationCreature()
 	data.angle = random() * 2 * M_PI;
 	data.angleVel = (random() - 0.5) * 0.02;
 
-	data.hardness = random();
+	data.hardness = random() * random() * random() * random() * random();
 	data.rad = CREATURE_MAX_RADIUS.value;
 	
 	data.life = random();
@@ -97,19 +97,21 @@ void AddFirstGenerationCreature()
 	data.forwardThrust = random() * random() * 0.0015;
 	data.turnThrust = 0.0;
 
-	data.spike = vec4(0, 0, random(), 0);
-	data.feeder = vec4(0, 0, random(), 0);
+	float spikeState = random();
+	float feederState = random();
+	float shieldState = random();
 	float shieldSpan = random();
-	data.shield = vec4(0, 0, random(), shieldSpan);
+	data.spike = vec4(0, 0, spikeState, 0);
+	data.feeder = vec4(0, 0, feederState, 0);
+	data.shield = vec4(0, 0, shieldState, shieldSpan);
 
 	data.eyeMuscles = vec2((random() - 0.5) * 2, (random() - 0.5) * 2);
-	data.eyeConeRadius = CREATURE_EYE_MAX_CONES_RADIUS.max;
+	data.eyeConeRadius = CREATURE_EYE_MAX_CONES_RADIUS.value;
 	data.eyePupilConeCoverageFraction = random();
 
 	data.spikeLocalAngle = random() * 2 * M_PI;
 	data.feederLocalAngle = random() * 2 * M_PI;
 	data.shieldLocalAngle = random() * 2 * M_PI;
-	data.shieldSpan = random() * 0.3;
 
 	CreatureData_AddCreature(data);
 }
@@ -721,7 +723,8 @@ void Simulation_Logic()
 	SetUniformUInteger(programID, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
 	SetUniformFloat(programID, "uDeviceAimDotThreshold", CREATURE_DEVICE_AIM_DOT_THRESHOLD.value);
 	SetUniformFloat(programID, "uCreatureFeederEffectiveness", CREATURE_DEVICE_FEEDER_EFFECTIVENESS.value);
-	SetUniformFloat(programID, "uCreatureSpikeEffectiveness", CREATURE_DEVICE_SPIKE_EFFECTIVENESS.value);
+	SetUniformFloat(programID, "uCreatureSpikeVersusLifeEffectiveness", CREATURE_DEVICE_SPIKE_VERSUS_LIFE_EFFECTIVENESS.value);
+	SetUniformFloat(programID, "uCreatureSpikeVersusMeatEffectiveness", CREATURE_DEVICE_SPIKE_VERSUS_MEAT_EFFECTIVENESS.value);
 	SetUniformFloat(programID, "uCreatureShieldEffectiveness", CREATURE_DEVICE_SHIELD_EFFECTIVENESS.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_CollidersCounts.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_CollidersIndicesAndPlacements.ssbo);
@@ -730,7 +733,9 @@ void Simulation_Logic()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Feeders.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Shields.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_CollidersGivenEnergy.ssbo);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Energies.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Lives.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_Energies.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_Meats.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -887,4 +892,19 @@ void Simulation_Update()
 {
 	Simulation_Logic();
 	Simulation_Render();
+
+	// @DEBUG sum energy
+	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_Energies.ssbo);
+	//void* ptr = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+	//GLfloat energies[100000];
+	//memcpy(energies, ptr, sizeof(GLfloat) * 100000);
+	//glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+	//
+	//float sum = 0.0;
+	//for (auto energy : energies)
+	//{
+	//	sum += energy;
+	//}
+
+	//cout << sum << endl;
 }
