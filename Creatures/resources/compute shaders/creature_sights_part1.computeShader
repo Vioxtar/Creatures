@@ -55,6 +55,10 @@ layout (std430, binding = 10) buffer CreatureGeneralPurposeSecondVec2
 	vec2 EyePupilC2C1PosDiffNorms[];
 };
 
+layout (std430, binding = 11) buffer CreatureLives
+{
+	float Lives[];
+};
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
@@ -123,6 +127,11 @@ void main()
 
 	uint gid = gl_GlobalInvocationID.x;
 	if (gid >= uCreatureCount)
+	{
+		return;
+	}
+
+	if (Lives[gid] <= 0.0)
 	{
 		return;
 	}

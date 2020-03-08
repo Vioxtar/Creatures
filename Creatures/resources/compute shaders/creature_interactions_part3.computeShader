@@ -20,14 +20,14 @@ layout (std430, binding = 3) buffer CreatureEnergies
 	float Energies[];
 };
 
-layout (std430, binding = 4) buffer CreatureMeats
-{
-	float Meats[];
-};
-
-layout (std430, binding = 5) buffer CreatureForwardDirections
+layout (std430, binding = 4) buffer CreatureForwardDirections
 {
 	vec2 ForwardDirections[];
+};
+
+layout (std430, binding = 5) buffer CreatureLives
+{
+	float Lives[];
 };
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
@@ -36,14 +36,16 @@ layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 uniform uint uCreatureCount;
 uniform uint uMaxNumOfColliders;
 
-uniform float uCreatureMaxEnergyCapacity;
-uniform float uCreatureMaxMeatCapacity;
-
 void main()
 {
 
 	uint gid = gl_GlobalInvocationID.x;
 	if (gid >= uCreatureCount)
+	{
+		return;
+	}
+
+	if (Lives[gid] <= 0.0)
 	{
 		return;
 	}
@@ -62,12 +64,7 @@ void main()
 		CollidersGivenEnergy[collidersStartIndex + i] = 0.0;
 	}
 	
-	// If we're above the energy limit, translate our energy to meat
-	float givenMeat = max(givenEnergy - uCreatureMaxEnergyCapacity, 0);
-	givenEnergy -= givenMeat;
-	
 	// Submit
-	Energies[gid] = min(Energies[gid] + givenEnergy, uCreatureMaxEnergyCapacity);
-	Meats[gid] = min(Meats[gid] + givenMeat, uCreatureMaxMeatCapacity);
+	Energies[gid] = givenEnergy;
 
 }

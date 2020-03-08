@@ -82,7 +82,7 @@ extern CreatureAttributesSSBOInfo creature_GeneralPurposeUInt{ 0, sizeof(GLuint)
 extern CreatureAttributesSSBOInfo creature_SkinHues{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_SkinSaturations{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_SkinValues{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_SkinRGBColors{ 0, sizeof(vec3) };
+extern CreatureAttributesSSBOInfo creature_SkinRGBColors{ 0, sizeof(GLfloat) * 3 };
 extern CreatureAttributesSSBOInfo creature_SkinPatterns{ 0, sizeof(vec2) };
 
 // Creature-localized devices (feeders, shields, sensors)

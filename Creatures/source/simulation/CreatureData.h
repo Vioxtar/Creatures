@@ -26,7 +26,6 @@ struct CreatureData
 	vec4 shield;
 	
 	// Appearance
-	vec3 skinRGBColors;
 	vec2 skinPattern;
 	GLfloat skinHue;
 	GLfloat skinSaturation;

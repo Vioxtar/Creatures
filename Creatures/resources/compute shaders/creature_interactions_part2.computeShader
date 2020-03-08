@@ -174,7 +174,7 @@ void main()
 
 	} else {
 
-
+		
 		// We're dead, we reduce our meat and give energy in return
 		// We're dead, handle:
 		// 1. Getting spiked by B (reduce our meat, give energy to B)

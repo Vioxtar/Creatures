@@ -25,6 +25,10 @@ layout (std430, binding = 4) buffer CreatureTurnThrusts
 	float TurnThrusts[];
 };
 
+layout (std430, binding = 5) buffer CreatureLives
+{
+	float Lives[];
+};
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
@@ -34,6 +38,11 @@ void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
 	if (gid >= uCreatureCount)
+	{
+		return;
+	}
+
+	if (Lives[gid] <= 0.0)
 	{
 		return;
 	}

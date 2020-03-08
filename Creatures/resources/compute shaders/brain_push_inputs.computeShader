@@ -15,7 +15,7 @@ layout (std430, binding = 2) buffer CreatureLives
 	float Lives[];
 };
 
-layout (std430, binding = 1) buffer CreatureVelocities
+layout (std430, binding = 3) buffer CreatureVelocities
 {
 	vec2 Velocities[];
 };
@@ -31,6 +31,11 @@ void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
 	if (gid >= uCreatureCount)
+	{
+		return;
+	}
+	
+	if (Lives[gid] <= 0.0)
 	{
 		return;
 	}
