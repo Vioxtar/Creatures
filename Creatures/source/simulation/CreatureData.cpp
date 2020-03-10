@@ -72,12 +72,6 @@ extern CreatureAttributesSSBOInfo creature_CollidersRadii{ 0, sizeof(GLfloat) * 
 extern CreatureAttributesSSBOInfo creature_CollidersGivenEnergy{ 0, sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS };
 
 
-// General purpose data packets
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeVec2{ 0, sizeof(vec2) };
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeSecondVec2{ 0, sizeof(vec2) };
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeFloat{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeUInt{ 0, sizeof(GLuint) };
-
 // Appearances
 extern CreatureAttributesSSBOInfo creature_SkinHues{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_SkinSaturations{ 0, sizeof(GLfloat) };
@@ -95,6 +89,15 @@ extern CreatureAttributesSSBOInfo creature_Feeders{ 0, sizeof(vec4) };
 extern CreatureAttributesSSBOInfo creature_ShieldLocalAngles{ 0, sizeof(GLfloat) };
 extern CreatureAttributesSSBOInfo creature_Shields{ 0, sizeof(vec4) };
 
+// General purpose data packets
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeVec2{ 0, sizeof(vec2) };
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeSecondVec2{ 0, sizeof(vec2) };
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeFloat{ 0, sizeof(GLfloat) };
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeUInt{ 0, sizeof(GLuint) };
+
+// Death and reproduction logging creature lists
+extern CreatureAttributesSSBOInfo creatureList_Vanishes{ 0, sizeof(GLuint) };
+extern CreatureAttributesSSBOInfo creatureList_Newborns{ 0, sizeof(uvec2) };
 
 
 // Set dynamic sizes again in runtime - some settings values are not visible during definition time!
@@ -150,6 +153,7 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Generations);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_UniformGridTiles);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeVec2);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeSecondVec2);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeFloat);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeUInt);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinHues);
@@ -169,10 +173,25 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersPositions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersRadii);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersGivenEnergy);
+	creatureAttributesSSBOInfosRefs.push_back(&creatureList_Vanishes);
+	creatureAttributesSSBOInfosRefs.push_back(&creatureList_Newborns);
 }
 
 
+//////////////////////////////////////////////
+// -- DEFAULT CREATURE ATTRIBUTES VALUES -- //
+//////////////////////////////////////////////
 
+// The main purpose of defining these values is to have something to write into creature attributes that don't
+// accept CreatureData values
+
+const vec2 defaultGeneralPurposeVec2 = vec2(0.0, 0.0);
+const vec2 defaultGeneralPurposeSecondVec2 = vec2(0.0, 0.0);
+const GLfloat defaultGeneralPurposeFloat = 0.0;
+const GLuint defaultGeneralPurposeUInt = 0;
+
+const uvec2 defaultCreatureListNewbornsCount = uvec2(0, 0);
+const GLuint defaultCreatureListVanishesCount = 0;
 
 ///////////////////////////////
 // -- CREATURE SSBO UTILS -- //
@@ -263,7 +282,6 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_SkinValues, newCreatureIndex, &newCreatureData.skinValue);
 	SetCreatureAttribute(creature_Positions, newCreatureIndex, &newCreatureData.pos);
 	SetCreatureAttribute(creature_Velocities, newCreatureIndex, &newCreatureData.vel);
-	SetCreatureAttribute(creature_GeneralPurposeVec2, newCreatureIndex, NULL);
 	SetCreatureAttribute(creature_Radii, newCreatureIndex, &newCreatureData.rad);
 	SetCreatureAttribute(creature_Lives, newCreatureIndex, &newCreatureData.life);
 	SetCreatureAttribute(creature_Angles, newCreatureIndex, &newCreatureData.angle);
@@ -273,7 +291,6 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_ForwardThrusts, newCreatureIndex, &newCreatureData.forwardThrust);
 	SetCreatureAttribute(creature_TurnThrusts, newCreatureIndex, &newCreatureData.turnThrust);
 	SetCreatureAttribute(creature_Harndesses, newCreatureIndex, &newCreatureData.hardness);
-	SetCreatureAttribute(creature_UniformGridTiles, newCreatureIndex, NULL);
 	SetCreatureAttribute(creature_SkinPatterns, newCreatureIndex, &newCreatureData.skinPattern);
 	SetCreatureAttribute(creature_SpikeLocalAngles, newCreatureIndex, &newCreatureData.spikeLocalAngle);
 	SetCreatureAttribute(creature_FeederLocalAngles, newCreatureIndex, &newCreatureData.feederLocalAngle);
@@ -286,6 +303,13 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_EyePupilConeCoverageFraction, newCreatureIndex, &newCreatureData.eyePupilConeCoverageFraction);
 	SetCreatureAttribute(creature_Energies, newCreatureIndex, &newCreatureData.energy);
 	SetCreatureAttribute(creature_Meats, newCreatureIndex, &newCreatureData.meat);
+
+	// Also set some zero values to avoid undefined values lurking in our buffers
+	SetCreatureAttribute(creature_GeneralPurposeVec2, newCreatureIndex, &defaultGeneralPurposeVec2);
+	SetCreatureAttribute(creature_GeneralPurposeSecondVec2, newCreatureIndex, &defaultGeneralPurposeSecondVec2);
+	SetCreatureAttribute(creature_GeneralPurposeFloat, newCreatureIndex, &defaultGeneralPurposeFloat);
+	SetCreatureAttribute(creature_GeneralPurposeUInt, newCreatureIndex, &defaultGeneralPurposeUInt);
+
 
 	// Map creature unique ID to creature index
 	creature_UniqueIDsToSSBOIndex.emplace(creature_NextUniqueIDToBeAssigned, newCreatureIndex);
@@ -367,6 +391,17 @@ void CreatureData_Init()
 	{
 		InitEmptyCreatureAttributesSSBO(*creatureAttributeSSBOInfoRef, numOfCreaturesOnInit);
 	}
+
+
+	// Creature lists' index 0 is used for counting the number of creatures listed in the buffer, hence their size should
+	// always be max_supported_creature_count_by_current_buffers + 1
+	ExpandCreatureAttributesSSBO(creatureList_Newborns, 1);
+	ExpandCreatureAttributesSSBO(creatureList_Vanishes, 1);
+	
+	// Set current count to zero
+	SetCreatureAttribute(creatureList_Newborns, 0, &defaultCreatureListNewbornsCount);
+	SetCreatureAttribute(creatureList_Vanishes, 0, &defaultCreatureListVanishesCount);
+
 
 	// Lastly pre-allocate memory for our unique IDs vector
 	creature_UniqueIDs.reserve(numOfCreaturesOnInit);

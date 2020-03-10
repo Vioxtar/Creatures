@@ -118,15 +118,17 @@ Project minimum requiremenets:
 
 
 	NON-OBVIOUS-TODOS:
+	spawn firsgens in the corners
+	use persistent buffer mappings for vanishes/reproduction ssbos
 	fix that bug that causes all the creatures to spawn at incorrect positions + sometimes also rendering artifacts
 	A potentially massive optimization to forward propagations: Use X for creature ID, and use Y for a sequence of nodes in each level, then perform NumOfLevelsToForwardPropagate dispatches!
 			Creatures that no longer have things to forward propagate just return immediately!
 	MOST IMPORTANT NOTE::: All your SSBO values are raw, un-normalized values! The only process in which raw values are converted to normalized values, or when normalizes values are converted to raw values, is during brain input, and brain output, respectively!
-	Keep UGrid tiles small, and instead increase x/y start/end values!
+	Keep UGrid tiles small, and instead increase x/y start/end values! Iterate from the center outwards, return if all cones are filled!
 	try changing some brain data to GLhalf
 	try changing some indexing data to GLint64
 	Use as many fucking memory qualifiers and hints as possible to boost performance
-	PUPIL SEES SKIN PATTERN AS WELL!
+	PUPIL SEES SKIN PATTERN AS WELL! Make it so it sees the difference to itself instead of raw values, like hue difference! Use dot somehow?
 	Make eyes rely on a separate UGrid memory access! Currently probe distance is too small and increasing it fucks with performance! The new sense radius should just be the max eye cone radius
 	Make a separate UI thread - make sure that while ImGui is being drawn / other UI stuff calculated, the simulation is running! To avoid undefined behavior, decouple the UI 'data snapshotting' logic into a preliminary step, and only once data was snapshot you can divide into threads! Drawing needs to still be in the correct order... this will be hard.
 	send in actualc reature radius fraction as brain input! Creatures only know their 0.2 output contribution!

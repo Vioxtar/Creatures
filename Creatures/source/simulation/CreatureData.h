@@ -139,12 +139,6 @@ extern CreatureAttributesSSBOInfo creature_CollidersPositions;
 extern CreatureAttributesSSBOInfo creature_CollidersRadii;
 extern CreatureAttributesSSBOInfo creature_CollidersGivenEnergy;
 
-// General purpose data packets
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeVec2;
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeSecondVec2;
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeFloat;
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeUInt;
-
 // Appearances
 extern CreatureAttributesSSBOInfo creature_SkinHues;
 extern CreatureAttributesSSBOInfo creature_SkinSaturations;
@@ -161,3 +155,13 @@ extern CreatureAttributesSSBOInfo creature_Feeders;
 
 extern CreatureAttributesSSBOInfo creature_ShieldLocalAngles;
 extern CreatureAttributesSSBOInfo creature_Shields;
+
+// General purpose data packets
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeVec2;
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeSecondVec2;
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeFloat;
+extern CreatureAttributesSSBOInfo creature_GeneralPurposeUInt;
+
+// Death and reproduction logging creature lists
+extern CreatureAttributesSSBOInfo creatureList_Vanishes;
+extern CreatureAttributesSSBOInfo creatureList_Newborns;

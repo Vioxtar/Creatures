@@ -203,7 +203,7 @@ void main()
 					float velCollideFactor = pow(dot(velDiff, velDiff), 0.25);
 					float push = pow(hardnessFactor * velCollideFactor, 1.0 - penetrationPercentage) * violation;
 				
-					// We may as much as our meat (plus some default value because we like numerical stability)
+					// We weigh as much as our meat (plus some default value because we like numerical stability)
 					float m1 = aMeat + uCreatureDefaultBodyMass;
 					float m2 = bMeat + uCreatureDefaultBodyMass;
 					float m1Frac = m1 / (m1 + m2);

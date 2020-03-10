@@ -75,6 +75,11 @@ layout (std430, binding = 14) buffer CreatureSkinSaturations
 	float SkinSaturations[];
 };
 
+layout (std430, binding = 15) buffer CreatureListVanishes
+{
+	uint Vanishes[];
+};
+
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 
@@ -116,29 +121,31 @@ void main()
 	}
 
 	float life = Lives[gid];
-	bool alive = life > 0.0;
 	
 
-	// Dead or alive, saturation reflects our life
+	// Saturation reflects our life
 	float lifePercentage = life / uCreatureMaxLife;
 	SkinSaturations[gid] = lifePercentage;
 
+
+	float energy = Energies[gid];
+
+	// Energy to life, normally we'd place this under the 'alive' statement, but regen can update life
+	if (life < uCreatureMaxLife)
+	{
+		float maxLifeDiff = uCreatureMaxLife - life;
+		float lifeAdd = min(maxLifeDiff, min(uCreatureEnergyToLifeConversionRate, energy));
+		life += lifeAdd;
+		energy -= lifeAdd;
+	}
+
+	bool alive = life > 0.0;
 
 	if (alive)
 	{
 		// Life <-> Energy <-> Meat conversions
 
-		float energy = Energies[gid];
 		float meat = Meats[gid];
-
-		// Energy to life
-		if (life < uCreatureMaxLife)
-		{
-			float maxLifeDiff = uCreatureMaxLife - life;
-			float lifeAdd = min(maxLifeDiff, min(uCreatureEnergyToLifeConversionRate, energy));
-			life += lifeAdd;
-			energy -= lifeAdd;
-		}
 
 		// Meat to energy
 		if (energy < uCreatureMaxEnergy)
@@ -210,8 +217,9 @@ void main()
 		// If we're below the creature existence radius threshold, remove ourselves from the simulation
 		if (radius < uCreatureDeathExistenceRadiusThreshold)
 		{
-			// @TODO: Creature removal
-			return;
+			// Place ourselves in the vanishes list - the CPU will take it from here
+			uint currentAmountOfCreaturesToVanish = atomicAdd(Vanishes[0], 1);
+			Vanishes[currentAmountOfCreaturesToVanish + 1] = gid;
 		}
 
 		// We're dead but we're still in the simulation, interpolate hardness and device values to that of a creature corpse

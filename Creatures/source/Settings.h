@@ -22,6 +22,7 @@ using namespace mathutils;
 // Window settings
 extern const uint16_t WINDOW_STARTING_WIDTH;
 extern const uint16_t WINDOW_STARTING_HEIGHT;
+extern const uint16_t WINDOW_RENDER_MULTISAMPLES;
 
 // UI settings
 extern const float UI_DEARIMGUI_STYLE_FRAME_ROUNDING;
@@ -58,7 +59,8 @@ extern const uint16_t TECH_CREATURE_INTERACTIONS_PART3_WORKGROUP_LOCAL_SIZE;
 extern const uint16_t TECH_CREATURE_SIGHTS_PART1_WORKGROUP_LOCAL_SIZE;
 extern const uint16_t TECH_CREATURE_SIGHTS_PART2_WORKGROUP_LOCAL_SIZE;
 extern const uint16_t TECH_CREATURE_SIGHTS_PART3_WORKGROUP_LOCAL_SIZE;
-extern const uint16_t TECH_CREATURE_BODY_WORK_WORKGROUP_LOCAL_SIZE;
+extern const uint16_t TECH_CREATURE_BODY_WORKS_PART1_WORKGROUP_LOCAL_SIZE;
+extern const uint16_t TECH_CREATURE_BODY_WORKS_PART2_WORKGROUP_LOCAL_SIZE;
 
 
 // Camera settings
@@ -140,6 +142,7 @@ extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE;
 
 // Simulation creature settings
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT;
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE;
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT;
 
 // Render settings

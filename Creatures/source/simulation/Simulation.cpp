@@ -148,7 +148,8 @@ ProgramInfo program_CreatureSightsPart3{ 0, 0, TECH_CREATURE_SIGHTS_PART3_WORKGR
 ProgramInfo program_BrainPushInputs{ 0, 0, TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainForwardPropagate{ 0, 0, TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainPullOutputs{ 0, 0, TECH_BRAIN_PULL_OUTPUTS_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureBodyWork{ 0, 0, TECH_CREATURE_BODY_WORK_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureBodyWorksPart1{ 0, 0, TECH_CREATURE_BODY_WORKS_PART1_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureBodyWorksPart2{ 0, 0, TECH_CREATURE_BODY_WORKS_PART2_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_FramePreLogic{ 0, 0, TECH_FRAME_PRE_LOGIC_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_FramePostLogic{ 0, 0, TECH_FRAME_POST_LOGIC_WORKGROUP_LOCAL_SIZE };
 
@@ -183,7 +184,7 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPushInputs);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainForwardPropagate);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPullOutputs);
-	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureBodyWork);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureBodyWorksPart1);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_FramePreLogic);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_FramePostLogic);
 
@@ -336,6 +337,8 @@ void BuildUniformGrid()
 
 void InitOpenGLSettings()
 {
+	glEnable(GL_MULTISAMPLE);
+
 	// Set some blending/depth settings
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -361,10 +364,16 @@ void InitLogicPrograms()
 	program_FramePostLogic.program = CreateLinkedShaderProgram(1, framePostLogicShaderTypes, framePostLogicShaderPaths, &replacers);
 	replacers.clear();
 
-	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureBodyWork.workGroupLocalSize)));
-	GLenum creatureBodyWorkShaderTypes[] = { GL_COMPUTE_SHADER };
-	const char* creatureBodyWorkShaderPaths[] = { "resources/compute shaders/creature_body_work.computeShader" };
-	program_CreatureBodyWork.program = CreateLinkedShaderProgram(1, creatureBodyWorkShaderTypes, creatureBodyWorkShaderPaths, &replacers);
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureBodyWorksPart1.workGroupLocalSize)));
+	GLenum creatureBodyWorksPart1ShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* creatureBodyWorksPart1ShaderPaths[] = { "resources/compute shaders/creature_body_works_part1.computeShader" };
+	program_CreatureBodyWorksPart1.program = CreateLinkedShaderProgram(1, creatureBodyWorksPart1ShaderTypes, creatureBodyWorksPart1ShaderPaths, &replacers);
+	replacers.clear();
+
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureBodyWorksPart2.workGroupLocalSize)));
+	GLenum creatureBodyWorksPart2ShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* creatureBodyWorksPart2ShaderPaths[] = { "resources/compute shaders/creature_body_works_part2.computeShader" };
+	program_CreatureBodyWorksPart2.program = CreateLinkedShaderProgram(1, creatureBodyWorksPart2ShaderTypes, creatureBodyWorksPart2ShaderPaths, &replacers);
 	replacers.clear();
 
 	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_UpdateCreaturePlacements.workGroupLocalSize)));
@@ -537,7 +546,20 @@ void Simulation_Init()
 // -- SIMULATION UPDATE STEP -- //
 //////////////////////////////////
 
-void Simulation_Logic()
+float creaturesToSpawn = 0.0;
+void Simulation_FirstgenCreatureSpawns()
+{
+
+	creaturesToSpawn += SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE.value;
+	while (creaturesToSpawn >= 1.0)
+	{
+		AddFirstGenerationCreature();
+		creaturesToSpawn -= 1.0;
+	}
+
+}
+
+void Simulation_Programs_Sequence()
 {
 
 	/* @TODO:
@@ -615,8 +637,8 @@ void Simulation_Logic()
 
 
 	// Creature body works
-	programID = program_CreatureBodyWork.program;
-	workGroupsNeeded = program_CreatureBodyWork.workGroupsNeeded;
+	programID = program_CreatureBodyWorksPart1.program;
+	workGroupsNeeded = program_CreatureBodyWorksPart1.workGroupsNeeded;
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformFloat(programID, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
@@ -654,6 +676,7 @@ void Simulation_Logic()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_Shields.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 13, creature_SkinValues.ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 14, creature_SkinSaturations.ssbo);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 15, creatureList_Vanishes.ssbo);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -889,6 +912,36 @@ void Simulation_Logic()
 
 }
 
+void HandleCreatureVanished(unsigned int creatureIndex)
+{
+
+	CreatureData_RemoveCreature(creatureIndex);
+
+}
+
+void CheckCreatureVanishes()
+{
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creatureList_Vanishes.ssbo);
+
+	GLuint creaturesVanishedCount;
+	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0.0, creatureList_Vanishes.attributeBytesSize, &creaturesVanishedCount);
+
+	if (creaturesVanishedCount <= 0) { return; }
+
+	vector<GLuint> vanishedCreaturesIndices(creaturesVanishedCount);
+	
+	unsigned int bytesToCopy = creatureList_Vanishes.attributeBytesSize * creaturesVanishedCount;
+	void* ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, creatureList_Vanishes.attributeBytesSize, bytesToCopy, GL_READ_ONLY);
+	memcpy(vanishedCreaturesIndices.data(), ptr, bytesToCopy);
+	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+	for (auto creatureIndex : vanishedCreaturesIndices)
+	{
+		HandleCreatureVanished(creatureIndex);
+	}
+}
+
 void Simulation_Render()
 {
 
@@ -923,7 +976,11 @@ void Simulation_Render()
 
 void Simulation_Update()
 {
-	Simulation_Logic();
+	Simulation_FirstgenCreatureSpawns();
+	Simulation_Programs_Sequence();
+
+	//CheckCreatureVanishes();
+
 	Simulation_Render();
 
 	// @DEBUG sum energy

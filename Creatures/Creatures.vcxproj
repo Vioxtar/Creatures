@@ -204,7 +204,8 @@
     <None Include="resources\compute shaders\brain_forward_propagate.computeShader" />
     <None Include="resources\compute shaders\brain_pull_outputs.computeShader" />
     <None Include="resources\compute shaders\brain_push_inputs.computeShader" />
-    <None Include="resources\compute shaders\creature_body_work.computeShader" />
+    <None Include="resources\compute shaders\creature_body_works_part1.computeShader" />
+    <None Include="resources\compute shaders\creature_body_works_part2.computeShader" />
     <None Include="resources\compute shaders\creature_interactions_part1.computeShader" />
     <None Include="resources\compute shaders\creature_interactions_part2.computeShader" />
     <None Include="resources\compute shaders\creature_interactions_part3.computeShader" />

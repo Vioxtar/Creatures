@@ -39,6 +39,8 @@ int main()
 	const int startingWidth = WINDOW_STARTING_WIDTH;
 	const int startingHeight = WINDOW_STARTING_HEIGHT;
 
+	glfwWindowHint(GLFW_SAMPLES, WINDOW_RENDER_MULTISAMPLES);
+
 	// Create window object
 	GLFWwindow* window = glfwCreateWindow(startingWidth, startingHeight, "Creatures", NULL, NULL);
 	if (window == NULL)
@@ -64,7 +66,6 @@ int main()
 	/////////////////////////////////
 	// -- BOILER PLATE CODE END -- //
 	/////////////////////////////////
-
 
 	// Setup viewport
 	glfwSetFramebufferSizeCallback(window, glfw_frame_buffer_size_callback);

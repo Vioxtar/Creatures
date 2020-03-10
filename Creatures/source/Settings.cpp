@@ -10,6 +10,7 @@
 // Window settings
 extern const uint16_t WINDOW_STARTING_WIDTH = 1000;
 extern const uint16_t WINDOW_STARTING_HEIGHT = 1000;
+extern const uint16_t WINDOW_RENDER_MULTISAMPLES = 16;
 
 // UI settings
 extern const float UI_DEARIMGUI_STYLE_FRAME_ROUNDING = 10.0;
@@ -28,7 +29,7 @@ extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_WIDTH = 200;
 
 
 // Technical settings
-extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 500;
+extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 10000;
 extern const GLenum TECH_SSBO_USAGE = GL_STATIC_DRAW;
 
 // @TODO: Query the maximum local size
@@ -48,13 +49,15 @@ extern const uint16_t TECH_CREATURE_INTERACTIONS_PART3_WORKGROUP_LOCAL_SIZE = 15
 extern const uint16_t TECH_CREATURE_SIGHTS_PART1_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_CREATURE_SIGHTS_PART2_WORKGROUP_LOCAL_SIZE = 1536;
 extern const uint16_t TECH_CREATURE_SIGHTS_PART3_WORKGROUP_LOCAL_SIZE = 1536;
-extern const uint16_t TECH_CREATURE_BODY_WORK_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_CREATURE_BODY_WORKS_PART1_WORKGROUP_LOCAL_SIZE = 1536;
+extern const uint16_t TECH_CREATURE_BODY_WORKS_PART2_WORKGROUP_LOCAL_SIZE = 1536;
+
 
 // Camera settings
 extern const float CAMERA_MAX_ZOOM_OUT = 0.001f;
 extern const float CAMERA_MAX_ZOOM_IN = 10.0f;
 extern const float CAMERA_ZOOM_INTERPOLATION_SPEED = 0.1f;
-extern const float CAMERA_ZOOM_SCROLL_SCALE = 0.1f;
+extern const float CAMERA_ZOOM_SCROLL_SCALE = 0.3f;
 extern const float CAMERA_ZOOM_MOVE_SCALE = 0.0002f;
 extern const float CAMERA_VELOCITY_FRICTION = 0.985f;
 extern const float CAMERA_START_ZOOM = 0.01f;
@@ -68,7 +71,7 @@ extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR = 5;
 extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES = 60;
 
 // Creature misc settings
-extern const float CREATURE_DEFAULT_BODY_MASS = 0.01;
+extern const float CREATURE_DEFAULT_BODY_MASS = 0.0001;
 
 // Creature brain settings
 extern const uint16_t CREATURE_BRAIN_NUM_OF_INPUTS = 36;
@@ -88,8 +91,8 @@ extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13;
 
 
 // Simulation space settings
-extern TweakableFloatSetting SIMULATION_WIDTH = { 1000, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 1000, 1, 300 };
+extern TweakableFloatSetting SIMULATION_WIDTH = { 500, 1, 300 };
+extern TweakableFloatSetting SIMULATION_HEIGHT = { 500, 1, 300 };
 
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
@@ -97,7 +100,8 @@ extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 }
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
 
 // Simulation creature settings
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 100000, 0, 1000000 };
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 0.0, 0, 1000000 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE = { 4.0, 0.0, 50.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 5.0, 0.0, 100.0 };
 
 // Render settings
@@ -131,7 +135,7 @@ extern TweakableFloatSetting CREATURE_RADIUS_PERCENTAGE_MUSCLE_WEIGHT = { 0.3, 0
 extern TweakableFloatSetting CREATURE_LIFE_DRAIN_ON_NO_ENERGY = { 0.01, 0.0, 1.0 };
 
 // Creature death settings
-extern TweakableFloatSetting CREATURE_DEATH_WITH_MEAT_SHRINK_RATE = { 0.001, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_WITH_MEAT_SHRINK_RATE = { 0.0001, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEATH_WITHOUT_MEAT_SHRINK_RATE = { 0.01, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEATH_EXISTENCE_RADIUS_THRESHOLD = { 0.01, 0.0, 1.0 };
 
