@@ -925,14 +925,14 @@ void CheckCreatureVanishes()
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creatureList_Vanishes.ssbo);
 
 	GLuint creaturesVanishedCount;
-	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0.0, creatureList_Vanishes.attributeBytesSize, &creaturesVanishedCount);
+	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0.0, creatureList_Vanishes.unitByteSize, &creaturesVanishedCount);
 
 	if (creaturesVanishedCount <= 0) { return; }
 
 	vector<GLuint> vanishedCreaturesIndices(creaturesVanishedCount);
 	
-	unsigned int bytesToCopy = creatureList_Vanishes.attributeBytesSize * creaturesVanishedCount;
-	void* ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, creatureList_Vanishes.attributeBytesSize, bytesToCopy, GL_READ_ONLY);
+	unsigned int bytesToCopy = creatureList_Vanishes.unitByteSize * creaturesVanishedCount;
+	void* ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, creatureList_Vanishes.unitByteSize, bytesToCopy, GL_READ_ONLY);
 	memcpy(vanishedCreaturesIndices.data(), ptr, bytesToCopy);
 	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 

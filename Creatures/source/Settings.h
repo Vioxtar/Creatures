@@ -41,6 +41,9 @@ extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_WIDTH;
 // Technical settings
 extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
 extern const GLenum TECH_SSBO_USAGE;
+extern const unsigned int TECH_MIN_CREATURE_ATTRIBUTE_SSBO_CREATURES_SUPPORTED;
+extern const GLbitfield TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS;
+extern const GLbitfield TECH_CREATURE_LIST_BUFFER_FLAGS;
 
 // @TODO: Query the maximum local size
 extern const uint16_t TECH_FRAME_PRE_LOGIC_WORKGROUP_LOCAL_SIZE;

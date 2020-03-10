@@ -31,6 +31,9 @@ extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_WIDTH = 200;
 // Technical settings
 extern const uint16_t TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 10000;
 extern const GLenum TECH_SSBO_USAGE = GL_STATIC_DRAW;
+extern const unsigned int TECH_MIN_CREATURE_ATTRIBUTE_SSBO_CREATURES_SUPPORTED = 1;
+extern const GLbitfield TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS = GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT;
+extern const GLbitfield TECH_CREATURE_LIST_BUFFER_FLAGS = GL_DYNAMIC_STORAGE_BIT;
 
 // @TODO: Query the maximum local size
 extern const uint16_t TECH_FRAME_PRE_LOGIC_WORKGROUP_LOCAL_SIZE = 1536;
@@ -100,7 +103,7 @@ extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 }
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
 
 // Simulation creature settings
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 0.0, 0, 1000000 };
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 0, 0, 1000000 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE = { 4.0, 0.0, 50.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 5.0, 0.0, 100.0 };
 

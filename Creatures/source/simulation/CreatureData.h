@@ -85,83 +85,86 @@ CreatureUniqueID CreatureSSBOIndexToUniqueID(GLuint ssboIndex);
 ////////////////////////////////////
 
 
-struct CreatureAttributesSSBOInfo
+struct CreaturesSSBOInfo
 {
 	GLuint ssbo;
-	GLuint attributeBytesSize;
+	GLuint unitByteSize;
+	GLbitfield flags;
+	GLuint extraUnitsToAllocate;
+	bool hasBuffer;
 };
 
 
 // Brains
-extern CreatureAttributesSSBOInfo creature_BrainsLinks;
-extern CreatureAttributesSSBOInfo creature_BrainsNodes;
-extern CreatureAttributesSSBOInfo creature_BrainsBiasesExponents;
-extern CreatureAttributesSSBOInfo creature_BrainsStructures;
+extern CreaturesSSBOInfo creature_BrainsLinks;
+extern CreaturesSSBOInfo creature_BrainsNodes;
+extern CreaturesSSBOInfo creature_BrainsBiasesExponents;
+extern CreaturesSSBOInfo creature_BrainsStructures;
 
 // Eyes
-extern CreatureAttributesSSBOInfo creature_EyeMuscles;
-extern CreatureAttributesSSBOInfo creature_EyePositions;
-extern CreatureAttributesSSBOInfo creature_EyeConeRadii;
-extern CreatureAttributesSSBOInfo creature_EyePupilConeCoverageFraction;
-extern CreatureAttributesSSBOInfo creature_EyePupilSights;
-extern CreatureAttributesSSBOInfo creature_EyePupilTargetCreatureIndices;
-extern CreatureAttributesSSBOInfo creature_EyeConeSights;
+extern CreaturesSSBOInfo creature_EyeMuscles;
+extern CreaturesSSBOInfo creature_EyePositions;
+extern CreaturesSSBOInfo creature_EyeConeRadii;
+extern CreaturesSSBOInfo creature_EyePupilConeCoverageFraction;
+extern CreaturesSSBOInfo creature_EyePupilSights;
+extern CreaturesSSBOInfo creature_EyePupilTargetCreatureIndices;
+extern CreaturesSSBOInfo creature_EyeConeSights;
 
 // Physics
-extern CreatureAttributesSSBOInfo creature_Positions;
-extern CreatureAttributesSSBOInfo creature_Velocities;
-extern CreatureAttributesSSBOInfo creature_Angles;
-extern CreatureAttributesSSBOInfo creature_AngleVelocities;
-extern CreatureAttributesSSBOInfo creature_ForwardDirections;
-extern CreatureAttributesSSBOInfo creature_RightDirections;
+extern CreaturesSSBOInfo creature_Positions;
+extern CreaturesSSBOInfo creature_Velocities;
+extern CreaturesSSBOInfo creature_Angles;
+extern CreaturesSSBOInfo creature_AngleVelocities;
+extern CreaturesSSBOInfo creature_ForwardDirections;
+extern CreaturesSSBOInfo creature_RightDirections;
 
 // Movement
-extern CreatureAttributesSSBOInfo creature_ForwardThrusts;
-extern CreatureAttributesSSBOInfo creature_TurnThrusts;
+extern CreaturesSSBOInfo creature_ForwardThrusts;
+extern CreaturesSSBOInfo creature_TurnThrusts;
 
 // Body parameters
-extern CreatureAttributesSSBOInfo creature_Radii;
-extern CreatureAttributesSSBOInfo creature_Lives;
-extern CreatureAttributesSSBOInfo creature_Energies;
-extern CreatureAttributesSSBOInfo creature_Meats;
-extern CreatureAttributesSSBOInfo creature_Harndesses;
-extern CreatureAttributesSSBOInfo creature_Horninesses;
+extern CreaturesSSBOInfo creature_Radii;
+extern CreaturesSSBOInfo creature_Lives;
+extern CreaturesSSBOInfo creature_Energies;
+extern CreaturesSSBOInfo creature_Meats;
+extern CreaturesSSBOInfo creature_Harndesses;
+extern CreaturesSSBOInfo creature_Horninesses;
 
 // Creature misc
-extern CreatureAttributesSSBOInfo creature_Generations;
-extern CreatureAttributesSSBOInfo creature_UniformGridTiles;
+extern CreaturesSSBOInfo creature_Generations;
+extern CreaturesSSBOInfo creature_UniformGridTiles;
 
 // Colliders
-extern CreatureAttributesSSBOInfo creature_CollidersCounts;
-extern CreatureAttributesSSBOInfo creature_CollidersIndicesAndPlacements;
-extern CreatureAttributesSSBOInfo creature_CollidersToPosDirs;
-extern CreatureAttributesSSBOInfo creature_CollidersPositions;
-extern CreatureAttributesSSBOInfo creature_CollidersRadii;
-extern CreatureAttributesSSBOInfo creature_CollidersGivenEnergy;
+extern CreaturesSSBOInfo creature_CollidersCounts;
+extern CreaturesSSBOInfo creature_CollidersIndicesAndPlacements;
+extern CreaturesSSBOInfo creature_CollidersToPosDirs;
+extern CreaturesSSBOInfo creature_CollidersPositions;
+extern CreaturesSSBOInfo creature_CollidersRadii;
+extern CreaturesSSBOInfo creature_CollidersGivenEnergy;
 
 // Appearances
-extern CreatureAttributesSSBOInfo creature_SkinHues;
-extern CreatureAttributesSSBOInfo creature_SkinSaturations;
-extern CreatureAttributesSSBOInfo creature_SkinValues;
-extern CreatureAttributesSSBOInfo creature_SkinRGBColors;
-extern CreatureAttributesSSBOInfo creature_SkinPatterns;
+extern CreaturesSSBOInfo creature_SkinHues;
+extern CreaturesSSBOInfo creature_SkinSaturations;
+extern CreaturesSSBOInfo creature_SkinValues;
+extern CreaturesSSBOInfo creature_SkinRGBColors;
+extern CreaturesSSBOInfo creature_SkinPatterns;
 
 // Creature-localized devices (feeders, shields, sensors)
-extern CreatureAttributesSSBOInfo creature_SpikeLocalAngles;
-extern CreatureAttributesSSBOInfo creature_Spikes;
+extern CreaturesSSBOInfo creature_SpikeLocalAngles;
+extern CreaturesSSBOInfo creature_Spikes;
 
-extern CreatureAttributesSSBOInfo creature_FeederLocalAngles;
-extern CreatureAttributesSSBOInfo creature_Feeders;
+extern CreaturesSSBOInfo creature_FeederLocalAngles;
+extern CreaturesSSBOInfo creature_Feeders;
 
-extern CreatureAttributesSSBOInfo creature_ShieldLocalAngles;
-extern CreatureAttributesSSBOInfo creature_Shields;
+extern CreaturesSSBOInfo creature_ShieldLocalAngles;
+extern CreaturesSSBOInfo creature_Shields;
 
 // General purpose data packets
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeVec2;
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeSecondVec2;
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeFloat;
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeUInt;
+extern CreaturesSSBOInfo creature_GeneralPurposeVec2;
+extern CreaturesSSBOInfo creature_GeneralPurposeSecondVec2;
+extern CreaturesSSBOInfo creature_GeneralPurposeFloat;
+extern CreaturesSSBOInfo creature_GeneralPurposeUInt;
 
 // Death and reproduction logging creature lists
-extern CreatureAttributesSSBOInfo creatureList_Vanishes;
-extern CreatureAttributesSSBOInfo creatureList_Newborns;
+extern CreaturesSSBOInfo creatureList_Vanishes;
+extern CreaturesSSBOInfo creatureList_Newborns;

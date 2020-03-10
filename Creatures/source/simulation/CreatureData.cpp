@@ -26,106 +26,109 @@ extern GLuint max_supported_creature_count_by_current_buffers = 0; // The number
 
 
 // Brains
-extern CreatureAttributesSSBOInfo creature_BrainsLinks{ 0, sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_LINKS };
-extern CreatureAttributesSSBOInfo creature_BrainsNodes{ 0, sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_NODES };
-extern CreatureAttributesSSBOInfo creature_BrainsBiasesExponents{ 0, sizeof(vec2) * CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES };
-extern CreatureAttributesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES };
+extern CreaturesSSBOInfo creature_BrainsLinks{ 0, sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_LINKS, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_BrainsNodes{ 0, sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_NODES, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_BrainsBiasesExponents{ 0, sizeof(vec2) * CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
 // Eyes
-extern CreatureAttributesSSBOInfo creature_EyeMuscles{ 0, sizeof(vec2) };
-extern CreatureAttributesSSBOInfo creature_EyePositions{ 0, sizeof(vec2) };
-extern CreatureAttributesSSBOInfo creature_EyeConeRadii{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_EyePupilConeCoverageFraction{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_EyePupilSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES };
-extern CreatureAttributesSSBOInfo creature_EyeConeSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONES_VALUES };
+extern CreaturesSSBOInfo creature_EyeMuscles{ 0, sizeof(vec2), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_EyePositions{ 0, sizeof(vec2), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_EyeConeRadii{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_EyePupilConeCoverageFraction{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_EyePupilSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_EyeConeSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONES_VALUES, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
 // Physics
-extern CreatureAttributesSSBOInfo creature_Positions{ 0, sizeof(vec2) };
-extern CreatureAttributesSSBOInfo creature_Velocities{ 0, sizeof(vec2) };
-extern CreatureAttributesSSBOInfo creature_Angles{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_AngleVelocities{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_ForwardDirections{ 0, sizeof(vec2) };
-extern CreatureAttributesSSBOInfo creature_RightDirections{ 0, sizeof(vec2) };
+extern CreaturesSSBOInfo creature_Positions{ 0, sizeof(vec2), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_Velocities{ 0, sizeof(vec2), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_Angles{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_AngleVelocities{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_ForwardDirections{ 0, sizeof(vec2), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_RightDirections{ 0, sizeof(vec2), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
 // Movement
-extern CreatureAttributesSSBOInfo creature_ForwardThrusts{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_TurnThrusts{ 0, sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_ForwardThrusts{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_TurnThrusts{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
 // Body parameters
-extern CreatureAttributesSSBOInfo creature_Radii{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_Lives{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_Energies{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_Meats{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_Harndesses{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_Horninesses{ 0, sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_Radii{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_Lives{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_Energies{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_Meats{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_Harndesses{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_Horninesses{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
 // Creature misc
-extern CreatureAttributesSSBOInfo creature_Generations{ 0, sizeof(GLuint) };
-extern CreatureAttributesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLint) };
+extern CreaturesSSBOInfo creature_Generations{ 0, sizeof(GLuint), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLint), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
 // Colliders
-extern CreatureAttributesSSBOInfo creature_CollidersCounts{ 0, sizeof(GLuint) };
-extern CreatureAttributesSSBOInfo creature_CollidersIndicesAndPlacements{ 0, sizeof(uvec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
-extern CreatureAttributesSSBOInfo creature_CollidersToPosDirs{ 0, sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
-extern CreatureAttributesSSBOInfo creature_CollidersPositions{ 0, sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
-extern CreatureAttributesSSBOInfo creature_CollidersRadii{ 0, sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS };
-extern CreatureAttributesSSBOInfo creature_CollidersGivenEnergy{ 0, sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS };
+extern CreaturesSSBOInfo creature_CollidersCounts{ 0, sizeof(GLuint) };
+extern CreaturesSSBOInfo creature_CollidersIndicesAndPlacements{ 0, sizeof(uvec2) * CREATURE_MAX_NUM_OF_COLLIDERS, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_CollidersToPosDirs{ 0, sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_CollidersPositions{ 0, sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_CollidersRadii{ 0, sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_CollidersGivenEnergy{ 0, sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
 
 // Appearances
-extern CreatureAttributesSSBOInfo creature_SkinHues{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_SkinSaturations{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_SkinValues{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_SkinRGBColors{ 0, sizeof(GLfloat) * 3 };
-extern CreatureAttributesSSBOInfo creature_SkinPatterns{ 0, sizeof(vec2) };
+extern CreaturesSSBOInfo creature_SkinHues{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_SkinSaturations{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_SkinValues{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_SkinRGBColors{ 0, sizeof(GLfloat) * 3, TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_SkinPatterns{ 0, sizeof(vec2), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
 // Creature-localized devices (feeders, shields, sensors)
-extern CreatureAttributesSSBOInfo creature_SpikeLocalAngles{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_Spikes{ 0, sizeof(vec4) };
+extern CreaturesSSBOInfo creature_SpikeLocalAngles{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_Spikes{ 0, sizeof(vec4), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
-extern CreatureAttributesSSBOInfo creature_FeederLocalAngles{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_Feeders{ 0, sizeof(vec4) };
+extern CreaturesSSBOInfo creature_FeederLocalAngles{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_Feeders{ 0, sizeof(vec4), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
-extern CreatureAttributesSSBOInfo creature_ShieldLocalAngles{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_Shields{ 0, sizeof(vec4) };
+extern CreaturesSSBOInfo creature_ShieldLocalAngles{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_Shields{ 0, sizeof(vec4), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
 // General purpose data packets
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeVec2{ 0, sizeof(vec2) };
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeSecondVec2{ 0, sizeof(vec2) };
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeFloat{ 0, sizeof(GLfloat) };
-extern CreatureAttributesSSBOInfo creature_GeneralPurposeUInt{ 0, sizeof(GLuint) };
+extern CreaturesSSBOInfo creature_GeneralPurposeVec2{ 0, sizeof(vec2), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_GeneralPurposeSecondVec2{ 0, sizeof(vec2), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_GeneralPurposeFloat{ 0, sizeof(GLfloat), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
+extern CreaturesSSBOInfo creature_GeneralPurposeUInt{ 0, sizeof(GLuint), TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS };
 
 // Death and reproduction logging creature lists
-extern CreatureAttributesSSBOInfo creatureList_Vanishes{ 0, sizeof(GLuint) };
-extern CreatureAttributesSSBOInfo creatureList_Newborns{ 0, sizeof(uvec2) };
+extern CreaturesSSBOInfo creatureList_Vanishes{ 0, sizeof(GLuint), TECH_CREATURE_LIST_BUFFER_FLAGS, 1 };
+extern CreaturesSSBOInfo creatureList_Newborns{ 0, sizeof(uvec2), TECH_CREATURE_LIST_BUFFER_FLAGS, 1 };
 
 
 // Set dynamic sizes again in runtime - some settings values are not visible during definition time!
 // @TODO: Find a better solution to this, we shouldn't need to redefine attribute sizes here
 void ResetDynamicAttributeSizes()
 {
-	creature_BrainsLinks.attributeBytesSize = sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_LINKS;
-	creature_BrainsNodes.attributeBytesSize = sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_NODES;
-	creature_BrainsBiasesExponents.attributeBytesSize = sizeof(vec2) * CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES;
-	creature_BrainsStructures.attributeBytesSize = sizeof(GLuint) * CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES;
+	creature_BrainsLinks.unitByteSize = sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_LINKS;
+	creature_BrainsNodes.unitByteSize = sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_NODES;
+	creature_BrainsBiasesExponents.unitByteSize = sizeof(vec2) * CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES;
+	creature_BrainsStructures.unitByteSize = sizeof(GLuint) * CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES;
 
-	creature_CollidersIndicesAndPlacements.attributeBytesSize = sizeof(uvec2) * CREATURE_MAX_NUM_OF_COLLIDERS;
-	creature_CollidersToPosDirs.attributeBytesSize = sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS;
-	creature_CollidersPositions.attributeBytesSize = sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS;
-	creature_CollidersRadii.attributeBytesSize = sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS;
-	creature_CollidersGivenEnergy.attributeBytesSize = sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS;
+	creature_CollidersIndicesAndPlacements.unitByteSize = sizeof(uvec2) * CREATURE_MAX_NUM_OF_COLLIDERS;
+	creature_CollidersToPosDirs.unitByteSize = sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS;
+	creature_CollidersPositions.unitByteSize = sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS;
+	creature_CollidersRadii.unitByteSize = sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS;
+	creature_CollidersGivenEnergy.unitByteSize = sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS;
 
-	creature_EyePupilSights.attributeBytesSize = sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES;
-	creature_EyeConeSights.attributeBytesSize = sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONES_VALUES;
+	creature_EyePupilSights.unitByteSize = sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES;
+	creature_EyeConeSights.unitByteSize = sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONES_VALUES;
 }
 
 
 
 
-// The sole purpose of this vector is to contain our creature attributes SSBO infos for easier iteration during SSBO manipulations
-vector<CreatureAttributesSSBOInfo*> creatureAttributesSSBOInfosRefs;
-void LoadCreatureAttributeSSBOInfosIntoIterableVector()
+// The sole purpose of these vectors is to contain our creature SSBO infos for easier iteration during SSBO manipulations
+vector<CreaturesSSBOInfo*> creatureAttributesSSBOInfosRefs;
+vector<CreaturesSSBOInfo*> creatureListsSSBOInfosRefs;
+
+void LoadCreatureSSBOInfosIntoIterableVectors()
 {
+	// Load creature attribute SSBO infos
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsLinks);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsNodes);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_BrainsBiasesExponents);
@@ -173,8 +176,10 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersPositions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersRadii);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersGivenEnergy);
-	creatureAttributesSSBOInfosRefs.push_back(&creatureList_Vanishes);
-	creatureAttributesSSBOInfosRefs.push_back(&creatureList_Newborns);
+	
+	// Load creature list SSBO infos
+	creatureListsSSBOInfosRefs.push_back(&creatureList_Vanishes);
+	creatureListsSSBOInfosRefs.push_back(&creatureList_Newborns);
 }
 
 
@@ -182,7 +187,7 @@ void LoadCreatureAttributeSSBOInfosIntoIterableVector()
 // -- DEFAULT CREATURE ATTRIBUTES VALUES -- //
 //////////////////////////////////////////////
 
-// The main purpose of defining these values is to have something to write into creature attributes that don't
+// The main purpose of defining these values is to have something to write into creature SSBO units that don't
 // accept CreatureData values
 
 const vec2 defaultGeneralPurposeVec2 = vec2(0.0, 0.0);
@@ -193,51 +198,52 @@ const GLuint defaultGeneralPurposeUInt = 0;
 const uvec2 defaultCreatureListNewbornsCount = uvec2(0, 0);
 const GLuint defaultCreatureListVanishesCount = 0;
 
+
+
 ///////////////////////////////
 // -- CREATURE SSBO UTILS -- //
 ///////////////////////////////
 
-
-void InitEmptyCreatureAttributesSSBO(CreatureAttributesSSBOInfo& attributes, GLuint startingAttributesCount)
+void InitOrExpandCreatureSSBO(CreaturesSSBOInfo& creatureSSBOInfo, GLuint numOfCreaturesToSupport)
 {
-	// Create a new SSBO
-	GLuint newSSBO;
-	glGenBuffers(1, &newSSBO);
+
+	// How many creatures should we support on initialization? This number can't be zero!
+	GLuint unitsCountToSupport = numOfCreaturesToSupport;
+	GLuint unitsCountToAllocate = unitsCountToSupport + creatureSSBOInfo.extraUnitsToAllocate;
+	
+	// Calculate buffer size
+	GLuint bufferSize = unitsCountToAllocate * creatureSSBOInfo.unitByteSize;
 
 	// Initialize with NULL data
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, newSSBO);
-	GLuint size = startingAttributesCount * attributes.attributeBytesSize;
-	glBufferData(GL_SHADER_STORAGE_BUFFER, size, NULL, TECH_SSBO_USAGE);
-
-	attributes.ssbo = newSSBO;
-}
-
-void ExpandCreatureAttributesSSBO(CreatureAttributesSSBOInfo& attributes, GLuint attributeCountAdd)
-{
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
-
-	// Get old size, and calculate new size
-	GLint64 oldSize;
-	glGetBufferParameteri64v(GL_SHADER_STORAGE_BUFFER, GL_BUFFER_SIZE, &oldSize);
-	GLuint newSize = (GLuint)oldSize + attributeCountAdd * attributes.attributeBytesSize;
-
-	// Create a new empty SSBO
 	GLuint newSSBO;
 	glGenBuffers(1, &newSSBO);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, newSSBO);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, newSize, NULL, TECH_SSBO_USAGE);
+	glBufferStorage(GL_SHADER_STORAGE_BUFFER, bufferSize, NULL, creatureSSBOInfo.flags);
+	//glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize, NULL, TECH_SSBO_USAGE);
 
-	// Copy old SSBO to new SSBO
-	glBindBuffer(GL_COPY_READ_BUFFER, attributes.ssbo);
-	glBindBuffer(GL_COPY_WRITE_BUFFER, newSSBO);
-	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, oldSize); // This causes a performance warning for some reason on NVIDIA drivers
+	// Does this SSBO info already have an old buffer? If so, copy its data into the new buffer and delete it
+	if (creatureSSBOInfo.hasBuffer)
+	{
+		GLuint oldSSBO = creatureSSBOInfo.ssbo;
 
-	// Delete old SSBO
-	GLuint buffersToDelete = { attributes.ssbo };
-	glDeleteBuffers(1, &buffersToDelete);
+		// Acquire the size of the old buffer
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, oldSSBO);
+		GLint64 oldSize;
+		glGetBufferParameteri64v(GL_SHADER_STORAGE_BUFFER, GL_BUFFER_SIZE, &oldSize);
+
+		// Copy contents
+		glBindBuffer(GL_COPY_READ_BUFFER, oldSSBO);
+		glBindBuffer(GL_COPY_WRITE_BUFFER, newSSBO);
+		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, oldSize); // This causes a performance warning for some reason on NVIDIA drivers
+
+		// Delete old SSBO
+		GLuint buffersToDelete = { oldSSBO };
+		glDeleteBuffers(1, &buffersToDelete);
+	}
 
 	// Finalize
-	attributes.ssbo = newSSBO;
+	creatureSSBOInfo.ssbo = newSSBO;
+	creatureSSBOInfo.hasBuffer = true;
 }
 
 
@@ -245,28 +251,39 @@ void ExpandCreatureAttributesSSBO(CreatureAttributesSSBOInfo& attributes, GLuint
 // -- CREATURE MANIPULATION COMFORT TOOLS -- //
 ///////////////////////////////////////////////
 
-void SetCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creatureIndex, const void* data)
+void SetCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, GLuint creatureIndex, const void* data)
 {
-	GLuint writeOffset = attributes.attributeBytesSize * creatureIndex;
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, attributes.ssbo);
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, writeOffset, attributes.attributeBytesSize, data);
+	GLuint writeOffset = creatureSSBOInfo.unitByteSize * creatureIndex;
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, creatureSSBOInfo.ssbo);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, writeOffset, creatureSSBOInfo.unitByteSize, data);
 }
 
 
 GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 {
+
+	unsigned int newCreatureCount = creature_count + 1;
+
 	// Check if we're exceeding capacity
-	if (creature_count >= max_supported_creature_count_by_current_buffers)
+	if (newCreatureCount > max_supported_creature_count_by_current_buffers)
 	{
 		// We're exceeding capacities for all of our SSBOs, expand them
-		GLuint increaseSize = TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
-
+		
+		GLuint newNumOfCreaturesToSupport = max_supported_creature_count_by_current_buffers + TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
+		
+		// Expand attributes
 		for (auto creatureAttributeSSBOInfoRef : creatureAttributesSSBOInfosRefs)
 		{
-			ExpandCreatureAttributesSSBO(*creatureAttributeSSBOInfoRef, increaseSize);
+			InitOrExpandCreatureSSBO(*creatureAttributeSSBOInfoRef, newNumOfCreaturesToSupport);
 		}
 
-		max_supported_creature_count_by_current_buffers += increaseSize;
+		// Expand lists (make room for them as well! it might just be that ALL creatures somehow manage to die in the same frame and need to be listed! :))
+		for (auto creatureListSSBOInfoRef : creatureListsSSBOInfosRefs)
+		{
+			InitOrExpandCreatureSSBO(*creatureListSSBOInfoRef, newNumOfCreaturesToSupport);
+		}
+
+		max_supported_creature_count_by_current_buffers = newNumOfCreaturesToSupport;
 	}
 
 	// Create the new creature by simply setting its attributes
@@ -319,24 +336,24 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	creature_UniqueIDs.emplace_back(creature_NextUniqueIDToBeAssigned);
 	creature_NextUniqueIDToBeAssigned++;
 	
-	creature_count++;
+	creature_count = newCreatureCount;
 
 	return newCreatureIndex;
 }
 
-void RemoveCreatureAttribute(CreatureAttributesSSBOInfo attributes, GLuint creatureIndex)
+void RemoveCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, GLuint creatureIndex)
 {
 	GLuint lastCreatureIndex = creature_count - 1;
 
 	if (lastCreatureIndex != creatureIndex)
 	{
 		// Copy the data in lastCreatureIndex to our creatureIndex, the rest is taken care of through uniform memory limits
-		glBindBuffer(GL_COPY_READ_BUFFER, attributes.ssbo);
-		glBindBuffer(GL_COPY_WRITE_BUFFER, attributes.ssbo);
+		glBindBuffer(GL_COPY_READ_BUFFER, creatureSSBOInfo.ssbo);
+		glBindBuffer(GL_COPY_WRITE_BUFFER, creatureSSBOInfo.ssbo);
 
-		GLuint readOffset = lastCreatureIndex * attributes.attributeBytesSize;
-		GLuint writeOffset = creatureIndex * attributes.attributeBytesSize;
-		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, readOffset, writeOffset, attributes.attributeBytesSize);
+		GLuint readOffset = lastCreatureIndex * creatureSSBOInfo.unitByteSize;
+		GLuint writeOffset = creatureIndex * creatureSSBOInfo.unitByteSize;
+		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, readOffset, writeOffset, creatureSSBOInfo.unitByteSize);
 	}
 }
 
@@ -346,10 +363,13 @@ void CreatureData_RemoveCreature(GLuint creatureIndex)
 	if (creature_count <= 0)
 		return;
 
+	// Remove creature attributes
 	for (auto creatureAttributeSSBOInfoRef : creatureAttributesSSBOInfosRefs)
 	{
 		RemoveCreatureAttribute(*creatureAttributeSSBOInfoRef, creatureIndex);
 	}
+
+	// No need to manipulate creature lists!
 
 	// Obtain the unique ID of our removed creature
 	CreatureUniqueID uniqueIDOfRemovedCreature = creature_UniqueIDs[creatureIndex];
@@ -379,30 +399,30 @@ void CreatureData_Init()
 	// Make sure our attribute sizes are set correctly - some settings values are not visible in compile time!
 	ResetDynamicAttributeSizes();
 
-	// Before anything, load all creature attribute SSBO infos into a vector for easy iterations
-	LoadCreatureAttributeSSBOInfosIntoIterableVector();
+	// Load all creature SSBO infos into a vector for easy iterations
+	LoadCreatureSSBOInfosIntoIterableVectors();
 
-	const unsigned int numOfCreaturesOnInit = SIMULATION_NUM_OF_CREATURES_ON_INIT.value;
+	// How many creatures should we support on init?
+	unsigned int numOfCreaturesOnInit = SIMULATION_NUM_OF_CREATURES_ON_INIT.value;
+	unsigned int numOfCreaturesToSupportOnInit = std::max(numOfCreaturesOnInit, TECH_MIN_CREATURE_ATTRIBUTE_SSBO_CREATURES_SUPPORTED);
 
-	creature_count = 0;
-	max_supported_creature_count_by_current_buffers = numOfCreaturesOnInit;
-
+	// Initialize buffers
 	for (auto creatureAttributeSSBOInfoRef : creatureAttributesSSBOInfosRefs)
 	{
-		InitEmptyCreatureAttributesSSBO(*creatureAttributeSSBOInfoRef, numOfCreaturesOnInit);
+		// Just in case boolean default values aren't false for some reason
+		creatureAttributeSSBOInfoRef->hasBuffer = false;
+
+		// Init buffer
+		InitOrExpandCreatureSSBO(*creatureAttributeSSBOInfoRef, numOfCreaturesToSupportOnInit);
 	}
 
-
-	// Creature lists' index 0 is used for counting the number of creatures listed in the buffer, hence their size should
-	// always be max_supported_creature_count_by_current_buffers + 1
-	ExpandCreatureAttributesSSBO(creatureList_Newborns, 1);
-	ExpandCreatureAttributesSSBO(creatureList_Vanishes, 1);
+	creature_count = 0;
+	max_supported_creature_count_by_current_buffers = numOfCreaturesToSupportOnInit;
 	
-	// Set current count to zero
+	// Set creature lists' counts to zero
 	SetCreatureAttribute(creatureList_Newborns, 0, &defaultCreatureListNewbornsCount);
 	SetCreatureAttribute(creatureList_Vanishes, 0, &defaultCreatureListVanishesCount);
 
-
 	// Lastly pre-allocate memory for our unique IDs vector
-	creature_UniqueIDs.reserve(numOfCreaturesOnInit);
+	creature_UniqueIDs.reserve(numOfCreaturesToSupportOnInit);
 }
