@@ -273,8 +273,8 @@ void BuildUniformGrid()
 	float newMaxCreatureRadius = CREATURE_MAX_RADIUS.value;
 	float newMaxCreatureSenseRadius = CREATURE_EYE_MAX_CONES_RADIUS.value;// sqrt(2 * pow(CREATURE_EYE_MAX_PROBE_DISTANCE.value, 2)) + CREATURE_EYE_MAX_CONES_RADIUS.value;
 	float newMinCreatureRadius = CREATURE_MIN_RADIUS.value;
-	float newSimulationWidth = SIMULATION_WIDTH.value;
-	float newSimulationHeight = SIMULATION_HEIGHT.value;
+	float newSimulationWidth = SIMULATION_SPACE_WIDTH.value;
+	float newSimulationHeight = SIMULATION_SPACE_HEIGHT.value;
 
 	float physicalInteractionDistOverlap = newMaxCreatureRadius * 2.0; // Multiply by two, because creatures > newMaxCreatureRadius distant from each other can still interact due to overlaps!
 	float senseInteractionDist = newMaxCreatureSenseRadius; // Creatures sensors do not overlap in any way!
@@ -676,7 +676,7 @@ void Simulation_Programs_Sequence()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_Shields.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 13, creature_SkinValues.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 14, creature_SkinSaturations.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 15, creatureList_Vanishes.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 15, creatureList_Vanishes.creaturesSSBOInfo.bufferHandle);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -715,7 +715,7 @@ void Simulation_Programs_Sequence()
 	workGroupsNeeded = program_BorderPhysics.workGroupsNeeded;
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
-	SetUniformVector2f(programID, "uSimDimensions", vec2(SIMULATION_WIDTH.value, SIMULATION_HEIGHT.value));
+	SetUniformVector2f(programID, "uSimDimensions", vec2(SIMULATION_SPACE_WIDTH.value, SIMULATION_SPACE_HEIGHT.value));
 	SetUniformFloat(programID, "uBorderRestitution", SIMULATION_BORDER_RESTITUTION.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.bufferHandle);

@@ -137,8 +137,8 @@ SimSettingsChangedSubscriber SimulationSettingsChangedSubscribe(SimSettingsChang
 //////////////////////////////
 
 // Simulation space settings
-extern TweakableFloatSetting SIMULATION_WIDTH;
-extern TweakableFloatSetting SIMULATION_HEIGHT;
+extern TweakableFloatSetting SIMULATION_SPACE_WIDTH;
+extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT;
 
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION;

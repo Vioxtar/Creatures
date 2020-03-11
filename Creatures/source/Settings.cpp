@@ -96,17 +96,17 @@ extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13;
 
 
 // Simulation space settings
-extern TweakableFloatSetting SIMULATION_WIDTH = { 500, 1, 300 };
-extern TweakableFloatSetting SIMULATION_HEIGHT = { 500, 1, 300 };
+extern TweakableFloatSetting SIMULATION_SPACE_WIDTH = { 1200, 1, 300 };
+extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 1200, 1, 300 };
 
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.999985, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
 
 // Simulation creature settings
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 0, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE = { 4.0, 0.0, 50.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE = { 4, 0.0, 50.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 5.0, 0.0, 100.0 };
 
 // Render settings

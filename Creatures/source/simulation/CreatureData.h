@@ -80,24 +80,27 @@ typedef unsigned long long int CreatureUniqueID;
 GLuint CreatureUniqueIDToSSBOIndex(CreatureUniqueID creatureUniqueID);
 CreatureUniqueID CreatureSSBOIndexToUniqueID(GLuint ssboIndex);
 
-////////////////////////////////////
-// -- CREATURE ATTRIBUTE SSBOS -- //
-////////////////////////////////////
+//////////////////////////
+// -- CREATURE SSBOS -- //
+//////////////////////////
 
 struct CreaturesSSBOInfo
 {
 	GLuint bufferHandle;
 	GLuint unitByteSize;
-	GLuint extraUnitsToAllocate;
 
 	GLbitfield bufferFlags;
-	GLbitfield mappingFlags;
 
 	bool hasBuffer;
-	void* mapPtr;
 };
 
-
+struct PersistentlyMappedCreatureList
+{
+	CreaturesSSBOInfo creaturesSSBOInfo;
+	GLuint extraUnitsToAllocate;
+	GLbitfield persistentMappingFlags;
+	void* mapPtr;
+};
 
 // Brains
 extern CreaturesSSBOInfo creature_BrainsLinks;
@@ -170,5 +173,5 @@ extern CreaturesSSBOInfo creature_GeneralPurposeFloat;
 extern CreaturesSSBOInfo creature_GeneralPurposeUInt;
 
 // Death and reproduction logging creature lists
-extern CreaturesSSBOInfo creatureList_Vanishes;
-extern CreaturesSSBOInfo creatureList_Newborns;
+extern PersistentlyMappedCreatureList creatureList_Vanishes;
+extern PersistentlyMappedCreatureList creatureList_NewBorns;
