@@ -31,9 +31,9 @@ class CreatureTracker
 
 
 
-		ShowMisc();
-		ShowBrain();
-		ShowEyes();
+		//ShowMisc();
+		//ShowBrain();
+		//ShowEyes();
 
 		ImGui::End();
 	}

@@ -227,7 +227,7 @@ void InitOrExpandCreatureSSBO(CreaturesSSBOInfo& creatureSSBOInfo, GLuint numOfC
 	GLuint newSSBO;
 	glCreateBuffers(1, &newSSBO);
 	glNamedBufferStorage(newSSBO, bufferSize, NULL, creatureSSBOInfo.bufferFlags);
-
+	//glNamedBufferData(newSSBO, bufferSize, NULL, TECH_SSBO_USAGE);
 
 	// Does this SSBO info already have an old buffer? If so, copy its data into the new buffer and delete it
 	if (creatureSSBOInfo.hasBuffer)
@@ -271,13 +271,13 @@ void ExpandAllSSBOs()
 	for (auto creatureListRef : creatureListsRefs)
 	{
 		// First unmap
-		UnMapPersistentBuffer(*creatureListRef);
+		//UnMapPersistentBuffer(*creatureListRef);
 
 		// Then expand
 		InitOrExpandCreatureSSBO(creatureListRef->creaturesSSBOInfo, max_supported_creature_count_by_current_buffers + creatureListRef->extraUnitsToAllocate);
 
 		// Lastly remap
-		MapPersistentBuffer(*creatureListRef);
+		//MapPersistentBuffer(*creatureListRef);
 	}
 }
 
@@ -304,7 +304,7 @@ void InitAllSSBOs()
 		creatureListRef->persistentMappingFlags = TECH_CREATURE_LIST_MAPPING_FLAGS;
 
 		InitOrExpandCreatureSSBO(creatureListRef->creaturesSSBOInfo, max_supported_creature_count_by_current_buffers + creatureListRef->extraUnitsToAllocate);
-		MapPersistentBuffer(*creatureListRef);
+		//MapPersistentBuffer(*creatureListRef);
 	}
 }
 
