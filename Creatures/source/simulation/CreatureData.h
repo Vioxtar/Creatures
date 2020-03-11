@@ -84,15 +84,19 @@ CreatureUniqueID CreatureSSBOIndexToUniqueID(GLuint ssboIndex);
 // -- CREATURE ATTRIBUTE SSBOS -- //
 ////////////////////////////////////
 
-
 struct CreaturesSSBOInfo
 {
-	GLuint ssbo;
+	GLuint bufferHandle;
 	GLuint unitByteSize;
-	GLbitfield flags;
 	GLuint extraUnitsToAllocate;
+
+	GLbitfield bufferFlags;
+	GLbitfield mappingFlags;
+
 	bool hasBuffer;
+	void* mapPtr;
 };
+
 
 
 // Brains
