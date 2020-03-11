@@ -925,26 +925,19 @@ void CheckCreatureVanishes()
 	GLuint unitSize = creatureList_Vanishes.creaturesSSBOInfo.unitByteSize;
 	GLuint handle = creatureList_Vanishes.creaturesSSBOInfo.bufferHandle;
 
-	GLuint numOfVanishedCreatures;
-	glGetNamedBufferSubData(handle, 0, unitSize, &numOfVanishedCreatures);
+	// Acquire number of creatures to be removed
+	GLuint numOfVanishedCreatures = ((GLuint*)creatureList_Vanishes.mapPtr)[0];
 
 	if (numOfVanishedCreatures <= 0) return;
 
-	cout << numOfVanishedCreatures << endl;
+	// Zerofiy
+	((GLuint*)creatureList_Vanishes.mapPtr)[0] = 0;
 
-	/*GLuint size = unitSize * numOfVanishedCreatures;
-	void* ptr = glMapNamedBufferRange(handle, 0, size, GL_READ_ONLY);
-
-	vector<GLuint> vanishedCreatures(numOfVanishedCreatures);
-	memcpy(vanishedCreatures.data(), ptr, size);
-	glUnmapNamedBuffer(handle);
-
-	for (GLuint creatureIndex : vanishedCreatures)
+	// Remove all of the vanished creatures
+	for (unsigned int i = 1; i <= numOfVanishedCreatures; ++i)
 	{
-		CreatureData_RemoveCreature(creatureIndex);
+		CreatureData_RemoveCreature(((GLuint*)creatureList_Vanishes.mapPtr)[i]);
 	}
-
-	glNamedBufferSubData(handle, 0, unitSize, &zeroCount);*/
 }
 
 void Simulation_Render()
@@ -986,6 +979,11 @@ void Simulation_Update()
 	CheckCreatureVanishes();
 
 	Simulation_Render();
+
+	//if (random() > 0.99)
+	//{
+	//	cout << creature_count << endl;
+	//}
 
 	// @DEBUG sum energy
 	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_Energies.ssbo);
