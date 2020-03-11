@@ -96,8 +96,8 @@ extern CreaturesSSBOInfo creature_GeneralPurposeFloat{ 0, sizeof(GLfloat) };
 extern CreaturesSSBOInfo creature_GeneralPurposeUInt{ 0, sizeof(GLuint) };
 
 // Death and reproduction logging creature lists
-extern PersistentlyMappedCreatureList creatureList_Vanishes{ { 0, sizeof(GLuint), 1 }, 1 };
-extern PersistentlyMappedCreatureList creatureList_NewBorns{ { 0, sizeof(uvec2), 1 }, 1 };
+extern MappedCreaturesSSBOInfo creatureList_Vanishes{ { 0, sizeof(GLuint), 1 }, 1 };
+extern MappedCreaturesSSBOInfo creatureList_NewBorns{ { 0, sizeof(uvec2), 1 }, 1 };
 
 
 
@@ -124,7 +124,7 @@ void ResetDynamicAttributeSizes()
 
 // The sole purpose of these vectors is to contain our creature SSBO infos for easier iteration during SSBO manipulations
 vector<CreaturesSSBOInfo*> creatureAttributesSSBOInfosRefs;
-vector<PersistentlyMappedCreatureList*> creatureListsRefs;
+vector<MappedCreaturesSSBOInfo*> creatureListsRefs;
 
 void LoadCreatureSSBOInfosIntoIterableVectors()
 {
@@ -190,29 +190,24 @@ void LoadCreatureSSBOInfosIntoIterableVectors()
 // The main purpose of defining these values is to have something to write into creature SSBO units that don't
 // accept CreatureData values
 
-const vec2 defaultGeneralPurposeVec2 = vec2(0.0, 0.0);
-const vec2 defaultGeneralPurposeSecondVec2 = vec2(0.0, 0.0);
-const GLfloat defaultGeneralPurposeFloat = 0.0;
-const GLuint defaultGeneralPurposeUInt = 0;
-
-const uvec2 defaultCreatureListNewbornsCount = uvec2(0, 0);
-const GLuint defaultCreatureListVanishesCount = 0;
-
+const vec2 defaultVec2 = vec2(0.0, 0.0);
+const uvec2 defaultUVec2 = uvec2(0, 0);
+const GLuint defaultUInt = 0;
+const GLfloat defaultFloat = 0.0;
 
 
 /////////////////////////////
 // -- SINGLE SSBO UTILS -- //
 /////////////////////////////
 
-
-void MapPersistentBuffer(PersistentlyMappedCreatureList creatureList)
+void MapPersistentBuffer(MappedCreaturesSSBOInfo& creatureList)
 {
 	GLint64 bufferSize;
 	glGetNamedBufferParameteri64v(creatureList.creaturesSSBOInfo.bufferHandle, GL_BUFFER_SIZE, &bufferSize);
-	creatureList.mapPtr = glMapNamedBufferRange(creatureList.creaturesSSBOInfo.bufferHandle, 0, bufferSize, creatureList.persistentMappingFlags);
+	creatureList.mapPtr = glMapNamedBufferRange(creatureList.creaturesSSBOInfo.bufferHandle, 0, bufferSize, creatureList.mappingFlags);
 }
 
-void UnMapPersistentBuffer(PersistentlyMappedCreatureList creatureList)
+void UnMapPersistentBuffer(MappedCreaturesSSBOInfo& creatureList)
 {
 	glUnmapNamedBuffer(creatureList.creaturesSSBOInfo.bufferHandle);
 }
@@ -226,7 +221,11 @@ void InitOrExpandCreatureSSBO(CreaturesSSBOInfo& creatureSSBOInfo, GLuint numOfC
 	// Initialize with NULL data
 	GLuint newSSBO;
 	glCreateBuffers(1, &newSSBO);
+	
+	// Immutable
 	glNamedBufferStorage(newSSBO, bufferSize, NULL, creatureSSBOInfo.bufferFlags);
+	
+	// Mutable
 	//glNamedBufferData(newSSBO, bufferSize, NULL, TECH_SSBO_USAGE);
 
 	// Does this SSBO info already have an old buffer? If so, copy its data into the new buffer and delete it
@@ -270,41 +269,34 @@ void ExpandAllSSBOs()
 	// Expand lists (make room for them as well! it might just be that ALL creatures somehow manage to die in the same frame and need to be listed! :))
 	for (auto creatureListRef : creatureListsRefs)
 	{
-		// First unmap
-		//UnMapPersistentBuffer(*creatureListRef);
-
-		// Then expand
+		UnMapPersistentBuffer(*creatureListRef);
 		InitOrExpandCreatureSSBO(creatureListRef->creaturesSSBOInfo, max_supported_creature_count_by_current_buffers + creatureListRef->extraUnitsToAllocate);
-
-		// Lastly remap
-		//MapPersistentBuffer(*creatureListRef);
+		MapPersistentBuffer(*creatureListRef);
 	}
 }
 
 void InitAllSSBOs()
 {
+
 	// Initialize attributes
 	for (auto creatureAttributeSSBOInfoRef : creatureAttributesSSBOInfosRefs)
 	{
-		// Just in case boolean default values aren't false for some reason
 		creatureAttributeSSBOInfoRef->hasBuffer = false;
-
-		// Set usage flags
 		creatureAttributeSSBOInfoRef->bufferFlags = TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS;
 
-		// Init buffer
 		InitOrExpandCreatureSSBO(*creatureAttributeSSBOInfoRef, max_supported_creature_count_by_current_buffers);
 	}
 
 	// Initialize lists
 	for (auto creatureListRef : creatureListsRefs)
 	{
-		// Set usage flags
+		creatureListRef->creaturesSSBOInfo.hasBuffer = false;
 		creatureListRef->creaturesSSBOInfo.bufferFlags = TECH_CREATURE_LIST_BUFFER_FLAGS;
-		creatureListRef->persistentMappingFlags = TECH_CREATURE_LIST_MAPPING_FLAGS;
+		creatureListRef->mappingFlags = TECH_CREATURE_LIST_MAPPING_FLAGS;
 
 		InitOrExpandCreatureSSBO(creatureListRef->creaturesSSBOInfo, max_supported_creature_count_by_current_buffers + creatureListRef->extraUnitsToAllocate);
-		//MapPersistentBuffer(*creatureListRef);
+
+		MapPersistentBuffer(*creatureListRef);
 	}
 }
 
@@ -368,11 +360,10 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_Meats, newCreatureIndex, &newCreatureData.meat);
 
 	// Also set some zero values to avoid undefined values lurking in our buffers
-	SetCreatureAttribute(creature_GeneralPurposeVec2, newCreatureIndex, &defaultGeneralPurposeVec2);
-	SetCreatureAttribute(creature_GeneralPurposeSecondVec2, newCreatureIndex, &defaultGeneralPurposeSecondVec2);
-	SetCreatureAttribute(creature_GeneralPurposeFloat, newCreatureIndex, &defaultGeneralPurposeFloat);
-	SetCreatureAttribute(creature_GeneralPurposeUInt, newCreatureIndex, &defaultGeneralPurposeUInt);
-
+	SetCreatureAttribute(creature_GeneralPurposeVec2, newCreatureIndex, &defaultVec2);
+	SetCreatureAttribute(creature_GeneralPurposeSecondVec2, newCreatureIndex, &defaultVec2);
+	SetCreatureAttribute(creature_GeneralPurposeFloat, newCreatureIndex, &defaultFloat);
+	SetCreatureAttribute(creature_GeneralPurposeUInt, newCreatureIndex, &defaultUInt);
 
 	// Map creature unique ID to creature index
 	creature_UniqueIDsToSSBOIndex.emplace(creature_NextUniqueIDToBeAssigned, newCreatureIndex);
@@ -454,8 +445,8 @@ void CreatureData_Init()
 	InitAllSSBOs();
 	
 	// Set creature lists' counts to zero
-	SetCreatureAttribute(creatureList_NewBorns.creaturesSSBOInfo, 0, &defaultCreatureListNewbornsCount);
-	SetCreatureAttribute(creatureList_Vanishes.creaturesSSBOInfo, 0, &defaultCreatureListVanishesCount);
+	SetCreatureAttribute(creatureList_NewBorns.creaturesSSBOInfo, 0, &defaultUVec2);
+	SetCreatureAttribute(creatureList_Vanishes.creaturesSSBOInfo, 0, &defaultUInt);
 
 	// Lastly pre-allocate memory for our unique IDs vector
 	creature_UniqueIDs.reserve(max_supported_creature_count_by_current_buffers);

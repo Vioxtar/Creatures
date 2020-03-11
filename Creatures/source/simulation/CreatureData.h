@@ -94,11 +94,12 @@ struct CreaturesSSBOInfo
 	bool hasBuffer;
 };
 
-struct PersistentlyMappedCreatureList
+struct MappedCreaturesSSBOInfo
 {
 	CreaturesSSBOInfo creaturesSSBOInfo;
 	GLuint extraUnitsToAllocate;
-	GLbitfield persistentMappingFlags;
+
+	GLbitfield mappingFlags;
 	void* mapPtr;
 };
 
@@ -173,5 +174,5 @@ extern CreaturesSSBOInfo creature_GeneralPurposeFloat;
 extern CreaturesSSBOInfo creature_GeneralPurposeUInt;
 
 // Death and reproduction logging creature lists
-extern PersistentlyMappedCreatureList creatureList_Vanishes;
-extern PersistentlyMappedCreatureList creatureList_NewBorns;
+extern MappedCreaturesSSBOInfo creatureList_Vanishes;
+extern MappedCreaturesSSBOInfo creatureList_NewBorns;

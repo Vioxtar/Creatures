@@ -90,9 +90,9 @@ void AddFirstGenerationCreature()
 	data.hardness = 1.0;
 	data.rad = CREATURE_MAX_RADIUS.value;
 	
-	data.life = 0.0;// CREATURE_MAX_LIFE.value;
-	data.energy = 0.0;// CREATURE_MAX_ENERGY.value;
-	data.meat = 0.0;// SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT.value;
+	data.life = CREATURE_MAX_LIFE.value;
+	data.energy = CREATURE_MAX_ENERGY.value;
+	data.meat = SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT.value;
 
 	data.forwardThrust = random() * random() * 0.0015;
 	data.turnThrust = (random() - 0.5) * 0.0015;
@@ -919,9 +919,9 @@ void HandleCreatureVanished(unsigned int creatureIndex)
 
 }
 
+const GLuint zeroCount = 0;
 void CheckCreatureVanishes()
 {
-	
 	GLuint unitSize = creatureList_Vanishes.creaturesSSBOInfo.unitByteSize;
 	GLuint handle = creatureList_Vanishes.creaturesSSBOInfo.bufferHandle;
 
@@ -930,16 +930,21 @@ void CheckCreatureVanishes()
 
 	if (numOfVanishedCreatures <= 0) return;
 
-	GLuint* vanishedCreaturesAndCount = (GLuint*)glMapNamedBufferRange(handle, 0, unitSize * (1 + numOfVanishedCreatures), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT);
-	vanishedCreaturesAndCount[0] = 0;
+	cout << numOfVanishedCreatures << endl;
 
-	for (unsigned int i = 0; i < numOfVanishedCreatures; ++i)
-	{
-		CreatureData_RemoveCreature(vanishedCreaturesAndCount[1 + i]);
-	}
+	/*GLuint size = unitSize * numOfVanishedCreatures;
+	void* ptr = glMapNamedBufferRange(handle, 0, size, GL_READ_ONLY);
 
+	vector<GLuint> vanishedCreatures(numOfVanishedCreatures);
+	memcpy(vanishedCreatures.data(), ptr, size);
 	glUnmapNamedBuffer(handle);
 
+	for (GLuint creatureIndex : vanishedCreatures)
+	{
+		CreatureData_RemoveCreature(creatureIndex);
+	}
+
+	glNamedBufferSubData(handle, 0, unitSize, &zeroCount);*/
 }
 
 void Simulation_Render()
