@@ -220,7 +220,7 @@ bool SelectCreatureByDistanceToMouse(CreatureUniqueID& selectedCreatureID)
 
 	if (found)
 	{
-		selectedCreatureID = CreatureSSBOIndexToUniqueID(closestCreatureSSBOIndex);
+		selectedCreatureID = CreatureData_CreatureSSBOIndexToUniqueID(closestCreatureSSBOIndex);
 	}
 
 	return found;

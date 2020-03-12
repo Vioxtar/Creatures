@@ -17,9 +17,13 @@ CreatureData GetCreatureSnapshot(CreatureUniqueID creatureID)
 {
 	// Obtain the SSBO index of our creature
 	
-	GLuint ssboIndex = CreatureUniqueIDToSSBOIndex(creatureID);
+	GLuint ssboIndex = CreatureData_CreatureUniqueIDToSSBOIndex(creatureID);
 
 	CreatureData snapShot;
+
+	//void* ptr = glMapNamedBufferRange(creature_Positions.bufferHandle, creature_Positions.unitByteSize * ssboIndex, creature_Positions.unitByteSize, GL_MAP_READ_BIT);
+	//snapShot.pos = *(vec2*)ptr;
+	//glUnmapNamedBuffer(creature_Positions.bufferHandle);
 
 	glGetNamedBufferSubData(creature_Positions.bufferHandle, creature_Positions.unitByteSize * ssboIndex, creature_Positions.unitByteSize, &snapShot.pos);
 

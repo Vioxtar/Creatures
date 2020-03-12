@@ -37,7 +37,7 @@ extern const GLenum TECH_SSBO_USAGE = GL_STATIC_DRAW;
 extern const GLbitfield TECH_CREATURE_ATTRIBUTE_BUFFER_FLAGS = GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT;
 
 extern const GLbitfield TECH_CREATURE_LIST_BUFFER_FLAGS = GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
-extern const GLbitfield TECH_CREATURE_LIST_MAPPING_FLAGS = GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
+extern const GLbitfield TECH_CREATURE_LIST_MAPPING_FLAGS = GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_FLUSH_EXPLICIT_BIT;
 
 
 // @TODO: Query the maximum local size
@@ -99,8 +99,8 @@ extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13;
 
 
 // Simulation space settings
-extern TweakableFloatSetting SIMULATION_SPACE_WIDTH = { 500, 1, 300 };
-extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 500, 1, 300 };
+extern TweakableFloatSetting SIMULATION_SPACE_WIDTH = { 1000, 1, 300 };
+extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 1000, 1, 300 };
 
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
@@ -108,8 +108,8 @@ extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.999985, 0.0, 1.
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
 
 // Simulation creature settings
-extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 50000, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE = { 0, 0.0, 50.0 };
+extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 0, 0, 1000000 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE = { 10, 0.0, 50.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 5.0, 0.0, 100.0 };
 
 // Render settings

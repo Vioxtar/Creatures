@@ -912,13 +912,6 @@ void Simulation_Programs_Sequence()
 
 }
 
-void HandleCreatureVanished(unsigned int creatureIndex)
-{
-
-	CreatureData_RemoveCreature(creatureIndex);
-
-}
-
 const GLuint zeroCount = 0;
 void CheckMappedCreatureVanishes()
 {
@@ -930,42 +923,26 @@ void CheckMappedCreatureVanishes()
 
 	if (numOfVanishedCreatures <= 0) return;
 
-	// Zerofiy
+	// Zerofiy count, make the write immediately visible to OpenGL
 	((GLuint*)creatureList_Vanishes.mapPtr)[0] = 0;
+	glFlushMappedNamedBufferRange(handle, 0, unitSize); // @TODO: Is this needed?
 
-	// Remove all of the vanished creatures
-	for (unsigned int i = 1; i <= numOfVanishedCreatures; ++i)
+	// Each call to remove creature (by SSBO index) can shift creatures in the buffer, work with unique IDs instead!
+	vector<CreatureUniqueID> vanishedCreatureIDs(numOfVanishedCreatures);
+	for (unsigned int i = 0; i < numOfVanishedCreatures; ++i)
 	{
-		CreatureData_RemoveCreature(((GLuint*)creatureList_Vanishes.mapPtr)[i]);
+		GLuint ssboIndex = ((GLuint*)creatureList_Vanishes.mapPtr)[i + 1];
+		CreatureUniqueID uniqueID = CreatureData_CreatureSSBOIndexToUniqueID(ssboIndex);
+		vanishedCreatureIDs[i] = uniqueID;
+	}
+
+	// Remove creatures based on the unique IDs we found
+	for (unsigned int i = 0; i < numOfVanishedCreatures; ++i)
+	{
+		CreatureData_RemoveCreatureBySSBOIndex(CreatureData_CreatureUniqueIDToSSBOIndex(vanishedCreatureIDs[i]));
 	}
 }
 
-void CheckUnMappedCreatureVanishes()
-{
-
-	GLuint unitSize = creatureList_Vanishes.creaturesSSBOInfo.unitByteSize;
-	GLuint handle = creatureList_Vanishes.creaturesSSBOInfo.bufferHandle;
-
-	// Acquire number of creatures to be removed
-	GLuint numOfVanishedCreatures;
-	glGetNamedBufferSubData(handle, 0, unitSize, &numOfVanishedCreatures);
-
-	if (numOfVanishedCreatures <= 0) return;
-
-	// Zerofiy
-	glNamedBufferSubData(handle, 0, unitSize, &zeroCount);
-
-	// Remove all of the vanished creatures
-	void* ptr = glMapNamedBufferRange(handle, 0, unitSize * (numOfVanishedCreatures + 1), GL_MAP_READ_BIT);
-
-	for (unsigned int i = 1; i <= numOfVanishedCreatures; ++i)
-	{
-		CreatureData_RemoveCreature(((GLuint*)ptr)[i]);
-	}
-
-	glUnmapNamedBuffer(handle);
-
-}
 
 void Simulation_Render()
 {
@@ -1001,12 +978,28 @@ void Simulation_Render()
 void Simulation_Update()
 {
 	Simulation_FirstgenCreatureSpawns();
+	
+	// Program logic sequence
 	Simulation_Programs_Sequence();
+	
+	// Render
+	Simulation_Render();
+	
 
+
+	// Wait until OpenGL finished with all command dequeues
+	glFinish();
+
+	// Remove creatures that vanished
 	CheckMappedCreatureVanishes();
 
-	Simulation_Render();
+	// Reproduction
+	// @TODO
 
+
+
+
+	// @DEBUG
 	//if (random() > 0.99)
 	//{
 	//	cout << creature_count << endl;

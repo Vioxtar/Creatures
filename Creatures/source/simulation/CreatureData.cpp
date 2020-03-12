@@ -5,12 +5,12 @@ CreatureUniqueID creature_NextUniqueIDToBeAssigned = 0;
 map<CreatureUniqueID, GLuint> creature_UniqueIDsToSSBOIndex;
 vector<CreatureUniqueID> creature_UniqueIDs;
 
-GLuint CreatureUniqueIDToSSBOIndex(CreatureUniqueID creatureID)
+GLuint CreatureData_CreatureUniqueIDToSSBOIndex(CreatureUniqueID creatureID)
 {
 	return creature_UniqueIDsToSSBOIndex.at(creatureID);
 }
 
-CreatureUniqueID CreatureSSBOIndexToUniqueID(GLuint ssboIndex)
+CreatureUniqueID CreatureData_CreatureSSBOIndexToUniqueID(GLuint ssboIndex)
 {
 	// @TODO: Check that ssbo index < creature_count
 	return creature_UniqueIDs[ssboIndex];
@@ -395,7 +395,7 @@ void RemoveCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, GLuint creature
 }
 
 
-void CreatureData_RemoveCreature(GLuint creatureIndex)
+void CreatureData_RemoveCreatureBySSBOIndex(GLuint creatureIndex)
 {
 	if (creature_count <= 0)
 		return;

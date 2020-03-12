@@ -65,9 +65,12 @@ struct CreatureData
 };
 
 
+typedef unsigned long long int CreatureUniqueID;
+
+
 GLuint CreatureData_AddCreature(CreatureData newCreatureData);
 
-void CreatureData_RemoveCreature(GLuint creatureIndex);
+void CreatureData_RemoveCreatureBySSBOIndex(GLuint creatureIndex);
 
 void CreatureData_Init();
 
@@ -75,10 +78,8 @@ void CreatureData_Init();
 extern GLuint creature_count; // The count of active creatures in the simulation
 extern GLuint max_supported_creature_count_by_current_buffers; // The number of creatures supported by current SSBO buffers
 
-typedef unsigned long long int CreatureUniqueID;
-
-GLuint CreatureUniqueIDToSSBOIndex(CreatureUniqueID creatureUniqueID);
-CreatureUniqueID CreatureSSBOIndexToUniqueID(GLuint ssboIndex);
+GLuint CreatureData_CreatureUniqueIDToSSBOIndex(CreatureUniqueID creatureUniqueID);
+CreatureUniqueID CreatureData_CreatureSSBOIndexToUniqueID(GLuint ssboIndex);
 
 //////////////////////////
 // -- CREATURE SSBOS -- //

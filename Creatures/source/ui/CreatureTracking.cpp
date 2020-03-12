@@ -31,6 +31,19 @@ class CreatureTracker
 
 
 
+		//@DEBUG
+
+		ImGui::GetBackgroundDrawList()->AddCircle(
+			SimulationSpaceToViewportSpace(creatureSnapShot.pos),
+			SimulationScaleToViewportScale(1.0) * 1.0 + UI_CREATURE_TRACKER_HALO_RADIUS_PIXEL_BIAS,
+			IM_COL32(0, 255, 0, 100),
+			UI_CREATURE_TRACKER_HALO_NUM_OF_SEGMENTS,
+			UI_CREATURE_TRACKER_HALO_PIXEL_THICKNESS
+		);
+
+
+
+
 		ShowMisc();
 		ShowBrain();
 		ShowEyes();
