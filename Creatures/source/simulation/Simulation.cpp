@@ -87,7 +87,7 @@ void AddFirstGenerationCreature()
 	data.angle = random() * 2 * M_PI;
 	data.angleVel = (random() - 0.5) * 0.02;
 
-	data.hardness = 1.0;
+	data.hardness = random();
 	data.rad = CREATURE_MAX_RADIUS.value;
 	
 	data.life = CREATURE_MAX_LIFE.value;
@@ -653,6 +653,7 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureRadiusPercentageMeatWeight", CREATURE_RADIUS_PERCENTAGE_MEAT_WEIGHT.value);
 	SetUniformFloat(programID, "uCreatureRadiusPercentageMuscleWeight", CREATURE_RADIUS_PERCENTAGE_MUSCLE_WEIGHT.value);
 	SetUniformFloat(programID, "uCreatureLifeDrainOnNoEnergy", CREATURE_LIFE_DRAIN_ON_NO_ENERGY.value);
+	SetUniformFloat(programID, "uCreatureEnergyDrainConstant", CREATURE_ENERGY_DRAIN_CONSTANT.value);
 	SetUniformFloat(programID, "uCreatureDeathWithMeatShrinkRate", CREATURE_DEATH_WITH_MEAT_SHRINK_RATE.value);
 	SetUniformFloat(programID, "uCreatureDeathWithoutMeatShrinkRate", CREATURE_DEATH_WITHOUT_MEAT_SHRINK_RATE.value);
 	SetUniformFloat(programID, "uCreatureDeathExistenceRadiusThreshold", CREATURE_DEATH_EXISTENCE_RADIUS_THRESHOLD.value);
@@ -985,8 +986,6 @@ void Simulation_Update()
 	// Render
 	Simulation_Render();
 	
-
-
 	// Wait until OpenGL finished with all command dequeues
 	glFinish();
 

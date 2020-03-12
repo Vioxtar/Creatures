@@ -182,6 +182,7 @@ extern TweakableFloatSetting CREATURE_RADIUS_PERCENTAGE_MEAT_WEIGHT;
 extern TweakableFloatSetting CREATURE_RADIUS_PERCENTAGE_MUSCLE_WEIGHT;
 
 extern TweakableFloatSetting CREATURE_LIFE_DRAIN_ON_NO_ENERGY;
+extern TweakableFloatSetting CREATURE_ENERGY_DRAIN_CONSTANT;
 
 // Creature death settings
 extern TweakableFloatSetting CREATURE_DEATH_WITH_MEAT_SHRINK_RATE;

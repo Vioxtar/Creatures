@@ -117,6 +117,7 @@ void main()
 	float aRad = Radii[gid];
 	float aHardness = Hardnesses[gid];
 	float aMeat = Meats[gid];
+	float aMass = aMeat * aMeat;
 
 	uint aCollidersStartIndex = gid * uMaxNumOfColliders;
 	
@@ -151,6 +152,7 @@ void main()
 				vec2 bPos = Positions[bGID];
 				float bRad = Radii[bGID];
 				float bMeat = Meats[bGID];
+				float bMass = bMeat * bMeat;
 
 				vec2 c1c2PosDiff = bPos - aPos;
 				float distSquared = dot(c1c2PosDiff, c1c2PosDiff);
@@ -204,8 +206,8 @@ void main()
 					float push = pow(hardnessFactor * velCollideFactor, 1.0 - penetrationPercentage) * violation;
 				
 					// We weigh as much as our meat (plus some default value because we like numerical stability)
-					float m1 = aMeat + uCreatureDefaultBodyMass;
-					float m2 = bMeat + uCreatureDefaultBodyMass;
+					float m1 = aMass + uCreatureDefaultBodyMass;
+					float m2 = bMass + uCreatureDefaultBodyMass;
 					float m1Frac = m1 / (m1 + m2);
 					float m2Frac = m2 / (m1 + m2);
 

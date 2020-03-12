@@ -3,11 +3,15 @@
 vector<vec2> GetSSBOIndexedCreaturePositions()
 {
 	void* positionsPtr = glMapNamedBuffer(creature_Positions.bufferHandle, GL_READ_ONLY);
-	
 	vector<vec2> positions(creature_count);
 	memcpy(&positions[0], positionsPtr, size_t(creature_Positions.unitByteSize) * creature_count);
-	
 	glUnmapNamedBuffer(creature_Positions.bufferHandle);
+
+
+
+	//glGetNamedBufferSubData(creature_Positions.bufferHandle, 0, creature_Positions.unitByteSize * creature_count, positions.data());
+
+
 
 	return positions;
 }
