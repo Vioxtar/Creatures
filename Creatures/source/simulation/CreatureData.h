@@ -68,10 +68,8 @@ struct CreatureData
 typedef unsigned long long int CreatureUniqueID;
 
 
-GLuint CreatureData_AddCreature(CreatureData newCreatureData);
-
-void CreatureData_RemoveCreatureBySSBOIndex(GLuint creatureIndex);
-
+CreatureUniqueID CreatureData_AddCreature(CreatureData newCreatureData);
+void CreatureData_RemoveCreatureByUniqueID(CreatureUniqueID creatureID);
 void CreatureData_Init();
 
 

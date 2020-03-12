@@ -939,7 +939,7 @@ void CheckMappedCreatureVanishes()
 	// Remove creatures based on the unique IDs we found
 	for (unsigned int i = 0; i < numOfVanishedCreatures; ++i)
 	{
-		CreatureData_RemoveCreatureBySSBOIndex(CreatureData_CreatureUniqueIDToSSBOIndex(vanishedCreatureIDs[i]));
+		CreatureData_RemoveCreatureByUniqueID(vanishedCreatureIDs[i]);
 	}
 }
 

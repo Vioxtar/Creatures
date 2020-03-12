@@ -315,7 +315,7 @@ void SetCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, GLuint creatureInd
 }
 
 
-GLuint CreatureData_AddCreature(CreatureData newCreatureData)
+CreatureUniqueID CreatureData_AddCreature(CreatureData newCreatureData)
 {
 
 	unsigned int newCreatureCount = creature_count + 1;
@@ -368,17 +368,21 @@ GLuint CreatureData_AddCreature(CreatureData newCreatureData)
 	SetCreatureAttribute(creature_GeneralPurposeFloat, newCreatureIndex, &defaultFloat);
 	SetCreatureAttribute(creature_GeneralPurposeUInt, newCreatureIndex, &defaultUInt);
 
-	// Map creature unique ID to creature index
-	creature_UniqueIDsToSSBOIndex.emplace(creature_NextUniqueIDToBeAssigned, newCreatureIndex);
-
-	// Map creature index to unique ID
-	// @TODO: assert creature_UniqueIDs[creature_count] == creature_NextUniqueIDToBeAssigned?
-	creature_UniqueIDs.emplace_back(creature_NextUniqueIDToBeAssigned);
+	// Set new creature unique ID
+	CreatureUniqueID creatureUniqueID = creature_NextUniqueIDToBeAssigned;
 	creature_NextUniqueIDToBeAssigned++;
 	
+	// Map creature unique ID to creature index
+	creature_UniqueIDsToSSBOIndex.emplace(creatureUniqueID, newCreatureIndex);
+
+	// Map creature index to unique ID
+	creature_UniqueIDs.emplace_back(creatureUniqueID);
+	
+	// Increase count by one
 	creature_count = newCreatureCount;
 
-	return newCreatureIndex;
+	// Return unique ID
+	return creatureUniqueID;
 }
 
 void RemoveCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, GLuint creatureIndex)
@@ -395,7 +399,7 @@ void RemoveCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, GLuint creature
 }
 
 
-void CreatureData_RemoveCreatureBySSBOIndex(GLuint creatureIndex)
+void RemoveCreatureBySSBOIndex(GLuint creatureIndex)
 {
 	if (creature_count <= 0)
 		return;
@@ -425,6 +429,12 @@ void CreatureData_RemoveCreatureBySSBOIndex(GLuint creatureIndex)
 
 	creature_count--;
 }
+
+void CreatureData_RemoveCreatureByUniqueID(CreatureUniqueID creatureID)
+{
+	RemoveCreatureBySSBOIndex(CreatureData_CreatureUniqueIDToSSBOIndex(creatureID));
+}
+
 
 //////////////////////////
 // -- INITIALIZATION -- //
