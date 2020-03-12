@@ -194,6 +194,7 @@ const vec2 defaultVec2 = vec2(0.0, 0.0);
 const uvec2 defaultUVec2 = uvec2(0, 0);
 const GLuint defaultUInt = 0;
 const GLfloat defaultFloat = 0.0;
+const GLbyte defaultZeroByte = 0;
 
 
 /////////////////////////////
@@ -212,7 +213,6 @@ void UnMapPersistentBuffer(MappedCreaturesSSBOInfo& creatureList)
 	glUnmapNamedBuffer(creatureList.creaturesSSBOInfo.bufferHandle);
 }
 
-
 void InitOrExpandCreatureSSBO(CreaturesSSBOInfo& creatureSSBOInfo, GLuint numOfCreaturesToSupport)
 {	
 	// Calculate buffer size
@@ -227,6 +227,9 @@ void InitOrExpandCreatureSSBO(CreaturesSSBOInfo& creatureSSBOInfo, GLuint numOfC
 	
 	// Mutable
 	//glNamedBufferData(newSSBO, bufferSize, NULL, TECH_SSBO_USAGE);
+
+	// Avoid undefined buffers by clearing the buffer to a single value @TODO: Experimental!
+	//glClearNamedBufferData(newSSBO, GL_R8, GL_RG, GL_FLOAT, &defaultZeroByte);
 
 	// Does this SSBO info already have an old buffer? If so, copy its data into the new buffer and delete it
 	if (creatureSSBOInfo.hasBuffer)

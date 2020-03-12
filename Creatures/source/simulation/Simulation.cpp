@@ -920,7 +920,7 @@ void HandleCreatureVanished(unsigned int creatureIndex)
 }
 
 const GLuint zeroCount = 0;
-void CheckCreatureVanishes()
+void CheckMappedCreatureVanishes()
 {
 	GLuint unitSize = creatureList_Vanishes.creaturesSSBOInfo.unitByteSize;
 	GLuint handle = creatureList_Vanishes.creaturesSSBOInfo.bufferHandle;
@@ -938,6 +938,33 @@ void CheckCreatureVanishes()
 	{
 		CreatureData_RemoveCreature(((GLuint*)creatureList_Vanishes.mapPtr)[i]);
 	}
+}
+
+void CheckUnMappedCreatureVanishes()
+{
+
+	GLuint unitSize = creatureList_Vanishes.creaturesSSBOInfo.unitByteSize;
+	GLuint handle = creatureList_Vanishes.creaturesSSBOInfo.bufferHandle;
+
+	// Acquire number of creatures to be removed
+	GLuint numOfVanishedCreatures;
+	glGetNamedBufferSubData(handle, 0, unitSize, &numOfVanishedCreatures);
+
+	if (numOfVanishedCreatures <= 0) return;
+
+	// Zerofiy
+	glNamedBufferSubData(handle, 0, unitSize, &zeroCount);
+
+	// Remove all of the vanished creatures
+	void* ptr = glMapNamedBufferRange(handle, 0, unitSize * (numOfVanishedCreatures + 1), GL_MAP_READ_BIT);
+
+	for (unsigned int i = 1; i <= numOfVanishedCreatures; ++i)
+	{
+		CreatureData_RemoveCreature(((GLuint*)ptr)[i]);
+	}
+
+	glUnmapNamedBuffer(handle);
+
 }
 
 void Simulation_Render()
@@ -976,7 +1003,7 @@ void Simulation_Update()
 	Simulation_FirstgenCreatureSpawns();
 	Simulation_Programs_Sequence();
 
-	CheckCreatureVanishes();
+	CheckMappedCreatureVanishes();
 
 	Simulation_Render();
 
