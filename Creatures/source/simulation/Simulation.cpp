@@ -87,7 +87,7 @@ void AddFirstGenerationCreature()
 	data.angle = random() * 2 * M_PI;
 	data.angleVel = (random() - 0.5) * 0.02;
 
-	data.hardness = random();
+	data.hardness = random() * random() * random() * random() * random() * random();
 	data.rad = CREATURE_MAX_RADIUS.value;
 	
 	data.life = CREATURE_MAX_LIFE.value;
