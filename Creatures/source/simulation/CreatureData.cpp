@@ -229,9 +229,6 @@ void InitOrExpandCreatureSSBO(CreaturesSSBOInfo& creatureSSBOInfo, GLuint numOfC
 	// Mutable
 	//glNamedBufferData(newSSBO, bufferSize, NULL, TECH_SSBO_USAGE);
 
-	// Avoid undefined buffers by clearing the buffer to a single value @TODO: Experimental!
-	//glClearNamedBufferData(newSSBO, GL_R8, GL_RG, GL_FLOAT, &defaultZeroByte);
-
 	// Does this SSBO info already have an old buffer? If so, copy its data into the new buffer and delete it
 	if (creatureSSBOInfo.hasBuffer)
 	{
