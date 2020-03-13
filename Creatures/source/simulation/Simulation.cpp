@@ -914,7 +914,7 @@ void Simulation_Programs_Sequence()
 }
 
 const GLuint zeroCount = 0;
-void CheckMappedCreatureVanishes()
+void VanishedCreatureRemoval()
 {
 	GLuint unitSize = creatureList_Vanishes.creaturesSSBOInfo.unitByteSize;
 	GLuint handle = creatureList_Vanishes.creaturesSSBOInfo.bufferHandle;
@@ -978,8 +978,12 @@ void Simulation_Render()
 
 void Simulation_Update()
 {
+	// Finish everything the GPU needs to do from the last frame
+	glFlush();
+
+	// Add first generation creatures
 	Simulation_FirstgenCreatureSpawns();
-	
+
 	// Program logic sequence
 	Simulation_Programs_Sequence();
 	
@@ -990,7 +994,7 @@ void Simulation_Update()
 	glFinish();
 
 	// Remove creatures that vanished
-	CheckMappedCreatureVanishes();
+	VanishedCreatureRemoval();
 
 	// Reproduction
 	// @TODO
@@ -999,10 +1003,10 @@ void Simulation_Update()
 
 
 	// @DEBUG
-	//if (random() > 0.99)
-	//{
-	//	cout << creature_count << endl;
-	//}
+	if (random() > 0.99)
+	{
+		cout << creature_count << endl;
+	}
 
 	// @DEBUG sum energy
 	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_Energies.ssbo);

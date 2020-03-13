@@ -99,8 +99,8 @@ extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13;
 
 
 // Simulation space settings
-extern TweakableFloatSetting SIMULATION_SPACE_WIDTH = { 500, 1, 300 };
-extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 500, 1, 300 };
+extern TweakableFloatSetting SIMULATION_SPACE_WIDTH = { 1000, 1, 2000 };
+extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 1000, 1, 2000 };
 
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
