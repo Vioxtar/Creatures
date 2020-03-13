@@ -26,78 +26,79 @@ extern GLuint max_supported_creature_count_by_current_buffers = 0; // The number
 
 
 // Brains
-extern CreaturesSSBOInfo creature_BrainsLinks{ 0, sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_LINKS };
-extern CreaturesSSBOInfo creature_BrainsNodes{ 0, sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_NODES };
-extern CreaturesSSBOInfo creature_BrainsBiasesExponents{ 0, sizeof(vec2) * CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES };
-extern CreaturesSSBOInfo creature_BrainsStructures{ 0, sizeof(GLuint) * CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES };
+extern CreaturesSSBOInfo creature_BrainsLinks{ sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_LINKS };
+extern CreaturesSSBOInfo creature_BrainsNodes{ sizeof(GLfloat) * CREATURE_BRAIN_MAX_NUM_OF_NODES };
+extern CreaturesSSBOInfo creature_BrainsBiasesExponents{ sizeof(vec2) * CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES };
+extern CreaturesSSBOInfo creature_BrainsStructures{ sizeof(GLuint) * CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES };
 
 // Eyes
-extern CreaturesSSBOInfo creature_EyeMuscles{ 0, sizeof(vec2) };
-extern CreaturesSSBOInfo creature_EyePositions{ 0, sizeof(vec2) };
-extern CreaturesSSBOInfo creature_EyeConeRadii{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_EyePupilConeCoverageFraction{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_EyePupilSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES };
-extern CreaturesSSBOInfo creature_EyeConeSights{ 0, sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONES_VALUES };
+extern CreaturesSSBOInfo creature_EyeMuscles{ sizeof(vec2) };
+extern CreaturesSSBOInfo creature_EyePositions{ sizeof(vec2) };
+extern CreaturesSSBOInfo creature_EyeConeRadii{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_EyePupilConeCoverageFraction{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_EyePupilSights{ sizeof(GLfloat) * CREATURE_EYE_NUM_OF_PUPIL_VALUES };
+extern CreaturesSSBOInfo creature_EyeConeSights{ sizeof(GLfloat) * CREATURE_EYE_NUM_OF_CONES_VALUES };
 
 // Physics
-extern CreaturesSSBOInfo creature_Positions{ 0, sizeof(vec2) };
-extern CreaturesSSBOInfo creature_Velocities{ 0, sizeof(vec2) };
-extern CreaturesSSBOInfo creature_Angles{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_AngleVelocities{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_ForwardDirections{ 0, sizeof(vec2) };
-extern CreaturesSSBOInfo creature_RightDirections{ 0, sizeof(vec2) };
+extern CreaturesSSBOInfo creature_Positions{ sizeof(vec2) };
+extern CreaturesSSBOInfo creature_Velocities{ sizeof(vec2) };
+extern CreaturesSSBOInfo creature_Angles{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_AngleVelocities{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_ForwardDirections{ sizeof(vec2) };
+extern CreaturesSSBOInfo creature_RightDirections{ sizeof(vec2) };
 
 // Movement
-extern CreaturesSSBOInfo creature_ForwardThrusts{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_TurnThrusts{ 0, sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_ForwardThrusts{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_TurnThrusts{ sizeof(GLfloat) };
 
 // Body parameters
-extern CreaturesSSBOInfo creature_Radii{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_Lives{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_Energies{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_Meats{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_Harndesses{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_Horninesses{ 0, sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_Radii{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_Lives{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_Energies{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_Meats{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_Harndesses{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_Horninesses{ sizeof(GLfloat) };
 
 // Creature misc
-extern CreaturesSSBOInfo creature_Generations{ 0, sizeof(GLuint) };
-extern CreaturesSSBOInfo creature_UniformGridTiles{ 0, sizeof(GLint) };
+extern CreaturesSSBOInfo creature_Generations{ sizeof(GLuint) };
+extern CreaturesSSBOInfo creature_UniformGridTiles{ sizeof(GLint) };
 
 // Colliders
-extern CreaturesSSBOInfo creature_CollidersCounts{ 0, sizeof(GLuint) };
-extern CreaturesSSBOInfo creature_CollidersIndicesAndPlacements{ 0, sizeof(uvec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
-extern CreaturesSSBOInfo creature_CollidersToPosDirs{ 0, sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
-extern CreaturesSSBOInfo creature_CollidersPositions{ 0, sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
-extern CreaturesSSBOInfo creature_CollidersRadii{ 0, sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS };
-extern CreaturesSSBOInfo creature_CollidersGivenEnergy{ 0, sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS };
+extern CreaturesSSBOInfo creature_CollidersCounts{ sizeof(GLuint) };
+extern CreaturesSSBOInfo creature_CollidersIndicesAndPlacements{ sizeof(uvec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
+extern CreaturesSSBOInfo creature_CollidersToPosDirs{ sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
+extern CreaturesSSBOInfo creature_CollidersPositions{ sizeof(vec2) * CREATURE_MAX_NUM_OF_COLLIDERS };
+extern CreaturesSSBOInfo creature_CollidersRadii{ sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS };
+extern CreaturesSSBOInfo creature_CollidersGivenEnergy{ sizeof(GLfloat) * CREATURE_MAX_NUM_OF_COLLIDERS };
 
 
 // Appearances
-extern CreaturesSSBOInfo creature_SkinHues{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_SkinSaturations{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_SkinValues{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_SkinRGBColors{ 0, sizeof(GLfloat) * 3 };
-extern CreaturesSSBOInfo creature_SkinPatterns{ 0, sizeof(vec2) };
+extern CreaturesSSBOInfo creature_SkinHues{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_SkinSaturations{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_SkinValues{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_SkinRGBColors{ sizeof(GLfloat) * 3 };
+extern CreaturesSSBOInfo creature_SkinPatterns{ sizeof(vec2) };
 
 // Creature-localized devices (feeders, shields, sensors)
-extern CreaturesSSBOInfo creature_SpikeLocalAngles{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_Spikes{ 0, sizeof(vec4) };
+extern CreaturesSSBOInfo creature_SpikeLocalAngles{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_Spikes{ sizeof(vec4) };
 
-extern CreaturesSSBOInfo creature_FeederLocalAngles{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_Feeders{ 0, sizeof(vec4) };
+extern CreaturesSSBOInfo creature_FeederLocalAngles{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_Feeders{ sizeof(vec4) };
 
-extern CreaturesSSBOInfo creature_ShieldLocalAngles{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_Shields{ 0, sizeof(vec4) };
+extern CreaturesSSBOInfo creature_ShieldLocalAngles{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_Shields{ sizeof(vec4) };
 
 // General purpose data packets
-extern CreaturesSSBOInfo creature_GeneralPurposeVec2{ 0, sizeof(vec2) };
-extern CreaturesSSBOInfo creature_GeneralPurposeSecondVec2{ 0, sizeof(vec2) };
-extern CreaturesSSBOInfo creature_GeneralPurposeFloat{ 0, sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_GeneralPurposeUInt{ 0, sizeof(GLuint) };
+extern CreaturesSSBOInfo creature_GeneralPurposeVec2{ sizeof(vec2) };
+extern CreaturesSSBOInfo creature_GeneralPurposeSecondVec2{ sizeof(vec2) };
+extern CreaturesSSBOInfo creature_GeneralPurposeFloat{ sizeof(GLfloat) };
+extern CreaturesSSBOInfo creature_GeneralPurposeUInt{ sizeof(GLuint) };
 
 // Death and reproduction logging creature lists
-extern MappedCreaturesSSBOInfo creatureList_Vanishes{ { 0, sizeof(GLuint), 1 }, 1 };
-extern MappedCreaturesSSBOInfo creatureList_NewBorns{ { 0, sizeof(uvec2), 1 }, 1 };
+extern MappedCreaturesSSBOInfo creatureList_Vanishes{ { sizeof(GLuint) }, 1 };
+extern MappedCreaturesSSBOInfo creatureList_NewBorns{ { sizeof(uvec2) }, 1 };
+
 
 
 

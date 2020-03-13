@@ -85,8 +85,8 @@ CreatureUniqueID CreatureData_CreatureSSBOIndexToUniqueID(GLuint ssboIndex);
 
 struct CreaturesSSBOInfo
 {
-	GLuint bufferHandle;
 	GLuint unitByteSize;
+	GLuint bufferHandle;
 
 	GLbitfield bufferFlags;
 
