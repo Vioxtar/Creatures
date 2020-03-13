@@ -8,8 +8,11 @@ By leveraging GPU acceleration, the simulation can support tens of thousands of 
 
 
 # Media
-![Creatures Image 1](https://cdn.discordapp.com/attachments/663525313287946251/688060700576186386/unknown.png)
 
-![Creatures Image 1](https://cdn.discordapp.com/attachments/663525313287946251/688061116110077962/unknown.png)
+![Creatures Image 1](https://gfycat.com/goldenhilariousarachnid.gif)
 
-![Creatures Image 1](https://cdn.discordapp.com/attachments/663525313287946251/688060970400350216/unknown.png)
+![Creatures Image 2](https://cdn.discordapp.com/attachments/663525313287946251/688060700576186386/unknown.png)
+
+![Creatures Image 3](https://cdn.discordapp.com/attachments/663525313287946251/688061116110077962/unknown.png)
+
+![Creatures Image 4](https://cdn.discordapp.com/attachments/663525313287946251/688060970400350216/unknown.png)
