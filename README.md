@@ -4,7 +4,7 @@ Creatures (work in progress) is a fun, educational project that features an arti
 Through selection of the fittest, thousands of creatures evolve to become better reproductive beings, and as a byproduct - develop artificial intelligence to assist them in this task.
 The selection of the fittest is natural; there is no predefined or hard-coded fitness function involved.
 
-By leveraging GPU acceleration, the simulation can support tens of thousands of creatures simulatenously - accelerating the probablistic mutation driven evolution process. Additionally, the simulation is physics based, and features a simplified model of fluid dynamics, which dictates the nature of creature-to-creature interactions.
+By leveraging GPU acceleration, the simulation can support tens of thousands of creatures simulatenously - accelerating the process of evolution (which relies on probablistic mutations). Additionally, the simulation is physics based, and features a simplified model of fluid dynamics, which dictates the nature of creature-to-creature interactions.
 
 
 # Media
