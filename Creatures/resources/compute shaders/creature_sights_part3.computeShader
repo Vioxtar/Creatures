@@ -70,8 +70,7 @@ void main()
 	float pupilSkinHueDifference = 0.0;
 	float pupilSkinValue = 0.0;
 	float pupilSkinSaturation = 0.0;
-	float pupilSkinPatternX = 0.0;
-	float pupilSkinPatternY = 0.0;
+	float pupilSkinPatternDifference = 0.0;
 	float pupilLife = 0.0;
 	float pupilEnergy = 0.0;
 	float pupilRadius = 0.0;
@@ -86,6 +85,7 @@ void main()
 	{
 		// Get some stuff about ourselves
 		float aHue = SkinHues[gid];
+		vec2 aSkinPattern = SkinPatterns[gid];
 
 		// Get some data about our seen creature
 		float bHue = SkinHues[bGID];
@@ -99,8 +99,10 @@ void main()
 
 		pupilSkinValue = SkinValues[bGID];
 		pupilSkinSaturation = SkinSaturations[bGID];
-		pupilSkinPatternX = bSkinPattern.x;
-		pupilSkinPatternY = bSkinPattern.y;
+
+		pupilSkinPatternDifference = abs(aSkinPattern.x - bSkinPattern.x) + abs(aSkinPattern.y - bSkinPattern.y);
+		pupilSkinPatternDifference *= 0.5; // Map from 2.0 to 1.0
+
 		pupilLife = Lives[bGID];
 		pupilEnergy = Energies[bGID];
 		pupilRadius = Radii[bGID];
@@ -114,10 +116,9 @@ void main()
 	EyePupilSights[pupilSightStartIndex + 5] =	pupilSkinHueDifference;
 	EyePupilSights[pupilSightStartIndex + 6] =	pupilSkinValue;
 	EyePupilSights[pupilSightStartIndex + 7] =	pupilSkinSaturation;
-	EyePupilSights[pupilSightStartIndex + 8] = pupilSkinPatternX;
-	EyePupilSights[pupilSightStartIndex + 9] = pupilSkinPatternY;
-	EyePupilSights[pupilSightStartIndex + 10] =	pupilLife;
-	EyePupilSights[pupilSightStartIndex + 11] =	pupilEnergy;
-	EyePupilSights[pupilSightStartIndex + 12] = pupilRadius;
+	EyePupilSights[pupilSightStartIndex + 8] = pupilSkinPatternDifference;
+	EyePupilSights[pupilSightStartIndex + 9] =	pupilLife;
+	EyePupilSights[pupilSightStartIndex + 10] =	pupilEnergy;
+	EyePupilSights[pupilSightStartIndex + 11] = pupilRadius;
 
 }

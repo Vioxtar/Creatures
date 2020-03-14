@@ -23,21 +23,22 @@ Project minimum requiremenets:
 	BRAINS PUSH PULL:
 	
 	Push:
-		Pupil sights
-		Cone sights
-		Energy
-		Life
-		Meat
-		Body pressure (?)
-		velocity (what determines 1 / max value? probably set a max velocity value!)
+		Pupil sights 1
+		Cone sights 1
+		Energy 1
+		Life 1
+		Meat 1
+		Body pressure (?) 1
+		velocity (what determines 1 / max value? probably set a max velocity value!) 3
 			forward node
 			backward node
 			right node
 			left node
-		angle velocity (what determines 1 / max value? probably set a max angular velocity value!)
+		angle velocity (what determines 1 / max value? probably set a max angular velocity value!) 1
 			clockwise node
 			anti clockwise node
-		temporals
+		nodes 1
+		structures 1
 
 	Pull:
 		Forward
@@ -52,8 +53,10 @@ Project minimum requiremenets:
 		Hardness
 		Radius
 		Skin value
-
-
+		Hornyness
+		eye muscles
+		cone radii
+		pupil cone coverage
 
 
 
@@ -177,6 +180,7 @@ Project minimum requiremenets:
 
 
 	NON-OBVIOUS-TODOS:
+	add body pressures, and pass that as a brain input
 	spawn firsgens in the corners
 	A potentially massive optimization to forward propagations: Use X for creature ID, and use Y for a sequence of nodes in each level, then perform NumOfLevelsToForwardPropagate dispatches!
 			Creatures that no longer have things to forward propagate just return immediately!

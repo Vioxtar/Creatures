@@ -92,7 +92,7 @@ extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 20;
 // Creature eye settings
 extern const uint16_t CREATURE_EYE_NUM_OF_CONES = 16;
 extern const uint16_t CREATURE_EYE_NUM_OF_VALUES_IN_SINGLE_CONE = 1;
-extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 13;
+extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 12;
 
 
 //////////////////////////////

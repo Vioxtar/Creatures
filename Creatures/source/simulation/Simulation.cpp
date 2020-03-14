@@ -85,7 +85,7 @@ void AddFirstGenerationCreature()
 	data.pos = vec2(0, 0);
 	data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
 	data.angle = random() * 2 * M_PI;
-	data.angleVel = (random() - 0.5) * 0.1;
+	data.angleVel = 0.1;
 
 	data.hardness = random() * random() * random() * random() * random() * random();
 	data.rad = CREATURE_MAX_RADIUS.value;
@@ -593,6 +593,13 @@ void Simulation_Programs_Sequence()
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformUInteger(programID, "uMaxNumOfStructureIndices", CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
 	SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_NODES);
+	SetUniformFloat(programID, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
+	SetUniformFloat(programID, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
+	SetUniformFloat(programID, "uCreatureMaxMeat", CREATURE_MAX_MEAT.value);
+	SetUniformFloat(programID, "uCreatureMaxRadius", CREATURE_MAX_RADIUS.value);
+	SetUniformFloat(programID, "uCreatureMinRadius", CREATURE_MIN_RADIUS.value);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfPupilValues", CREATURE_EYE_NUM_OF_PUPIL_VALUES);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfConesValues", CREATURE_EYE_NUM_OF_CONES_VALUES);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Lives.bufferHandle);
