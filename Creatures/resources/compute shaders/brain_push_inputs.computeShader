@@ -15,11 +15,45 @@ layout (std430, binding = 2) buffer CreatureLives
 	float Lives[];
 };
 
-layout (std430, binding = 3) buffer CreatureVelocities
+layout (std430, binding = 3) buffer CreatureEnergies
+{
+	float Energies[];
+};
+
+layout (std430, binding = 4) buffer CreatureMeats
+{
+	float Meats[];
+};
+
+layout (std430, binding = 5) buffer CreatureForwardDirections
+{
+	vec2 ForwardDirections[];
+};
+
+layout (std430, binding = 6) buffer CreatureRightDirections
+{
+	vec2 RightDirections[];
+};
+
+layout (std430, binding = 7) buffer CreatureVelocities
 {
 	vec2 Velocities[];
 };
 
+layout (std430, binding = 8) buffer CreatureAngleVelocities
+{
+	float AngleVelocities[];
+};
+
+layout (std430, binding = 9) buffer CreatureEyePupilSights
+{
+	float EyePupilSights[];
+};
+
+layout (std430, binding = 10) buffer CreatureEyeConeSights
+{
+	float EyeConeSights[];
+};
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 

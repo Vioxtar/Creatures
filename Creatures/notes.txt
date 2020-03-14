@@ -8,7 +8,60 @@ Project minimum requiremenets:
 
 
 
-	MOTHERFUCKING EYE POSITIONS< PUPIL SIGHT AND CONE SIGHT (?) buffers fucking us UP when copying in the swap-remove on vanished creature removal (only happens after we track a creature!??!?!)
+	Roadmap:
+	Brain push pull
+	Reproduction
+	Tweaks for a better evolutionary model
+	Brain forward propagate optimization
+
+
+
+
+
+
+
+	BRAINS PUSH PULL:
+	
+	Push:
+		Pupil sights
+		Cone sights
+		Energy
+		Life
+		Meat
+		Body pressure (?)
+		velocity (what determines 1 / max value? probably set a max velocity value!)
+			forward node
+			backward node
+			right node
+			left node
+		angle velocity (what determines 1 / max value? probably set a max angular velocity value!)
+			clockwise node
+			anti clockwise node
+		temporals
+
+	Pull:
+		Forward
+		Backward
+		Right
+		Left
+		Clockwise
+		AntiClockwise
+		Spike
+		Shield
+		Feeder
+		Hardness
+		Radius
+		Skin value
+
+
+
+
+
+
+
+
+
+
 
 
 

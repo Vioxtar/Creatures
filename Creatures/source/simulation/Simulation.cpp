@@ -85,7 +85,7 @@ void AddFirstGenerationCreature()
 	data.pos = vec2(0, 0);
 	data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
 	data.angle = random() * 2 * M_PI;
-	data.angleVel = (random() - 0.5) * 0.02;
+	data.angleVel = (random() - 0.5) * 0.1;
 
 	data.hardness = random() * random() * random() * random() * random() * random();
 	data.rad = CREATURE_MAX_RADIUS.value;
@@ -95,7 +95,7 @@ void AddFirstGenerationCreature()
 	data.meat = SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT.value;
 
 	data.forwardThrust = random() * random() * 0.0015;
-	data.turnThrust = (random() - 0.5) * 0.0015;
+	data.turnThrust = (random() - 0.5) * 0.00;
 
 	float spikeState = random();
 	float feederState = random();
@@ -596,7 +596,14 @@ void Simulation_Programs_Sequence()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Lives.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Velocities.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Energies.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Meats.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_RightDirections.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Velocities.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_AngleVelocities.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_EyePupilSights.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_EyeConeSights.bufferHandle);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
