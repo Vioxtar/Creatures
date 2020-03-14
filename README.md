@@ -1,6 +1,6 @@
 # Creatures
 
-Creatures (work in progress) is a fun, educational project that features an artistic exploration of artificial life, developed with OpenGL and C++.
+Creatures (work in progress) is a fun, educational project that offers an artistic exploration of artificial life, developed with OpenGL and C++.
 Through selection of the fittest, thousands of creatures evolve to become better reproductive beings, and as a byproduct - develop artificial intelligence.
 The selection of the fittest is natural; there is no predefined or hard-coded fitness function involved.
 
