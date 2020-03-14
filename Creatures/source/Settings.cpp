@@ -31,6 +31,8 @@ extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_WIDTH = 200;
 // Technical settings
 extern const unsigned int TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 25000;
 extern const unsigned int TECH_CREATURES_SUPPORTED_ON_INIT_BUFFER_PREALLOCATION = 200000;
+extern const unsigned int TECH_CREATURE_DATA_PERSISTENT_MAP_BUFFER_BYTE_CAPACITY_BIAS = 10000;
+
 
 extern const GLenum TECH_SSBO_USAGE = GL_STATIC_DRAW;
 
@@ -104,8 +106,8 @@ extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 1000, 1, 2000 };
 
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.99, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.99985, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.9985, 0.0, 1.0 };
 
 // Simulation creature settings
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 0, 0, 1000000 };

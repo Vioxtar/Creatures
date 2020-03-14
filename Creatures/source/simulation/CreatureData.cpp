@@ -302,6 +302,80 @@ void InitAllSSBOs()
 }
 
 
+//////////////////////////////////////
+// -- CREATURE ATTRIBUTE GETTERS -- //
+//////////////////////////////////////
+
+GLuint persistentMap_BufferHandle;
+void* persistentMap_BufferPtr;
+GLuint persistentMap_MaxBytesSupported = 0;
+bool persistentMap_Initialized = false;
+
+void InitOrExpandPersistentMapBufferIfNeeded(GLuint numOfBytesToSupport)
+{
+	// Do we already support the needed amount of bytes?
+	if (persistentMap_MaxBytesSupported >= numOfBytesToSupport) return;
+
+	GLuint numOfBytesToAllocate = numOfBytesToSupport + TECH_CREATURE_DATA_PERSISTENT_MAP_BUFFER_BYTE_CAPACITY_BIAS;
+
+	// Does the buffer already exist?
+	if (persistentMap_Initialized)
+	{
+		// Unmap the existing buffer
+		glUnmapNamedBuffer(persistentMap_BufferHandle);
+
+		// Delete the existing buffer
+		GLuint buffersToDelete = { persistentMap_BufferHandle };
+		glDeleteBuffers(1, &buffersToDelete);
+	}
+
+	// Continue as usual...
+
+	// Create the new buffer
+	glCreateBuffers(1, &persistentMap_BufferHandle);
+	
+	// Initialize it with empty data
+	glNamedBufferStorage(persistentMap_BufferHandle, numOfBytesToAllocate, NULL, GL_MAP_PERSISTENT_BIT | GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT);
+
+	// Persistently map it
+	persistentMap_BufferPtr = glMapNamedBufferRange(persistentMap_BufferHandle, 0, numOfBytesToAllocate, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
+
+	// Finalize
+	persistentMap_MaxBytesSupported = numOfBytesToAllocate;
+	persistentMap_Initialized = true;
+}
+
+void GetCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, CreatureUniqueID creatureID, void* data)
+{
+	GLuint amountOfBytesToCopy = creatureSSBOInfo.unitByteSize;
+	
+	// Expand persistent buffer if needed
+	InitOrExpandPersistentMapBufferIfNeeded(amountOfBytesToCopy);
+
+	GLuint ssboIndex = CreatureData_CreatureUniqueIDToSSBOIndex(creatureID);
+
+	// Copy to persistent buffer
+	glCopyNamedBufferSubData(creatureSSBOInfo.bufferHandle, persistentMap_BufferHandle, amountOfBytesToCopy * ssboIndex, 0, amountOfBytesToCopy);
+
+	// Write from persistent buffer
+	glGetNamedBufferSubData(persistentMap_BufferHandle, 0, amountOfBytesToCopy, data);
+}
+
+void GetCreatureAttributes(CreaturesSSBOInfo creatureSSBOInfo, void* data)
+{
+	GLuint amountOfBytesToCopy = creatureSSBOInfo.unitByteSize * creature_count;
+	
+	// Expand persistent buffer if needed
+	InitOrExpandPersistentMapBufferIfNeeded(amountOfBytesToCopy);
+
+	// Copy to persistent buffer
+	glCopyNamedBufferSubData(creatureSSBOInfo.bufferHandle, persistentMap_BufferHandle, 0, 0, amountOfBytesToCopy);
+
+	// Write from persistent buffer
+	glGetNamedBufferSubData(persistentMap_BufferHandle, 0, amountOfBytesToCopy, data);
+}
+
+
 ///////////////////////////////////////////////
 // -- CREATURE MANIPULATION COMFORT TOOLS -- //
 ///////////////////////////////////////////////
@@ -311,7 +385,6 @@ void SetCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, GLuint creatureInd
 	GLuint writeOffset = creatureSSBOInfo.unitByteSize * creatureIndex;
 	glNamedBufferSubData(creatureSSBOInfo.bufferHandle, writeOffset, creatureSSBOInfo.unitByteSize, data);
 }
-
 
 CreatureUniqueID CreatureData_AddCreature(CreatureData newCreatureData)
 {

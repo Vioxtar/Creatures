@@ -65,8 +65,11 @@ struct CreatureData
 };
 
 
-typedef unsigned long long int CreatureUniqueID;
+////////////////
+// -- MISC -- //
+////////////////
 
+typedef unsigned long long int CreatureUniqueID;
 
 CreatureUniqueID CreatureData_AddCreature(CreatureData newCreatureData);
 void CreatureData_RemoveCreatureByUniqueID(CreatureUniqueID creatureID);
@@ -101,6 +104,9 @@ struct MappedCreaturesSSBOInfo
 	GLbitfield mappingFlags;
 	void* mapPtr;
 };
+
+void GetCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, CreatureUniqueID creatureID, void* data);
+void GetCreatureAttributes(CreaturesSSBOInfo creatureSSBOInfo, void* data);
 
 // Brains
 extern CreaturesSSBOInfo creature_BrainsLinks;
