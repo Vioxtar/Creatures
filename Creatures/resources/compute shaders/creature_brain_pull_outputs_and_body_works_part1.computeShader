@@ -1,0 +1,159 @@
+#version 460 core
+
+layout (std430, binding = 0) buffer CreatureBrainsStructures
+{
+	uint BrainsStructures[];
+};
+
+layout (std430, binding = 1) buffer CreatureBrainsNodes
+{
+	float BrainsNodes[];
+};
+
+layout (std430, binding = 2) buffer CreatureLives
+{
+	float Lives[];
+};
+
+layout (std430, binding = 3) buffer CreatureEnergies
+{
+	float Energies[];
+};
+
+layout (std430, binding = 4) buffer CreatureForwardDirections
+{
+	vec2 ForwardDirections[];
+};
+
+layout (std430, binding = 5) buffer CreatureRightDirections
+{
+	vec2 RightDirections[];
+};
+
+layout (std430, binding = 6) buffer CreatureVelocities
+{
+	vec2 Velocities[];
+};
+
+layout (std430, binding = 7) buffer CreatureAngleVelocities
+{
+	float AngleVelocities[];
+};
+
+layout (std430, binding = 8) buffer CreatureEyeMuscles
+{
+	vec2 EyeMuscles[];
+};
+
+layout (std430, binding = 9) buffer CreatureEyeConeRadii
+{
+	float EyeConeRadii[];
+};
+
+layout (std430, binding = 10) buffer CreatureEyePupilConeCoverageFractions
+{
+	float EyePupilConeCoverageFractions[];
+};
+
+layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
+
+
+uniform uint uCreatureCount;
+
+uniform uint uMaxNumOfStructureIndices;
+uniform uint uMaxNumOfNodesInBrain;
+
+uniform float uCreatureMaxEnergy;
+uniform float uCreatureEnergyPercentageBasedMovementMultiplierExponent;
+
+uniform float uCreatureStrafeMovementEffectivness;
+uniform float uCreatureForwardMovementEffectiveness;
+uniform float uCreatureBackwardMovementEffectivness;
+uniform float uCreatureTurnMovementEffectiveness;
+
+uniform float uCreatureForwardMovementEnergyCost;
+uniform float uCreatureBackwardMovementEnergyCost;
+uniform float uCreatureStrafeMovementEnergyCost;
+uniform float uCreatureTurnMovementEnergyCost;
+
+uniform float uCreatureEyeMaxConeRadius;
+
+void main()
+{
+	uint gid = gl_GlobalInvocationID.x;
+	if (gid >= uCreatureCount)
+	{
+		return;
+	}
+
+	if (Lives[gid] <= 0.0)
+	{
+		return;
+	}
+	
+	// Get some stuff about our brain
+	uint brainStructureStartIndex = gid * uMaxNumOfStructureIndices;
+	uint numOfLevels = BrainsStructures[brainStructureStartIndex];
+	uint outputLevelIndex = brainStructureStartIndex + numOfLevels;
+
+	// Find the number of outputs and the starting output index to start reading from
+	uint numOfOutputs = BrainsStructures[outputLevelIndex];
+	uint firstOutputIndex = (gid + 1) * uMaxNumOfNodesInBrain - numOfOutputs;
+
+	// Acquire brain outputs
+	float movementForward = max(0.0, min(BrainsNodes[firstOutputIndex + 0], 1.0));		
+	float movementBackward = max(0.0, min(BrainsNodes[firstOutputIndex + 1], 1.0));
+	float movementStrafeRight = max(0.0, min(BrainsNodes[firstOutputIndex + 2], 1.0));
+	float movementStrafeLeft = max(0.0, min(BrainsNodes[firstOutputIndex + 3], 1.0));
+	float movementTurnClockwise = max(0.0, min(BrainsNodes[firstOutputIndex + 4], 1.0));
+	float movementTurnAntiClockwise = max(0.0, min(BrainsNodes[firstOutputIndex + 5], 1.0));
+	float eyeMuscleRight = max(0.0, min(BrainsNodes[firstOutputIndex + 6], 1.0));
+	float eyeMuscleLeft = max(0.0, min(BrainsNodes[firstOutputIndex + 7], 1.0));
+	float eyeMuscleUp = max(0.0, min(BrainsNodes[firstOutputIndex + 8], 1.0));
+	float eyeMuscleDown = max(0.0, min(BrainsNodes[firstOutputIndex + 9], 1.0));
+	float eyeConeRadiusPercentage = max(0.0, min(BrainsNodes[firstOutputIndex + 10], 1.0));
+	float eyePupilConeCoverageFraction = max(0.0, min(BrainsNodes[firstOutputIndex + 11], 1.0));
+
+
+
+	// Obtain energy and calculate our movement multiplier - used to make creatures on low energies move slower
+	float energy = Energies[gid];
+	float energyPercentage = energy / uCreatureMaxEnergy;
+	float energyPercentageBasedMovementMultiplier = pow(energyPercentage, uCreatureEnergyPercentageBasedMovementMultiplierExponent);
+
+	// Scale our movement actuations per our energy
+	movementForward *= energyPercentageBasedMovementMultiplier;
+	movementBackward *= energyPercentageBasedMovementMultiplier;
+	movementStrafeRight *= energyPercentageBasedMovementMultiplier;
+	movementStrafeLeft *= energyPercentageBasedMovementMultiplier;
+	movementTurnClockwise *= energyPercentageBasedMovementMultiplier;
+	movementTurnAntiClockwise *= energyPercentageBasedMovementMultiplier;
+
+	// Forward/backward right/left movement actuation
+	float movementForwardBackward = 
+		movementForward * uCreatureForwardMovementEffectiveness -
+		movementBackward * uCreatureBackwardMovementEffectivness;
+	float movementRightLeft = (movementStrafeRight - movementStrafeLeft) * uCreatureStrafeMovementEffectivness;
+	vec2 eventualMovementVelocityAdd = ForwardDirections[gid] * movementForwardBackward + RightDirections[gid] * movementRightLeft;
+	//Velocities[gid] += eventualMovementVelocityAdd;
+
+	// Turning movement actuation
+	float movementTurn = (movementTurnClockwise - movementTurnAntiClockwise) * uCreatureTurnMovementEffectiveness;
+	AngleVelocities[gid] += movementTurn;
+
+	
+	// Eye control (outputs are written directly into eye control values instead of velocity values)
+	EyeMuscles[gid] = vec2(eyeMuscleRight - eyeMuscleLeft, eyeMuscleUp - eyeMuscleDown);
+	EyeConeRadii[gid] = eyeConeRadiusPercentage * uCreatureEyeMaxConeRadius;
+	EyePupilConeCoverageFractions[gid] = eyePupilConeCoverageFraction;
+
+
+	// Energy deductions
+	float energyToDeduct =
+		movementForward * uCreatureForwardMovementEnergyCost
+		+ movementBackward * uCreatureBackwardMovementEnergyCost
+		+ (movementStrafeRight + movementStrafeLeft) * uCreatureStrafeMovementEnergyCost
+		+ (movementTurnClockwise + movementTurnAntiClockwise) * uCreatureTurnMovementEnergyCost;
+
+	Energies[gid] = max(energy - energyToDeduct, 0);
+}

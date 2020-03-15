@@ -1,81 +1,66 @@
 #version 460 core
 
-layout (std430, binding = 0) buffer CreatureVelocities
+layout (std430, binding = 0) buffer CreatureBrainsStructures
 {
-	vec2 Velocities[];
+	uint BrainsStructures[];
 };
 
-layout (std430, binding = 1) buffer CreatureAngleVelocities
+layout (std430, binding = 1) buffer CreatureBrainsNodes
 {
-	float AngleVelocities[];
+	float BrainsNodes[];
 };
 
-layout (std430, binding = 2) buffer CreatureForwardDirections
-{
-	vec2 ForwardDirections[];
-};
-
-layout (std430, binding = 3) buffer CreatureForwardThrusts
-{
-	float ForwardThrusts[];
-};
-
-layout (std430, binding = 4) buffer CreatureTurnThrusts
-{
-	float TurnThrusts[];
-};
-
-layout (std430, binding = 5) buffer CreatureLives
+layout (std430, binding = 2) buffer CreatureLives
 {
 	float Lives[];
 };
 
-layout (std430, binding = 6) buffer CreatureEnergies
+layout (std430, binding = 3) buffer CreatureEnergies
 {
 	float Energies[];
 };
 
-layout (std430, binding = 7) buffer CreatureMeats
+layout (std430, binding = 4) buffer CreatureMeats
 {
 	float Meats[];
 };
 
-layout (std430, binding = 8) buffer CreatureRadii
+layout (std430, binding = 5) buffer CreatureRadii
 {
 	float Radii[];
 };
 
-layout (std430, binding = 9) buffer CreatureHardnesses
+layout (std430, binding = 6) buffer CreatureHardnesses
 {
 	float Hardnesses[];
 };
 
-layout (std430, binding = 10) buffer CreatureSpikes
+layout (std430, binding = 7) buffer CreatureSpikes
 {
 	vec4 Spikes[];
 };
 
-layout (std430, binding = 11) buffer CreatureFeeders
-{
-	vec4 Feeders[];
-};
-
-layout (std430, binding = 12) buffer CreatureShields
+layout (std430, binding = 8) buffer CreatureShields
 {
 	vec4 Shields[];
 };
 
-layout (std430, binding = 13) buffer CreatureSkinvValues
+layout (std430, binding = 9) buffer CreatureFeeders
+{
+	vec4 Feeders[];
+};
+
+layout (std430, binding = 10) buffer CreatureSkinvValues
 {
 	float SkinValues[];
 };
 
-layout (std430, binding = 14) buffer CreatureSkinSaturations
+layout (std430, binding = 11) buffer CreatureSkinSaturations
 {
 	float SkinSaturations[];
 };
 
-layout (std430, binding = 15) buffer CreatureListVanishes
+layout (std430, binding = 12) buffer CreatureVanishes
 {
 	uint Vanishes[];
 };
@@ -84,6 +69,9 @@ layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 
 uniform uint uCreatureCount;
+
+uniform uint uMaxNumOfStructureIndices;
+uniform uint uMaxNumOfNodesInBrain;
 
 uniform float uCreatureMaxEnergy;
 uniform float uCreatureMaxMeat;
@@ -99,8 +87,21 @@ uniform float uCreatureRadiusInterpolationRate;
 uniform float uCreatureRadiusPercentageMeatWeight;
 uniform float uCreatureRadiusPercentageMuscleWeight;
 
+uniform float uCreatureMaxHardness;
+uniform float uCreatureMinHardness;
+uniform float uCreatureHardnessInterpolationRate;
+
+uniform float uCreatureDeviceSpikeEnergyCost;
+uniform float uCreatureDeviceShieldEnergyCost;
+uniform float uCreatureDeviceFeederEnergyCost;
+
+uniform float uCreatureDeviceStateInterpolationRate;
+
+uniform float uCreatureMaxSkinValue;
+uniform float uCreatureMinSkinValue;
+uniform float uCreatureSkinValueInterpolationRate;
+
 uniform float uCreatureLifeDrainOnNoEnergy;
-uniform float uCreatureEnergyDrainConstant;
 
 uniform float uCreatureDeathWithMeatShrinkRate;
 uniform float uCreatureDeathWithoutMeatShrinkRate;
@@ -113,6 +114,8 @@ uniform float uCreatureDeathDeviceZeroficationInterpolationRate;
 uniform float uCreatureDeathSkinValueTarget;
 uniform float uCreatureDeathSkinValueInterpolationRate;
 
+uniform float uCreatureEnergyPercentageBasedDeviceStateMultiplierExponent;
+
 void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
@@ -124,14 +127,14 @@ void main()
 	float life = Lives[gid];
 	
 
-	// Saturation reflects our life
+	// Saturation reflects our life, dead or alive
 	float lifePercentage = life / uCreatureMaxLife;
 	SkinSaturations[gid] = lifePercentage;
 
 
 	float energy = Energies[gid];
 
-	// Energy to life, normally we'd place this under the 'alive' statement, but regen can update life
+	// Energy to life, normally we'd place this under the 'alive' statement, but energy can regenerate life
 	if (life < uCreatureMaxLife)
 	{
 		float maxLifeDiff = uCreatureMaxLife - life;
@@ -172,41 +175,72 @@ void main()
 			life -= uCreatureLifeDrainOnNoEnergy;
 		}
 
-		// Constant energy drain
-		energy -= uCreatureEnergyDrainConstant;
+
+		// Get some stuff about our brain
+		uint brainStructureStartIndex = gid * uMaxNumOfStructureIndices;
+		uint numOfLevels = BrainsStructures[brainStructureStartIndex];
+		uint outputLevelIndex = brainStructureStartIndex + numOfLevels;
+
+		// Find the number of outputs and the starting output index to start reading from
+		uint numOfOutputs = BrainsStructures[outputLevelIndex];
+		uint firstOutputIndex = (gid + 1) * uMaxNumOfNodesInBrain - numOfOutputs;
+
+		// Acquire brain outputs
+		float radiusMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 12], 1.0));
+		float hardnessMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 13], 1.0));
+		float deviceSpikeStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 14], 1.0));
+		float deviceShieldStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 15], 1.0));
+		float deviceFeederStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 16], 1.0));
+		float skinValueMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 17], 1.0));
 
 
-
-		// Radius control
+		// Radius
 		float radius = Radii[gid];
-
 		float meatPercentage = meat / uCreatureMaxMeat;
-		float radiusMusclePercentage = 1.0; // @TODO
 		float targetRadiusPercentage =
 			uCreatureRadiusPercentageMeatWeight * meatPercentage +
-			uCreatureRadiusPercentageMuscleWeight * radiusMusclePercentage;
-
+			uCreatureRadiusPercentageMuscleWeight * radiusMuscle;
 		float targetRadius = uCreatureMinRadius + (uCreatureMaxRadius - uCreatureMinRadius) * targetRadiusPercentage;
 		float newRadius = radius * (1.0 - uCreatureRadiusInterpolationRate) + uCreatureRadiusInterpolationRate * targetRadius;
 		Radii[gid] = newRadius;
 
 
+		// Hardness
+		float hardness = Hardnesses[gid];
+		float targetHardness = uCreatureMinHardness + (uCreatureMaxHardness - uCreatureMinHardness) * hardnessMuscle;
+		float newHardness = hardness * (1.0 - uCreatureHardnessInterpolationRate) + uCreatureHardnessInterpolationRate * targetHardness;
+		Hardnesses[gid] = newHardness;
 
-		// Movement
 
-		float turnThrust = TurnThrusts[gid];
-		vec2 forwardDir = ForwardDirections[gid];
-		float forwardThrust = ForwardThrusts[gid];
+		// Devices
+		vec4 spike = Spikes[gid];
+		vec4 feeder = Feeders[gid];
+		vec4 shield = Shields[gid];
+		spike.z = spike.z * (1.0 - uCreatureDeviceStateInterpolationRate) + uCreatureDeviceStateInterpolationRate * deviceSpikeStateMuscle;
+		feeder.z = feeder.z * (1.0 - uCreatureDeviceStateInterpolationRate) + uCreatureDeviceStateInterpolationRate * deviceFeederStateMuscle;
+		shield.z = shield.z * (1.0 - uCreatureDeviceStateInterpolationRate) + uCreatureDeviceStateInterpolationRate * deviceShieldStateMuscle;
+		Spikes[gid] = spike;
+		Feeders[gid] = feeder;
+		Shields[gid] = shield;
 
-		AngleVelocities[gid] += turnThrust;
-		Velocities[gid] += forwardDir * forwardThrust;
+		float energyToDeduct =
+			deviceSpikeStateMuscle * uCreatureDeviceSpikeEnergyCost
+			+ deviceShieldStateMuscle * uCreatureDeviceShieldEnergyCost
+			+ deviceFeederStateMuscle * uCreatureDeviceFeederEnergyCost;
 
+		energy -= energyToDeduct;
+
+
+		// Skin values
+		float skinValue = SkinValues[gid];
+		float targetSkinValue = uCreatureMinSkinValue + (uCreatureMaxSkinValue - uCreatureMinSkinValue) * skinValueMuscle;
+		SkinValues[gid] = skinValue * (1.0 - uCreatureSkinValueInterpolationRate) + uCreatureSkinValueInterpolationRate * targetSkinValue;
 
 
 		// Write back energy/life/meat values, make sure they're clamped, even though they should already be clamped
-		Energies[gid] = max(0, min(energy, uCreatureMaxEnergy));
-		Lives[gid] = max(0, min(life, uCreatureMaxLife));
-		Meats[gid] = max(0, min(meat, uCreatureMaxMeat));
+		Energies[gid] = max(0.0, min(energy, uCreatureMaxEnergy));
+		Lives[gid] = max(0.0, min(life, uCreatureMaxLife));
+		Meats[gid] = max(0.0, min(meat, uCreatureMaxMeat));
 	}
 	else
 	{

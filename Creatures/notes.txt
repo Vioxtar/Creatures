@@ -59,6 +59,52 @@ Project minimum requiremenets:
 		pupil cone coverage
 
 
+	REMOVE FORWARD/TURN THRUSTS AND INSTEAD USE AN 'ACTUATIONS' MODEL:
+	ACTUATIONS = {forth, back, right, left, clockwise, anticlockwise, spike, shield, feeder, hardness, radius, skin value, hornyness, eye right, eye left, eye up, eye down, eye cone radius, eye pupil coverage}
+	ACTUATIONS DONT NEED TO BE AT SOME BUFFER OF THEIR OWN, WE DIRECTLY USE THE BRAIN OUTPUTS! Yes! This means we also bind brain nodes to body works
+
+	So you do: creature_brain_pull_and_body_works_part1, creature_brain_pull_and_body_works_part2
+
+	PART 1 (focuses on actuations)
+	BrainStructures
+	BrainNodes
+	Lives
+	Energies
+	ForwardDirections
+	RightDirections
+	Velocities
+	AngleVelocities
+	EyeMuscles
+	EyeConeRadii
+	EyePupilCoverage
+	GeneralFloat (write energy cost)
+
+	PART 2 (focuses on body works)
+	BrainStructures
+	BrainNodes
+	Lives
+	Energies
+	Meats
+	Radii
+	Hardnesses
+	Spikes
+	Shields
+	Feeders
+	SkinValues
+	SkinSaturations
+	Vanishes
+	GeneralFloat (read and apply energy cost + our own)
+
+
+
+	eventualRightLeft = (right - left) * uCreatureStrafeMovementEffectiveness
+	eventualForthBack = forth * uCreatureForwardMovementEffectiveness + back * uCreatureBackwardMovementEffectiveness
+	eventualVelAdd = forwardDir * eventualForthBack + rightDir * eventualRightLeft
+	velocity += eventualVelAdd
+
+	energyRemoval = eventualForthBack >= 0 ? forth * uCreatureForwardMovementEnergyCost : back * uCreatureBackwardMovementEnergyCost
+	energyRemoval += abs(right - left) * uCreatureStrafeMovementEnergyCost
+
 
 
 

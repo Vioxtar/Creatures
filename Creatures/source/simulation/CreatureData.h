@@ -47,10 +47,6 @@ struct CreatureData
 	GLfloat life;
 	GLfloat energy;
 	GLfloat meat;
-
-	// Movement
-	GLfloat forwardThrust;
-	GLfloat turnThrust;
 	
 	// Eyes
 	vec2 eyeMuscles;
@@ -130,10 +126,6 @@ extern CreaturesSSBOInfo creature_Angles;
 extern CreaturesSSBOInfo creature_AngleVelocities;
 extern CreaturesSSBOInfo creature_ForwardDirections;
 extern CreaturesSSBOInfo creature_RightDirections;
-
-// Movement
-extern CreaturesSSBOInfo creature_ForwardThrusts;
-extern CreaturesSSBOInfo creature_TurnThrusts;
 
 // Body parameters
 extern CreaturesSSBOInfo creature_Radii;

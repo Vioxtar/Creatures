@@ -42,7 +42,7 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainBiasesExponents->reserve(CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES; i++)
 	{
-		float bias = random();
+		float bias = (random() - 0.5) * 2.0;
 		float activationExponent = random() * 10;
 		brainBiasesExponents->emplace_back(vec2(bias, activationExponent));
 	}
@@ -94,9 +94,6 @@ void AddFirstGenerationCreature()
 	data.energy = CREATURE_MAX_ENERGY.value;
 	data.meat = SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT.value;
 
-	data.forwardThrust = random() * random() * 0.0015;
-	data.turnThrust = (random() - 0.5) * 0.00;
-
 	float spikeState = random();
 	float feederState = random();
 	float shieldState = random();
@@ -147,9 +144,8 @@ ProgramInfo program_CreatureSightsPart2{ 0, 0, TECH_CREATURE_SIGHTS_PART2_WORKGR
 ProgramInfo program_CreatureSightsPart3{ 0, 0, TECH_CREATURE_SIGHTS_PART3_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainPushInputs{ 0, 0, TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainForwardPropagate{ 0, 0, TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_BrainPullOutputs{ 0, 0, TECH_BRAIN_PULL_OUTPUTS_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureBodyWorksPart1{ 0, 0, TECH_CREATURE_BODY_WORKS_PART1_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureBodyWorksPart2{ 0, 0, TECH_CREATURE_BODY_WORKS_PART2_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureBrainPullOutputsAndBodyWorksPart1{ 0, 0, TECH_CREATURE_BRAIN_PULL_OUTPUTS_AND_BODY_WORKS_PART1_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureBrainPullOutputsAndBodyWorksPart2{ 0, 0, TECH_CREATURE_BRAIN_PULL_OUTPUTS_AND_BODY_WORKS_PART2_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_FramePreLogic{ 0, 0, TECH_FRAME_PRE_LOGIC_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_FramePostLogic{ 0, 0, TECH_FRAME_POST_LOGIC_WORKGROUP_LOCAL_SIZE };
 
@@ -183,8 +179,8 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureSightsPart3);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPushInputs);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainForwardPropagate);
-	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPullOutputs);
-	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureBodyWorksPart1);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureBrainPullOutputsAndBodyWorksPart1);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureBrainPullOutputsAndBodyWorksPart2);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_FramePreLogic);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_FramePostLogic);
 
@@ -364,16 +360,16 @@ void InitLogicPrograms()
 	program_FramePostLogic.program = CreateLinkedShaderProgram(1, framePostLogicShaderTypes, framePostLogicShaderPaths, &replacers);
 	replacers.clear();
 
-	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureBodyWorksPart1.workGroupLocalSize)));
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureBrainPullOutputsAndBodyWorksPart1.workGroupLocalSize)));
 	GLenum creatureBodyWorksPart1ShaderTypes[] = { GL_COMPUTE_SHADER };
-	const char* creatureBodyWorksPart1ShaderPaths[] = { "resources/compute shaders/creature_body_works_part1.computeShader" };
-	program_CreatureBodyWorksPart1.program = CreateLinkedShaderProgram(1, creatureBodyWorksPart1ShaderTypes, creatureBodyWorksPart1ShaderPaths, &replacers);
+	const char* creatureBodyWorksPart1ShaderPaths[] = { "resources/compute shaders/creature_brain_pull_outputs_and_body_works_part1.computeShader" };
+	program_CreatureBrainPullOutputsAndBodyWorksPart1.program = CreateLinkedShaderProgram(1, creatureBodyWorksPart1ShaderTypes, creatureBodyWorksPart1ShaderPaths, &replacers);
 	replacers.clear();
 
-	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureBodyWorksPart2.workGroupLocalSize)));
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureBrainPullOutputsAndBodyWorksPart2.workGroupLocalSize)));
 	GLenum creatureBodyWorksPart2ShaderTypes[] = { GL_COMPUTE_SHADER };
-	const char* creatureBodyWorksPart2ShaderPaths[] = { "resources/compute shaders/creature_body_works_part2.computeShader" };
-	program_CreatureBodyWorksPart2.program = CreateLinkedShaderProgram(1, creatureBodyWorksPart2ShaderTypes, creatureBodyWorksPart2ShaderPaths, &replacers);
+	const char* creatureBodyWorksPart2ShaderPaths[] = { "resources/compute shaders/creature_brain_pull_outputs_and_body_works_part2.computeShader" };
+	program_CreatureBrainPullOutputsAndBodyWorksPart2.program = CreateLinkedShaderProgram(1, creatureBodyWorksPart2ShaderTypes, creatureBodyWorksPart2ShaderPaths, &replacers);
 	replacers.clear();
 
 	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_UpdateCreaturePlacements.workGroupLocalSize)));
@@ -448,13 +444,6 @@ void InitLogicPrograms()
 	const char* brainForwardPropagateShaderPaths[] = { "resources/compute shaders/brain_forward_propagate.computeShader" };
 	program_BrainForwardPropagate.program = CreateLinkedShaderProgram(1, brainForwardPropagateShaderTypes, brainForwardPropagateShaderPaths, &replacers);
 	replacers.clear();
-
-	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_BrainPullOutputs.workGroupLocalSize)));
-	GLenum brainPullOutputsShaderTypes[] = { GL_COMPUTE_SHADER };
-	const char* brainPullOutputsShaderPaths[] = { "resources/compute shaders/brain_pull_outputs.computeShader" };
-	program_BrainPullOutputs.program = CreateLinkedShaderProgram(1, brainPullOutputsShaderTypes, brainPullOutputsShaderPaths, &replacers);
-	replacers.clear();
-
 }
 
 void InitDrawingPrograms()
@@ -635,26 +624,48 @@ void Simulation_Programs_Sequence()
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
-	// Pull brain outputs
-	programID = program_BrainPullOutputs.program;
-	workGroupsNeeded = program_BrainPullOutputs.workGroupsNeeded;
+
+	// Creature pull brain outputs and body works part 1 (movement and eye control)
+	programID = program_CreatureBrainPullOutputsAndBodyWorksPart1.program;
+	workGroupsNeeded = program_CreatureBrainPullOutputsAndBodyWorksPart1.workGroupsNeeded;
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformUInteger(programID, "uMaxNumOfStructureIndices", CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
 	SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_NODES);
+	SetUniformFloat(programID, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
+	SetUniformFloat(programID, "uCreatureEnergyPercentageBasedMovementMultiplierExponent", CREATURE_ENERGY_PERCENTAGE_BASED_MOVEMENT_MULTIPLIER_EXPONENT.value);
+	SetUniformFloat(programID, "uCreatureStrafeMovementEffectivness", CREATURE_STRAFE_MOVEMENT_EFFECTIVENESS.value);
+	SetUniformFloat(programID, "uCreatureForwardMovementEffectiveness", CREATURE_FORWARD_MOVEMENT_EFFECTIVENESS.value);
+	SetUniformFloat(programID, "uCreatureBackwardMovementEffectivness", CREATURE_BACKWARD_MOVEMENT_EFFECTIVENESS.value);
+	SetUniformFloat(programID, "uCreatureTurnMovementEffectiveness", CREATURE_TURN_MOVEMENT_EFFECTIVENESS.value);
+	SetUniformFloat(programID, "uCreatureForwardMovementEnergyCost", CREATURE_FORWARD_MOVEMENT_ENERGY_COST.value);
+	SetUniformFloat(programID, "uCreatureBackwardMovementEnergyCost", CREATURE_BACKWARD_MOVEMENT_ENERGY_COST.value);
+	SetUniformFloat(programID, "uCreatureStrafeMovementEnergyCost", CREATURE_STRAFE_MOVEMENT_ENERGY_COST.value);
+	SetUniformFloat(programID, "uCreatureTurnMovementEnergyCost", CREATURE_TURN_MOVEMENT_ENERGY_COST.value);
+	SetUniformFloat(programID, "uCreatureEyeMaxConeRadius", CREATURE_EYE_MAX_CONES_RADIUS.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Lives.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Energies.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_ForwardDirections.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_RightDirections.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Velocities.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_AngleVelocities.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_EyeMuscles.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_EyeConeRadii.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_EyePupilConeCoverageFraction.bufferHandle);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
-	// Creature body works
-	programID = program_CreatureBodyWorksPart1.program;
-	workGroupsNeeded = program_CreatureBodyWorksPart1.workGroupsNeeded;
+	// Creature pull brain outputs and body works part 2 (life/energy/meat + devices management)
+	programID = program_CreatureBrainPullOutputsAndBodyWorksPart2.program;
+	workGroupsNeeded = program_CreatureBrainPullOutputsAndBodyWorksPart2.workGroupsNeeded;
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformUInteger(programID, "uMaxNumOfStructureIndices", CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
+	SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_NODES);
 	SetUniformFloat(programID, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
 	SetUniformFloat(programID, "uCreatureMaxMeat", CREATURE_MAX_MEAT.value);
 	SetUniformFloat(programID, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
@@ -666,6 +677,16 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureRadiusInterpolationRate", CREATURE_RADIUS_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureRadiusPercentageMeatWeight", CREATURE_RADIUS_PERCENTAGE_MEAT_WEIGHT.value);
 	SetUniformFloat(programID, "uCreatureRadiusPercentageMuscleWeight", CREATURE_RADIUS_PERCENTAGE_MUSCLE_WEIGHT.value);
+	SetUniformFloat(programID, "uCreatureMaxHardness", CREATURE_MAX_HARDNESS.value);
+	SetUniformFloat(programID, "uCreatureMinHardness", CREATURE_MIN_HARDNESS.value);
+	SetUniformFloat(programID, "uCreatureHardnessInterpolationRate", CREATURE_HARDNESS_INTERPOLATION_RATE.value);
+	SetUniformFloat(programID, "uCreatureDeviceSpikeEnergyCost", CREATURE_DEVICE_SPIKE_ENERGY_COST.value);
+	SetUniformFloat(programID, "uCreatureDeviceShieldEnergyCost", CREATURE_DEVICE_SHIELD_ENERGY_COST.value);
+	SetUniformFloat(programID, "uCreatureDeviceFeederEnergyCost", CREATURE_DEVICE_FEEDER_ENERGY_COST.value);
+	SetUniformFloat(programID, "uCreatureDeviceStateInterpolationRate", CREATURE_DEVICE_STATE_INTERPOLATION_RATE.value);
+	SetUniformFloat(programID, "uCreatureMaxSkinValue", CREATURE_MAX_SKIN_VALUE.value);
+	SetUniformFloat(programID, "uCreatureMinSkinValue", CREATURE_MIN_SKIN_VALUE.value);
+	SetUniformFloat(programID, "uCreatureSkinValueInterpolationRate", CREATURE_SKIN_VALUE_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureLifeDrainOnNoEnergy", CREATURE_LIFE_DRAIN_ON_NO_ENERGY.value);
 	SetUniformFloat(programID, "uCreatureEnergyDrainConstant", CREATURE_ENERGY_DRAIN_CONSTANT.value);
 	SetUniformFloat(programID, "uCreatureDeathWithMeatShrinkRate", CREATURE_DEATH_WITH_MEAT_SHRINK_RATE.value);
@@ -676,25 +697,24 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureDeathDeviceZeroficationInterpolationRate", CREATURE_DEATH_DEVICE_ZEROFICATION_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureDeathSkinValueTarget", CREATURE_DEATH_SKIN_VALUE_TARGET.value);
 	SetUniformFloat(programID, "uCreatureDeathSkinValueInterpolationRate", CREATURE_DEATH_SKIN_VALUE_INTERPOLATION_RATE.value);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Velocities.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_AngleVelocities.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_ForwardDirections.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_ForwardThrusts.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_TurnThrusts.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Lives.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Energies.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Meats.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_Radii.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_Harndesses.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_Spikes.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_Feeders.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_Shields.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 13, creature_SkinValues.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 14, creature_SkinSaturations.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 15, creatureList_Vanishes.creaturesSSBOInfo.bufferHandle);
+	SetUniformFloat(programID, "uCreatureEnergyPercentageBasedDeviceStateMultiplierExponent", CREATURE_ENERGY_PERCENTAGE_BASED_DEVICE_STATE_MULTIPLIER_EXPONENT.value);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Lives.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Energies.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Meats.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Radii.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Harndesses.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Spikes.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_Shields.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_Feeders.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_SkinValues.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_SkinSaturations.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creatureList_Vanishes.creaturesSSBOInfo.bufferHandle);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
 
 
 	// Update body placements
