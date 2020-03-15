@@ -905,6 +905,10 @@ void Simulation_Programs_Sequence()
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformUInteger(programID, "uCreatureEyeNumOfPupilValues", CREATURE_EYE_NUM_OF_PUPIL_VALUES);
+	SetUniformFloat(programID, "uCreatureMaxRadius", CREATURE_MAX_RADIUS.value);
+	SetUniformFloat(programID, "uCreatureMinRadius", CREATURE_MIN_RADIUS.value);
+	SetUniformFloat(programID, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
+	SetUniformFloat(programID, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_EyePupilSights.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_GeneralPurposeUInt.bufferHandle); // Read pupil creature target index
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_SkinHues.bufferHandle);

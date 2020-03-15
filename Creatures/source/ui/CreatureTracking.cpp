@@ -29,12 +29,9 @@ class CreatureTracker
 			return;
 		}
 
-
-
-
 		ShowMisc();
-		ShowBrain();
 		ShowEyes();
+		ShowBrain();
 
 		ImGui::End();
 	}
@@ -91,9 +88,26 @@ class CreatureTracker
 
 	void ShowBrain()
 	{
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		if (ImGui::CollapsingHeader("Brain"))
 		{
-			ImGui::Text("To be implemented!");
+			vec2 cnvsPos = ImGui::GetCursorScreenPos();
+			vec2 cnvsSize = ImGui::GetContentRegionAvail();
+			float cnvsSquish = 5.0;
+
+			cnvsPos.x += cnvsSquish;
+			cnvsPos.y += cnvsSquish;
+			cnvsSize.x -= cnvsSquish * 2.0;
+			cnvsSize.y -= cnvsSquish * 2.0;
+
+			// Background
+			drawList->AddRectFilled(
+				cnvsPos,
+				vec2(cnvsPos.x + cnvsSize.x, cnvsPos.y + cnvsSize.y),
+				IM_COL32(30, 30, 30, 255)
+			);
+
+
 		}
 	}
 
@@ -121,11 +135,10 @@ class CreatureTracker
 				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[5], barDimensions, "Skin Hue Difference");
 				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[6], barDimensions, "Skin Value");
 				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[7], barDimensions, "Skin Saturation");
-				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[8], barDimensions, "Skin Pattern X");
-				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[9], barDimensions, "Skin Pattern Y");
-				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[10], barDimensions, "Life");
-				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[11], barDimensions, "Energy");
-				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[12], barDimensions, "Radius");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[8], barDimensions, "Skin Pattern Difference");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[9], barDimensions, "Life");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[10], barDimensions, "Energy");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[11], barDimensions, "Radius");
 
 				ImGui::TreePop();
 			}

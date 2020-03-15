@@ -51,6 +51,12 @@ layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 uniform uint uCreatureCount;
 uniform uint uCreatureEyeNumOfPupilValues;
 
+uniform float uCreatureMaxRadius;
+uniform float uCreatureMinRadius;
+
+uniform float uCreatureMaxEnergy;
+uniform float uCreatureMaxLife;
+
 void main()
 {
 
@@ -117,8 +123,8 @@ void main()
 	EyePupilSights[pupilSightStartIndex + 6] =	pupilSkinValue;
 	EyePupilSights[pupilSightStartIndex + 7] =	pupilSkinSaturation;
 	EyePupilSights[pupilSightStartIndex + 8] = pupilSkinPatternDifference;
-	EyePupilSights[pupilSightStartIndex + 9] =	pupilLife;
-	EyePupilSights[pupilSightStartIndex + 10] =	pupilEnergy;
-	EyePupilSights[pupilSightStartIndex + 11] = pupilRadius;
+	EyePupilSights[pupilSightStartIndex + 9] =	pupilLife / uCreatureMaxLife;
+	EyePupilSights[pupilSightStartIndex + 10] =	pupilEnergy / uCreatureMaxEnergy;
+	EyePupilSights[pupilSightStartIndex + 11] = (pupilRadius - uCreatureMinRadius) / (uCreatureMaxRadius - uCreatureMinRadius);
 
 }

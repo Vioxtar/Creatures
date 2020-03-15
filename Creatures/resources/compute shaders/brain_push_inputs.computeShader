@@ -74,8 +74,6 @@ uniform float uCreatureMaxMeat;
 uniform float uCreatureMaxVelocityLength;
 uniform float uCreatureMaxAngleVelocityLength;
 
-uniform float uCreatureMaxRadius;
-uniform float uCreatureMinRadius;
 
 uniform uint uCreatureEyeNumOfPupilValues;
 uniform uint uCreatureEyeNumOfConesValues;
@@ -150,7 +148,7 @@ void main()
 	BrainsNodes[firstInputNodeIndex + inputOffset] = antiClockwise;
 	inputOffset++;
 
-	// Eye pupil sights (normalize as needed)
+	// Eye pupil sights (all are normalized)
 	uint pupilSightStartIndex = gid * uCreatureEyeNumOfPupilValues;
 
 	BrainsNodes[firstInputNodeIndex + inputOffset] = EyePupilSights[pupilSightStartIndex + 0]; // Activation
@@ -172,14 +170,11 @@ void main()
 	inputOffset++;
 	BrainsNodes[firstInputNodeIndex + inputOffset] = EyePupilSights[pupilSightStartIndex + 8]; // Skin pattern difference
 	inputOffset++;
-	BrainsNodes[firstInputNodeIndex + inputOffset] = EyePupilSights[pupilSightStartIndex + 9] / uCreatureMaxLife; // Life
+	BrainsNodes[firstInputNodeIndex + inputOffset] = EyePupilSights[pupilSightStartIndex + 9]; // Life
 	inputOffset++;
-	BrainsNodes[firstInputNodeIndex + inputOffset] = EyePupilSights[pupilSightStartIndex + 10] / uCreatureMaxEnergy; // Energy
+	BrainsNodes[firstInputNodeIndex + inputOffset] = EyePupilSights[pupilSightStartIndex + 10]; // Energy
 	inputOffset++;
-	
-	float pupilRadius = EyePupilSights[pupilSightStartIndex + 11];
-	float pupilRadiusNorm = (pupilRadius - uCreatureMinRadius) / (uCreatureMaxRadius - uCreatureMinRadius);
-	BrainsNodes[firstInputNodeIndex + inputOffset] = pupilRadiusNorm; // Radius
+	BrainsNodes[firstInputNodeIndex + inputOffset] = EyePupilSights[pupilSightStartIndex + 11]; // Radius
 	inputOffset++;
 
 	// Eye cone sights

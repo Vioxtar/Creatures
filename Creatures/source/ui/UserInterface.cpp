@@ -142,7 +142,7 @@ void UserInterface_PreUpdate()
 	ImGui::NewFrame();
 }
 
-bool show_demo_window = false; // @DEBUG
+bool show_demo_window = true; // @DEBUG
 void UserInterface_Update()
 {
 	// @DEBUG
