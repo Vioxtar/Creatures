@@ -226,6 +226,10 @@ Project minimum requiremenets:
 
 
 	NON-OBVIOUS-TODOS:
+	creature tracker follow creature
+	creature tracker show creature trail
+	make saturation actually an inherited trait, and have the pupil sight see saturation difference, meanwhile life can be reflected by opacity exponent
+	REST MECHANIC: make it so creatures can only spend X energy per frame, and if they actuate themselves too much they wont be able to regenerate - so regenerating creatures will need to move slow / halt
 	add body pressures, and pass that as a brain input
 	spawn firsgens in the corners
 	A potentially massive optimization to forward propagations: Use X for creature ID, and use Y for a sequence of nodes in each level, then perform NumOfLevelsToForwardPropagate dispatches!

@@ -7,3 +7,5 @@
 void StartTrackingCreature(CreatureUniqueID creatureID);
 
 void UpdateCreatureTrackers();
+
+void CreatureTracking_Init();

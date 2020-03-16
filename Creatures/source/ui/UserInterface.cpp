@@ -98,6 +98,10 @@ void DearImGuiPopMainStyle()
 
 void UserInterface_Init(GLFWwindow* window)
 {
+	// Initialize camera and creature tracking
+	Camera_Init();
+	CreatureTracking_Init();
+
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();

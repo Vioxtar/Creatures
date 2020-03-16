@@ -82,7 +82,6 @@ int main()
 
 	// Intiailize simulation and camera
 	Simulation_Init();
-	Camera_Init();
 
 	// Try and disable microstutters with V-Sync off
 	glfwSwapInterval(0);

@@ -31,6 +31,7 @@ extern const float UI_MAX_CREATURE_SELECTION_SQUARED_DISTANCE;
 extern const unsigned int UI_CREATURE_TRACKER_HALO_RADIUS_PIXEL_BIAS;
 extern const unsigned int UI_CREATURE_TRACKER_HALO_NUM_OF_SEGMENTS;
 extern const unsigned int UI_CREATURE_TRACKER_HALO_PIXEL_THICKNESS;
+extern const unsigned int UI_CREATURE_TRACKER_HALO_ALPHA;
 
 extern const unsigned int UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS;
 extern const unsigned int UI_CREATURE_TRACKER_DIRECTION_PIXEL_DISTANCE;
@@ -38,10 +39,19 @@ extern const unsigned int UI_CREATURE_TRACKER_DIRECTION_PIXEL_DISTANCE;
 extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_HEIGHT;
 extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_WIDTH;
 
+extern const float UI_CREATURE_TRACKER_BRAIN_NODE_MAX_BRIGHTNESS;
+extern const float UI_CREATURE_TRACKER_BRAIN_NODE_MIN_BRIGHTNESS;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA;
+extern const float UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_THICKNESS;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_BRIGHTNESS;
+
+
 // Technical settings
 extern const unsigned int TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH;
 extern const unsigned int TECH_CREATURES_SUPPORTED_ON_INIT_BUFFER_PREALLOCATION;
 extern const unsigned int TECH_CREATURE_DATA_PERSISTENT_MAP_BUFFER_BYTE_CAPACITY_BIAS;
+
 
 extern const GLenum TECH_SSBO_USAGE;
 
@@ -93,7 +103,6 @@ extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES;
 extern const float CREATURE_DEFAULT_BODY_MASS;
 
 // Creature brain settings
-extern const uint16_t CREATURE_BRAIN_NUM_OF_INPUTS;
 extern const uint16_t CREATURE_BRAIN_NUM_OF_OUTPUTS;
 extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS;
 extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL;
@@ -102,6 +111,7 @@ extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL;
 extern const uint16_t CREATURE_EYE_NUM_OF_CONES;
 extern const uint16_t CREATURE_EYE_NUM_OF_VALUES_IN_SINGLE_CONE;
 extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES;
+
 
 
 
@@ -208,6 +218,9 @@ extern TweakableFloatSetting CREATURE_BACKWARD_MOVEMENT_EFFECTIVENESS;
 extern TweakableFloatSetting CREATURE_STRAFE_MOVEMENT_EFFECTIVENESS;
 extern TweakableFloatSetting CREATURE_TURN_MOVEMENT_EFFECTIVENESS;
 
+extern TweakableFloatSetting CREATURE_MAX_VELOCITY_LENGTH;
+extern TweakableFloatSetting CREATURE_MAX_ANGLE_VELOCITY_LENGTH;
+
 // Creature energy costs
 extern TweakableFloatSetting CREATURE_FORWARD_MOVEMENT_ENERGY_COST;
 extern TweakableFloatSetting CREATURE_BACKWARD_MOVEMENT_ENERGY_COST;
@@ -242,7 +255,11 @@ extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS;
 // -- ASSISTING & SUBSEQUENT SETTINGS -- //
 ///////////////////////////////////////////
 
+// Eye settings
+extern const uint16_t CREATURE_EYE_NUM_OF_CONES_VALUES;
+
 // Calculate buffer size extern constants (used to define the size of each structure/node/link creature attributes)
+extern const uint16_t CREATURE_BRAIN_NUM_OF_INPUTS;
 extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_NODES;
 extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_LINKS;
 extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES;
@@ -250,6 +267,3 @@ extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES;
 
 // Colliders
 extern const GLuint CREATURE_MAX_NUM_OF_COLLIDERS;
-
-// Eye settings
-extern const uint16_t CREATURE_EYE_NUM_OF_CONES_VALUES;

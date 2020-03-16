@@ -124,7 +124,7 @@ void main()
 	EyePupilSights[pupilSightStartIndex + 7] =	pupilSkinSaturation;
 	EyePupilSights[pupilSightStartIndex + 8] = pupilSkinPatternDifference;
 	EyePupilSights[pupilSightStartIndex + 9] =	pupilLife / uCreatureMaxLife;
-	EyePupilSights[pupilSightStartIndex + 10] =	pupilEnergy / uCreatureMaxEnergy;
-	EyePupilSights[pupilSightStartIndex + 11] = (pupilRadius - uCreatureMinRadius) / (uCreatureMaxRadius - uCreatureMinRadius);
+	EyePupilSights[pupilSightStartIndex + 10] =	min(pupilEnergy / uCreatureMaxEnergy, 1.0); // Clamped because excess energy after interactions (to go to meat)
+	EyePupilSights[pupilSightStartIndex + 11] = max(0.0, (pupilRadius - uCreatureMinRadius) / (uCreatureMaxRadius - uCreatureMinRadius)); // Clamped because creature radius shrink on death
 
 }

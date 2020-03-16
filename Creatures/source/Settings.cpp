@@ -24,8 +24,15 @@ extern const unsigned int UI_CREATURE_TRACKER_HALO_ALPHA = 10;
 extern const unsigned int UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS = 2;
 extern const unsigned int UI_CREATURE_TRACKER_DIRECTION_PIXEL_DISTANCE = 20;
 
-extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_HEIGHT = 20;
-extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_WIDTH = 200;
+extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_HEIGHT = 20.0;
+extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_WIDTH = 200.0;
+
+extern const float UI_CREATURE_TRACKER_BRAIN_NODE_MAX_BRIGHTNESS = 255.0;
+extern const float UI_CREATURE_TRACKER_BRAIN_NODE_MIN_BRIGHTNESS = 0.0;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS = 25;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA = 255;
+extern const float UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_THICKNESS = 1.0;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_BRIGHTNESS = 255;
 
 
 // Technical settings
@@ -106,11 +113,11 @@ extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 1000, 1, 2000 };
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.975, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.9985, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.975, 0.0, 1.0 };
 
 // Simulation creature settings
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 0, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE = { 15, 0.0, 50.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE = { 3, 0.0, 50.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 5.0, 0.0, 100.0 };
 
 // Render settings
@@ -133,7 +140,6 @@ extern TweakableFloatSetting CREATURE_HARDNESS_INTERPOLATION_RATE = { 0.1, 0.001
 extern TweakableFloatSetting CREATURE_MAX_SKIN_VALUE = { 1.0, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_MIN_SKIN_VALUE = { 0.35, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_SKIN_VALUE_INTERPOLATION_RATE = { 0.1, 0.001, 1.0 };
-
 
 // Creature energy/meat/life settings
 extern TweakableFloatSetting CREATURE_MAX_ENERGY = { 5.0, 0.1, 10.0 };
@@ -164,10 +170,13 @@ extern TweakableFloatSetting CREATURE_DEVICE_STATE_INTERPOLATION_RATE = { 0.1, 0
 // Creature movement settings
 extern TweakableFloatSetting CREATURE_ENERGY_PERCENTAGE_BASED_MOVEMENT_MULTIPLIER_EXPONENT = { 0.05, 0.0, 1.0 };
 
-extern TweakableFloatSetting CREATURE_FORWARD_MOVEMENT_EFFECTIVENESS = { 0.01, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_BACKWARD_MOVEMENT_EFFECTIVENESS = { 0.005, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_STRAFE_MOVEMENT_EFFECTIVENESS = { 0.0025, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_TURN_MOVEMENT_EFFECTIVENESS = { 0.005, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_FORWARD_MOVEMENT_EFFECTIVENESS = { 0.001, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_BACKWARD_MOVEMENT_EFFECTIVENESS = { 0.0005, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_STRAFE_MOVEMENT_EFFECTIVENESS = { 0.00025, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_TURN_MOVEMENT_EFFECTIVENESS = { 0.0001, 0.0, 1.0 };
+
+extern TweakableFloatSetting CREATURE_MAX_VELOCITY_LENGTH = { 0.4, 0.1, 10.0 };
+extern TweakableFloatSetting CREATURE_MAX_ANGLE_VELOCITY_LENGTH = { 0.5, 0.1, 10.0 };
 
 // Creature energy costs
 extern TweakableFloatSetting CREATURE_FORWARD_MOVEMENT_ENERGY_COST = { 0.00001, 0.0, 1.0 };

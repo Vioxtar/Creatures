@@ -51,7 +51,7 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainLinks->reserve(CREATURE_BRAIN_MAX_NUM_OF_LINKS);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_LINKS; i++)
 	{
-		brainLinks->emplace_back(random());
+		brainLinks->emplace_back(random() * random() * random() * random());
 	}
 
 	// @TODO: First gen is currently getting max structure for performance testing
@@ -85,7 +85,7 @@ void AddFirstGenerationCreature()
 	data.pos = vec2(0, 0);
 	data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
 	data.angle = random() * 2 * M_PI;
-	data.angleVel = 0.1;
+	data.angleVel = 0;
 
 	data.hardness = random() * random() * random() * random() * random() * random();
 	data.rad = CREATURE_MAX_RADIUS.value;
@@ -585,8 +585,8 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
 	SetUniformFloat(programID, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
 	SetUniformFloat(programID, "uCreatureMaxMeat", CREATURE_MAX_MEAT.value);
-	SetUniformFloat(programID, "uCreatureMaxRadius", CREATURE_MAX_RADIUS.value);
-	SetUniformFloat(programID, "uCreatureMinRadius", CREATURE_MIN_RADIUS.value);
+	SetUniformFloat(programID, "uCreatureMaxVelocityLength", CREATURE_MAX_VELOCITY_LENGTH.value);
+	SetUniformFloat(programID, "uCreatureMaxAngleVelocityLength", CREATURE_MAX_ANGLE_VELOCITY_LENGTH.value);
 	SetUniformUInteger(programID, "uCreatureEyeNumOfPupilValues", CREATURE_EYE_NUM_OF_PUPIL_VALUES);
 	SetUniformUInteger(programID, "uCreatureEyeNumOfConesValues", CREATURE_EYE_NUM_OF_CONES_VALUES);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);

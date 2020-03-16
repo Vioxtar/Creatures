@@ -129,13 +129,14 @@ void main()
 	movementTurnClockwise *= energyPercentageBasedMovementMultiplier;
 	movementTurnAntiClockwise *= energyPercentageBasedMovementMultiplier;
 
+
 	// Forward/backward right/left movement actuation
 	float movementForwardBackward = 
 		movementForward * uCreatureForwardMovementEffectiveness -
 		movementBackward * uCreatureBackwardMovementEffectivness;
 	float movementRightLeft = (movementStrafeRight - movementStrafeLeft) * uCreatureStrafeMovementEffectivness;
 	vec2 eventualMovementVelocityAdd = ForwardDirections[gid] * movementForwardBackward + RightDirections[gid] * movementRightLeft;
-	//Velocities[gid] += eventualMovementVelocityAdd;
+	Velocities[gid] += eventualMovementVelocityAdd;
 
 	// Turning movement actuation
 	float movementTurn = (movementTurnClockwise - movementTurnAntiClockwise) * uCreatureTurnMovementEffectiveness;

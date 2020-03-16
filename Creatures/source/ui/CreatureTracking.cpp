@@ -91,29 +91,63 @@ class CreatureTracker
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		if (ImGui::CollapsingHeader("Brain"))
 		{
-			vec2 cnvsPos = ImGui::GetCursorScreenPos();
-			vec2 cnvsSize = ImGui::GetContentRegionAvail();
-			float cnvsSquish = 5.0;
 
-			cnvsPos.x += cnvsSquish;
-			cnvsPos.y += cnvsSquish;
-			cnvsSize.x -= cnvsSquish * 2.0;
-			cnvsSize.y -= cnvsSquish * 2.0;
+			vec2 brainPos = ImGui::GetCursorScreenPos();
+			vec2 brainSize = ImGui::GetContentRegionAvail();
 
-			// Background
-			drawList->AddRectFilled(
-				cnvsPos,
-				vec2(cnvsPos.x + cnvsSize.x, cnvsPos.y + cnvsSize.y),
-				IM_COL32(30, 30, 30, 255)
-			);
+			float brainShrink = 15.0;
+			brainPos.x += brainShrink;
+			brainPos.y += brainShrink;
+			brainSize.x -= brainShrink * 2.0;
+			brainSize.y -= brainShrink * 2.0;
+			
+			vec2 nodePos = vec2(0, 0);
+			unsigned int nodeIndex = 0;
 
 			unsigned int numOfLevels = creatureSnapShot.brainStructure[0];
-			float spaceBetweenLevels = cnvsSize.x / numOfLevels;
-			for (unsigned int level = 0; level < numOfLevels; ++level)
+			float spaceBetweenLevels = brainSize.x / (numOfLevels);
+			for (unsigned int level = 1; level <= numOfLevels; ++level)
 			{
-				unsigned int numOfNodesInLevel = creatureSnapShot.brainStructure[1 + level];
-				
+				unsigned int numOfNodesInLevel = creatureSnapShot.brainStructure[level];
+				float spaceBetweenNodes = brainSize.y / (numOfNodesInLevel);
+
+				vec2 offset = vec2(spaceBetweenLevels / 2.0, spaceBetweenNodes / 2.0);
+
+				for (unsigned int node = 1; node <= numOfNodesInLevel; ++node)
+				{
+					vec2 nodeDrawPos = brainPos + offset + nodePos;
+					float nodeDrawRadius = 10;
+					float nodeActivation = creatureSnapShot.brainNodes[nodeIndex];
+
+					unsigned int fillBright = unsigned int(
+						UI_CREATURE_TRACKER_BRAIN_NODE_MIN_BRIGHTNESS +
+						(UI_CREATURE_TRACKER_BRAIN_NODE_MAX_BRIGHTNESS - UI_CREATURE_TRACKER_BRAIN_NODE_MIN_BRIGHTNESS) * nodeActivation
+						);
+
+					drawList->AddCircleFilled(
+						nodeDrawPos,
+						nodeDrawRadius,
+						IM_COL32(fillBright, fillBright, fillBright, UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA),
+						UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS
+					);
+					
+					unsigned int outlineBright = UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_BRIGHTNESS;
+
+					drawList->AddCircle(
+						nodeDrawPos,
+						nodeDrawRadius,
+						IM_COL32(outlineBright, outlineBright, outlineBright, UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA),
+						UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS,
+						UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_THICKNESS
+					);
+					
+					nodePos.y += spaceBetweenNodes;
+					nodeIndex++;
+				}
+				nodePos.x += spaceBetweenLevels;
+				nodePos.y = 0;
 			}
+
 		}
 	}
 
@@ -309,4 +343,9 @@ void UpdateCreatureTrackers()
 	}
 
 	expiredCreatureTrackers.clear();
+}
+
+void CreatureTracking_Init()
+{
+	
 }
