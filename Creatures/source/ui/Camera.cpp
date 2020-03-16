@@ -15,7 +15,7 @@ float camVelocityFriction;
 // Camera movement controls
 vec2 cameraPos = vec2(0, 0);
 vec2 cameraVel = vec2(0, 0);
-bool canGlide = false;
+bool canGlide = true;
 
 // Camera transform
 mat4 simToCamTransform = mat4(1.0f);
@@ -74,6 +74,14 @@ void Camera_Move(vec2 offset)
 {
 	cameraPos += offset;
 	cameraVel = offset;
+}
+
+void Camera_InterpolateTo(vec2 targetPos, float rate)
+{
+	if (!canGlide) return;
+	cameraPos *= (1.0 - rate);
+	targetPos *= rate;
+	cameraPos -= targetPos;
 }
 
 void Camera_Zoom(float zoom)

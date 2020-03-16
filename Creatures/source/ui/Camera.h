@@ -12,6 +12,7 @@ void Camera_Init();
 void Camera_Update(double frameTime);
 
 void Camera_Move(vec2 offset);
+void Camera_InterpolateTo(vec2 targetPos, float rate);
 void Camera_Enable_Glide(bool glide);
 void Camera_Zoom(float zoom);
 

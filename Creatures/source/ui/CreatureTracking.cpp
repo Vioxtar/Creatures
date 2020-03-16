@@ -15,6 +15,8 @@ class CreatureTracker
 	string windowTitle;
 	bool active;
 
+	bool cameraFollow;
+
 	bool overlay_Halo;
 	bool overlay_ForwardDir;
 	bool overlay_RightDir;
@@ -39,6 +41,13 @@ class CreatureTracker
 	void ShowMisc()
 	{
 		float simToViewportScale = SimulationScaleToViewportScale(1.0);
+
+		// Follow camera
+		ImGui::Checkbox("Follow", &cameraFollow);
+		if (cameraFollow)
+		{
+			Camera_InterpolateTo(creatureSnapShot.pos, UI_CREATURE_TRACKER_CAMERA_FOLLOW_INTERPOLATION_RATE.value);
+		}
 
 		// Draw creature halo
 		ImGui::Checkbox("Halo", &overlay_Halo);
@@ -91,7 +100,6 @@ class CreatureTracker
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		if (ImGui::CollapsingHeader("Brain"))
 		{
-
 			vec2 brainPos = ImGui::GetCursorScreenPos();
 			vec2 brainSize = ImGui::GetContentRegionAvail();
 
@@ -119,26 +127,35 @@ class CreatureTracker
 					float nodeDrawRadius = 10;
 					float nodeActivation = creatureSnapShot.brainNodes[nodeIndex];
 
-					unsigned int fillBright = unsigned int(
-						UI_CREATURE_TRACKER_BRAIN_NODE_MIN_BRIGHTNESS +
-						(UI_CREATURE_TRACKER_BRAIN_NODE_MAX_BRIGHTNESS - UI_CREATURE_TRACKER_BRAIN_NODE_MIN_BRIGHTNESS) * nodeActivation
-						);
-
-					drawList->AddCircleFilled(
-						nodeDrawPos,
-						nodeDrawRadius,
-						IM_COL32(fillBright, fillBright, fillBright, UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA),
-						UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS
-					);
-					
-					unsigned int outlineBright = UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_BRIGHTNESS;
+					// @TEMP @DEBUG
+					if (nodeActivation > 1.0 || nodeActivation < 0.0)
+					{
+						cout << nodeActivation << endl;
+					}					
 
 					drawList->AddCircle(
 						nodeDrawPos,
 						nodeDrawRadius,
-						IM_COL32(outlineBright, outlineBright, outlineBright, UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA),
+						IM_COL32(
+							UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_R,
+							UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_G,
+							UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_B,
+							UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA
+						),
 						UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS,
 						UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_THICKNESS
+					);
+
+					drawList->AddCircleFilled(
+						nodeDrawPos,
+						nodeDrawRadius * nodeActivation,
+						IM_COL32(
+							UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_R,
+							UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_G,
+							UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_B,
+							UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA
+						),
+						UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS
 					);
 					
 					nodePos.y += spaceBetweenNodes;
@@ -286,6 +303,8 @@ public:
 	{
 		windowTitle = "Creature ";
 		windowTitle.append(to_string(creatureID));
+
+		cameraFollow = false;
 
 		overlay_Halo = true;
 		overlay_ForwardDir = false;

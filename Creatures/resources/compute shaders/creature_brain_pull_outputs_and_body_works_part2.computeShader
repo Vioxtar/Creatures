@@ -196,7 +196,7 @@ void main()
 
 		// Radius
 		float radius = Radii[gid];
-		float meatPercentage = meat / uCreatureMaxMeat;
+		float meatPercentage = min(meat, uCreatureMaxMeat) / uCreatureMaxMeat; // Clamped because extra meat
 		float targetRadiusPercentage =
 			uCreatureRadiusPercentageMeatWeight * meatPercentage +
 			uCreatureRadiusPercentageMuscleWeight * radiusMuscle;

@@ -80,7 +80,7 @@ void AddFirstGenerationCreature()
 	data.skinPattern = vec2(random(), random());
 	data.skinHue = random();
 	data.skinSaturation = 1.0;
-	data.skinValue = random();
+	data.skinValue = 1.0;
 
 	data.pos = vec2(0, 0);
 	data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
@@ -909,6 +909,8 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureMinRadius", CREATURE_MIN_RADIUS.value);
 	SetUniformFloat(programID, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
 	SetUniformFloat(programID, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
+	SetUniformFloat(programID, "uCreatureMaxSkinValue", CREATURE_MAX_SKIN_VALUE.value);
+	SetUniformFloat(programID, "uCreatureMinSkinValue", CREATURE_MIN_SKIN_VALUE.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_EyePupilSights.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_GeneralPurposeUInt.bufferHandle); // Read pupil creature target index
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_SkinHues.bufferHandle);

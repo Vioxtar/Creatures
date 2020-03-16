@@ -39,12 +39,18 @@ extern const unsigned int UI_CREATURE_TRACKER_DIRECTION_PIXEL_DISTANCE;
 extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_HEIGHT;
 extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_WIDTH;
 
-extern const float UI_CREATURE_TRACKER_BRAIN_NODE_MAX_BRIGHTNESS;
-extern const float UI_CREATURE_TRACKER_BRAIN_NODE_MIN_BRIGHTNESS;
+
 extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS;
 extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA;
 extern const float UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_THICKNESS;
-extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_BRIGHTNESS;
+
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_R;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_G;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_B;
+
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_R;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_G;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_B;
 
 
 // Technical settings
@@ -149,6 +155,9 @@ SimSettingsChangedSubscriber SimulationSettingsChangedSubscribe(SimSettingsChang
 //////////////////////////////
 // -- TWEAKABLE SETTINGS -- //
 //////////////////////////////
+
+// UI settings
+extern TweakableFloatSetting UI_CREATURE_TRACKER_CAMERA_FOLLOW_INTERPOLATION_RATE;
 
 // Simulation space settings
 extern TweakableFloatSetting SIMULATION_SPACE_WIDTH;

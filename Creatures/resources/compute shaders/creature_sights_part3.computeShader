@@ -57,6 +57,9 @@ uniform float uCreatureMinRadius;
 uniform float uCreatureMaxEnergy;
 uniform float uCreatureMaxLife;
 
+uniform float uCreatureMaxSkinValue;
+uniform float uCreatureMinSkinValue;
+
 void main()
 {
 
@@ -120,11 +123,11 @@ void main()
 	uint pupilSightStartIndex = gid * uCreatureEyeNumOfPupilValues;
 
 	EyePupilSights[pupilSightStartIndex + 5] =	pupilSkinHueDifference;
-	EyePupilSights[pupilSightStartIndex + 6] =	pupilSkinValue;
+	EyePupilSights[pupilSightStartIndex + 6] =	max((pupilSkinValue - uCreatureMinSkinValue) / (uCreatureMaxSkinValue - uCreatureMinSkinValue), 0); // Clamped because minSkinValue > default 0 pupilSkinValue
 	EyePupilSights[pupilSightStartIndex + 7] =	pupilSkinSaturation;
 	EyePupilSights[pupilSightStartIndex + 8] = pupilSkinPatternDifference;
 	EyePupilSights[pupilSightStartIndex + 9] =	pupilLife / uCreatureMaxLife;
 	EyePupilSights[pupilSightStartIndex + 10] =	min(pupilEnergy / uCreatureMaxEnergy, 1.0); // Clamped because excess energy after interactions (to go to meat)
-	EyePupilSights[pupilSightStartIndex + 11] = max(0.0, (pupilRadius - uCreatureMinRadius) / (uCreatureMaxRadius - uCreatureMinRadius)); // Clamped because creature radius shrink on death
+	EyePupilSights[pupilSightStartIndex + 11] = max(0.0, (pupilRadius - uCreatureMinRadius) / (uCreatureMaxRadius - uCreatureMinRadius)); // Clamped because creature radius shrink on death and minRadius > default 0 pupilRadius
 
 }
