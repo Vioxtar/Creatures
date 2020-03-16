@@ -107,7 +107,13 @@ class CreatureTracker
 				IM_COL32(30, 30, 30, 255)
 			);
 
-
+			unsigned int numOfLevels = creatureSnapShot.brainStructure[0];
+			float spaceBetweenLevels = cnvsSize.x / numOfLevels;
+			for (unsigned int level = 0; level < numOfLevels; ++level)
+			{
+				unsigned int numOfNodesInLevel = creatureSnapShot.brainStructure[1 + level];
+				
+			}
 		}
 	}
 

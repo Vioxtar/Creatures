@@ -38,13 +38,13 @@ CreatureData GetCreatureSnapshot(CreatureUniqueID creatureID)
 	GetCreatureAttribute(creature_EyePupilConeCoverageFraction, creatureID, &snapShot.eyePupilConeCoverageFraction);
 
 	snapShot.brainStructure.reserve(CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
-	//GetCreatureAttribute(creature_EyeConeSights, creatureID, &snapShot.brainStructure);
+	GetCreatureAttribute(creature_BrainsStructures, creatureID, snapShot.brainStructure.data());
 
-	//snapShot.brainNodes.reserve(CREATURE_BRAIN_MAX_NUM_OF_NODES);
-	//GetCreatureAttribute(creature_BrainsNodes, creatureID, &snapShot.brainNodes);
+	snapShot.brainNodes.reserve(CREATURE_BRAIN_MAX_NUM_OF_NODES);
+	GetCreatureAttribute(creature_BrainsNodes, creatureID, snapShot.brainNodes.data());
 
-	//snapShot.brainLinks.reserve(CREATURE_BRAIN_MAX_NUM_OF_LINKS);
-	//GetCreatureAttribute(creature_BrainsLinks, creatureID, &snapShot.brainLinks);
-
+	snapShot.brainLinks.reserve(CREATURE_BRAIN_MAX_NUM_OF_LINKS);
+	GetCreatureAttribute(creature_BrainsLinks, creatureID, snapShot.brainLinks.data());
+	
 	return snapShot;
 }

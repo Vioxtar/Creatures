@@ -350,7 +350,7 @@ void GetCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, CreatureUniqueID c
 
 	// Copy to persistent buffer
 	glCopyNamedBufferSubData(creatureSSBOInfo.bufferHandle, persistentMap_BufferHandle, amountOfBytesToCopy * ssboIndex, 0, amountOfBytesToCopy);
-
+	
 	// Write from persistent buffer
 	glGetNamedBufferSubData(persistentMap_BufferHandle, 0, amountOfBytesToCopy, data);
 }
