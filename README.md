@@ -9,6 +9,8 @@ By leveraging GPU acceleration, the simulation can support tens of thousands of 
 
 # Media
 
+![Creatures Image 0](https://thumbs.gfycat.com/ImmaterialMixedCats-size_restricted.gif)
+
 ![Creatures Image 1](https://thumbs.gfycat.com/GoldenHilariousArachnid-size_restricted.gif)
 
 ![Creatures Image 2](https://cdn.discordapp.com/attachments/663525313287946251/688060700576186386/unknown.png)
