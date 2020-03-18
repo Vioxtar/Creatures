@@ -39,7 +39,7 @@ int main()
 	const int startingWidth = WINDOW_STARTING_WIDTH;
 	const int startingHeight = WINDOW_STARTING_HEIGHT;
 
-	glfwWindowHint(GLFW_SAMPLES, WINDOW_RENDER_MULTISAMPLES);
+	//glfwWindowHint(GLFW_SAMPLES, WINDOW_RENDER_MULTISAMPLES);
 
 	// Create window object
 	GLFWwindow* window = glfwCreateWindow(startingWidth, startingHeight, "Creatures", NULL, NULL);

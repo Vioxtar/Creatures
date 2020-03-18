@@ -106,6 +106,9 @@ uniform float uCreatureMaxSkinValue;
 uniform float uCreatureMinSkinValue;
 uniform float uCreatureSkinValueInterpolationRate;
 
+uniform float uCreatureMaxSkinSaturation;
+uniform float uCreatureMinSkinSaturation;
+
 uniform float uCreatureLifeDrainOnNoEnergy;
 
 uniform float uCreatureDeathWithMeatShrinkRate;
@@ -135,7 +138,7 @@ void main()
 
 	// Saturation reflects our life, dead or alive
 	float lifePercentage = life / uCreatureMaxLife;
-	SkinSaturations[gid] = lifePercentage;
+	SkinSaturations[gid] = uCreatureMinSkinSaturation + (uCreatureMaxSkinSaturation - uCreatureMinSkinSaturation) * lifePercentage;
 
 
 	bool alive = life > 0.0;

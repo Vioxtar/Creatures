@@ -42,7 +42,7 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainBiasesExponents->reserve(CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES; i++)
 	{
-		float bias = (random() - 0.5) * 2.0;
+		float bias = (random() - 0.5) * 5.0;
 		float activationExponent = random() * 10;
 		brainBiasesExponents->emplace_back(vec2(bias, activationExponent));
 	}
@@ -51,7 +51,7 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainLinks->reserve(CREATURE_BRAIN_MAX_NUM_OF_LINKS);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_LINKS; i++)
 	{
-		brainLinks->emplace_back(random() * random() * random() * random());
+		brainLinks->emplace_back(random() * random() * random() * random() * random() * random() * random());
 	}
 
 	// @TODO: First gen is currently getting max structure for performance testing
@@ -202,11 +202,14 @@ void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
 	data.skinValue = 1.0;
 
 	// Place offspring at average of parent positions
-	vec2 p1Pos;
-	vec2 p2Pos;
-	GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &p1Pos);
-	GetCreatureAttributeBySSBOIndex(creature_Positions, p2SSBO, &p2Pos);
-	data.pos = vec2((p1Pos.x + p2Pos.x) / 2.0, (p1Pos.y + p2Pos.y) / 2.0);
+	//vec2 p1Pos;
+	//vec2 p2Pos;
+	//GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &p1Pos);
+	//GetCreatureAttributeBySSBOIndex(creature_Positions, p2SSBO, &p2Pos);
+	//data.pos = vec2((p1Pos.x + p2Pos.x) / 2.0, (p1Pos.y + p2Pos.y) / 2.0);
+
+	GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &data.pos);
+
 
 	data.vel = vec2(0, 0);
 	data.angle = random() * 2 * M_PI;
@@ -449,7 +452,7 @@ void BuildUniformGrid()
 
 void InitOpenGLSettings()
 {
-	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_MULTISAMPLE);
 
 	// Set some blending/depth settings
 	glEnable(GL_DEPTH_TEST);
@@ -802,6 +805,8 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureDeviceStateInterpolationRate", CREATURE_DEVICE_STATE_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureMaxSkinValue", CREATURE_MAX_SKIN_VALUE.value);
 	SetUniformFloat(programID, "uCreatureMinSkinValue", CREATURE_MIN_SKIN_VALUE.value);
+	SetUniformFloat(programID, "uCreatureMaxSkinSaturation", CREATURE_MAX_SKIN_SATURATION.value);
+	SetUniformFloat(programID, "uCreatureMinSkinSaturation", CREATURE_MIN_SKIN_SATURATION.value);
 	SetUniformFloat(programID, "uCreatureSkinValueInterpolationRate", CREATURE_SKIN_VALUE_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureLifeDrainOnNoEnergy", CREATURE_LIFE_DRAIN_ON_NO_ENERGY.value);
 	SetUniformFloat(programID, "uCreatureEnergyDrainConstant", CREATURE_ENERGY_DRAIN_CONSTANT.value);
@@ -1033,6 +1038,8 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
 	SetUniformFloat(programID, "uCreatureMaxSkinValue", CREATURE_MAX_SKIN_VALUE.value);
 	SetUniformFloat(programID, "uCreatureMinSkinValue", CREATURE_MIN_SKIN_VALUE.value);
+	SetUniformFloat(programID, "uCreatureMaxSkinSaturation", CREATURE_MAX_SKIN_SATURATION.value);
+	SetUniformFloat(programID, "uCreatureMinSkinSaturation", CREATURE_MIN_SKIN_SATURATION.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_EyePupilSights.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_GeneralPurposeUInt.bufferHandle); // Read pupil creature target index
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_SkinHues.bufferHandle);

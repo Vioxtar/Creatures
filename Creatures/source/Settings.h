@@ -206,6 +206,9 @@ extern TweakableFloatSetting CREATURE_MAX_SKIN_VALUE;
 extern TweakableFloatSetting CREATURE_MIN_SKIN_VALUE;
 extern TweakableFloatSetting CREATURE_SKIN_VALUE_INTERPOLATION_RATE;
 
+extern TweakableFloatSetting CREATURE_MAX_SKIN_SATURATION;
+extern TweakableFloatSetting CREATURE_MIN_SKIN_SATURATION;
+
 // Creature energy/meat/life settings
 extern TweakableFloatSetting CREATURE_MAX_ENERGY;
 extern TweakableFloatSetting CREATURE_MAX_MEAT;
