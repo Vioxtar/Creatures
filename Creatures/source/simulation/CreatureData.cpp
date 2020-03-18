@@ -339,20 +339,23 @@ void InitOrExpandPersistentMapBufferIfNeeded(GLuint numOfBytesToSupport)
 	persistentMap_Initialized = true;
 }
 
-void GetCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, CreatureUniqueID creatureID, void* data)
+void GetCreatureAttributeBySSBOIndex(CreaturesSSBOInfo creatureSSBOInfo, GLuint creatureSSBOIndex, void* data)
 {
 	GLuint amountOfBytesToCopy = creatureSSBOInfo.unitByteSize;
-	
+
 	// Expand persistent buffer if needed
 	InitOrExpandPersistentMapBufferIfNeeded(amountOfBytesToCopy);
 
-	GLuint ssboIndex = CreatureData_CreatureUniqueIDToSSBOIndex(creatureID);
-
 	// Copy to persistent buffer
-	glCopyNamedBufferSubData(creatureSSBOInfo.bufferHandle, persistentMap_BufferHandle, amountOfBytesToCopy * ssboIndex, 0, amountOfBytesToCopy);
-	
+	glCopyNamedBufferSubData(creatureSSBOInfo.bufferHandle, persistentMap_BufferHandle, amountOfBytesToCopy * creatureSSBOIndex, 0, amountOfBytesToCopy);
+
 	// Write from persistent buffer
 	glGetNamedBufferSubData(persistentMap_BufferHandle, 0, amountOfBytesToCopy, data);
+}
+
+void GetCreatureAttributeByUniqueID(CreaturesSSBOInfo creatureSSBOInfo, CreatureUniqueID creatureID, void* data)
+{
+	GetCreatureAttributeBySSBOIndex(creatureSSBOInfo, CreatureData_CreatureUniqueIDToSSBOIndex(creatureID), data);
 }
 
 void GetCreatureAttributes(CreaturesSSBOInfo creatureSSBOInfo, void* data)

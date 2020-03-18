@@ -117,10 +117,10 @@ void main()
 	float normForthBack = dot(velocity, forwardDir) / uCreatureMaxVelocityLength;
 	float normRightLeft = dot(velocity, rightDir) / uCreatureMaxVelocityLength;
 	
-	float forward = max(normForthBack, 0);
-	float backward = max(-normForthBack, 0);
-	float right = max(normRightLeft, 0);
-	float left = max(-normRightLeft, 0);
+	float forward = max(0.0, min(normForthBack, 1.0));
+	float backward = max(0.0, min(-normForthBack, 1.0));
+	float right = max(0.0, min(normRightLeft, 1.0));
+	float left = max(0.0, min(-normRightLeft, 1.0));
 
 	BrainsNodes[firstInputNodeIndex + 3] = forward;
 	BrainsNodes[firstInputNodeIndex + 4] = backward;

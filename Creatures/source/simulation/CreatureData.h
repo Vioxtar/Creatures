@@ -101,7 +101,8 @@ struct MappedCreaturesSSBOInfo
 	void* mapPtr;
 };
 
-void GetCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, CreatureUniqueID creatureID, void* data);
+void GetCreatureAttributeBySSBOIndex(CreaturesSSBOInfo creatureSSBOInfo, GLuint creatureSSBOIndex, void* data);
+void GetCreatureAttributeByUniqueID(CreaturesSSBOInfo creatureSSBOInfo, CreatureUniqueID creatureID, void* data);
 void GetCreatureAttributes(CreaturesSSBOInfo creatureSSBOInfo, void* data);
 
 // Brains

@@ -60,7 +60,12 @@ layout (std430, binding = 11) buffer CreatureSkinSaturations
 	float SkinSaturations[];
 };
 
-layout (std430, binding = 12) buffer CreatureVanishes
+layout (std430, binding = 12) buffer CreatureHorninesses
+{
+	float Horninesses[];
+};
+
+layout (std430, binding = 13) buffer CreatureVanishes
 {
 	uint Vanishes[];
 };
@@ -125,23 +130,13 @@ void main()
 	}
 
 	float life = Lives[gid];
-	
+	float energy = Energies[gid];
+
 
 	// Saturation reflects our life, dead or alive
 	float lifePercentage = life / uCreatureMaxLife;
 	SkinSaturations[gid] = lifePercentage;
 
-
-	float energy = Energies[gid];
-
-	// Energy to life, normally we'd place this under the 'alive' statement, but energy can regenerate life
-	if (life < uCreatureMaxLife)
-	{
-		float maxLifeDiff = uCreatureMaxLife - life;
-		float lifeAdd = min(maxLifeDiff, min(uCreatureEnergyToLifeConversionRate, energy));
-		life += lifeAdd;
-		energy -= lifeAdd;
-	}
 
 	bool alive = life > 0.0;
 
@@ -150,6 +145,15 @@ void main()
 		// Life <-> Energy <-> Meat conversions
 
 		float meat = Meats[gid];
+
+		// Energy to life
+		if (life < uCreatureMaxLife)
+		{
+			float maxLifeDiff = uCreatureMaxLife - life;
+			float lifeAdd = min(maxLifeDiff, min(uCreatureEnergyToLifeConversionRate, energy));
+			life += lifeAdd;
+			energy -= lifeAdd;
+		}
 
 		// Meat to energy
 		if (energy < uCreatureMaxEnergy)
@@ -192,7 +196,7 @@ void main()
 		float deviceShieldStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 15], 1.0));
 		float deviceFeederStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 16], 1.0));
 		float skinValueMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 17], 1.0));
-
+		float hornyMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 18], 1.0));
 
 		// Radius
 		float radius = Radii[gid];
@@ -235,6 +239,10 @@ void main()
 		float skinValue = SkinValues[gid];
 		float targetSkinValue = uCreatureMinSkinValue + (uCreatureMaxSkinValue - uCreatureMinSkinValue) * skinValueMuscle;
 		SkinValues[gid] = skinValue * (1.0 - uCreatureSkinValueInterpolationRate) + uCreatureSkinValueInterpolationRate * targetSkinValue;
+
+
+		// Hornyness values
+		Horninesses[gid] = hornyMuscle;
 
 
 		// Write back energy/life/meat values, make sure they're clamped, even though they should already be clamped

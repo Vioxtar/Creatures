@@ -159,6 +159,7 @@ SimSettingsChangedSubscriber SimulationSettingsChangedSubscribe(SimSettingsChang
 // UI settings
 extern TweakableFloatSetting UI_CREATURE_TRACKER_CAMERA_FOLLOW_INTERPOLATION_RATE;
 
+
 // Simulation space settings
 extern TweakableFloatSetting SIMULATION_SPACE_WIDTH;
 extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT;
@@ -171,7 +172,18 @@ extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE;
 // Simulation creature settings
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT;
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE;
+
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_ENERGY;
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT;
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE;
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS;
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS;
+
+extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_ENERGY;
+extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_MEAT;
+extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_LIFE;
+extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_RADIUS;
+extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_HARDNESS;
 
 // Render settings
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_R;
@@ -218,6 +230,9 @@ extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS;
 
 extern TweakableFloatSetting CREATURE_DEVICE_STATE_INTERPOLATION_RATE;
 
+// Creature reproduction settings
+extern TweakableFloatSetting CREATURE_REPRODUCTION_AIM_DOT_THRESHOLD;
+
 
 // Creature movement settings
 extern TweakableFloatSetting CREATURE_ENERGY_PERCENTAGE_BASED_MOVEMENT_MULTIPLIER_EXPONENT;
@@ -254,9 +269,13 @@ extern TweakableFloatSetting CREATURE_DEATH_DEVICE_ZEROFICATION_INTERPOLATION_RA
 extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_TARGET;
 extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_INTERPOLATION_RATE;
 
+// Creature mutation settings
+extern TweakableFloatSetting CREATURE_MUTATION_BRAIN_CHANGE_MIDLEVELS_CHANCE;
+
 // Creature eye settings
 extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE;
 extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS;
+
 
 
 

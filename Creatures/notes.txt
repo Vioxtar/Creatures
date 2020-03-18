@@ -16,7 +16,8 @@ Project minimum requiremenets:
 
 
 
-
+	SOME NOTES ON REPRODUCTION
+	When two creatures assume reproduction position, each creature that has > 0.5 horny creates an offspring with the other, only at the expense of their own energy
 
 
 
@@ -226,8 +227,13 @@ Project minimum requiremenets:
 
 
 	NON-OBVIOUS-TODOS:
-	creature tracker follow creature
-	creature tracker show creature trail
+	move alpha computation from fragment to vertex shader
+	have different selectable rendering programs to view special data like:
+		energy transactions
+		reproductions
+		meats
+		generations
+	creature tracker show creature trail?
 	make saturation actually an inherited trait, and have the pupil sight see saturation difference, meanwhile life can be reflected by opacity exponent
 	REST MECHANIC: make it so creatures can only spend X energy per frame, and if they actuate themselves too much they wont be able to regenerate - so regenerating creatures will need to move slow / halt
 	add body pressures, and pass that as a brain input
@@ -239,16 +245,11 @@ Project minimum requiremenets:
 	try changing some brain data to GLhalf
 	try changing some indexing data to GLint64
 	Use as many fucking memory qualifiers and hints as possible to boost performance
-	PUPIL SEES SKIN PATTERN AS WELL! Make it so it sees the difference to itself instead of raw values, like hue difference! Use dot somehow?
-	Make eyes rely on a separate UGrid memory access! Currently probe distance is too small and increasing it fucks with performance! The new sense radius should just be the max eye cone radius
 	Make a separate UI thread - make sure that while ImGui is being drawn / other UI stuff calculated, the simulation is running! To avoid undefined behavior, decouple the UI 'data snapshotting' logic into a preliminary step, and only once data was snapshot you can divide into threads! Drawing needs to still be in the correct order... this will be hard.
-	send in actualc reature radius fraction as brain input! Creatures only know their 0.2 output contribution!
 	Add varying input and output counts for brain creatures - depends on the number of eyes!
 	make the simulation random-seedable!
 	Creatures have stick points - if stick A sticks to non-stick surface, it results in 0.25 force, if stick A sticks to stick B and both are active, it results in 1 force
-	creatures can move backwards at 0.75 the speed they can move forward
 	Have a performance window! Squeeze everything you want into there (FPS counter, FPS plot based on time/creature count, forward propagations stats/etc)
-	Use a seperate thread for UI (including callbacks and updates...)
 	ADD A GENERATIONS HISTOGRAM (instead of average generations etc)
 	Consider adding negated activated functions (like you posted in discord) for maybe even MORE expressive brains!
 		But for now... use two-node setups for moving shit linearly
@@ -256,11 +257,7 @@ Project minimum requiremenets:
 	replace branching code with branchless code?
 	Implement 'visibilities' SSBO, every frame update each creature's 'LOD' value: false is offscreen, true is visible, then use that for deformations/whatever else
 	Settings pretty names
-	DearImgui integration and UI
-		F11 to fullscreen
-	Add WINDOW settings in settings file?
-	Spikes and shields and stick mechanisms
-	Fix window misalignment
+	F11 to fullscreen
 	Find out why border physics is so damn unstable (not really the case when border restitution is at 0)
 
 

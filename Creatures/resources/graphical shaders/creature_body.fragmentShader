@@ -79,7 +79,7 @@ void main()
     
     
     // Opaqueness reflects energy
-    FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oEnergyPercentage) * 5.0), oEnergyPercentage + 0.1);
+    FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oEnergyPercentage) * 10.0 * (1.0 + oEnergyPercentage)), oEnergyPercentage + 0.1);
     FragColor.a *= 0.975; // Still make everything ever so slightly transparent
 
     // May not be needed

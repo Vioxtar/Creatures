@@ -117,7 +117,7 @@ void main()
 	float aRad = Radii[gid];
 	float aHardness = Hardnesses[gid];
 	float aMeat = Meats[gid];
-	float aMass = aMeat * aMeat;
+	float aMass = aMeat;
 
 	uint aCollidersStartIndex = gid * uMaxNumOfColliders;
 	
@@ -152,7 +152,7 @@ void main()
 				vec2 bPos = Positions[bGID];
 				float bRad = Radii[bGID];
 				float bMeat = Meats[bGID];
-				float bMass = bMeat * bMeat;
+				float bMass = bMeat;
 
 				vec2 c1c2PosDiff = bPos - aPos;
 				float distSquared = dot(c1c2PosDiff, c1c2PosDiff);

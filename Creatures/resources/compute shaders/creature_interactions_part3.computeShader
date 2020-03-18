@@ -30,11 +30,29 @@ layout (std430, binding = 5) buffer CreatureLives
 	float Lives[];
 };
 
+layout (std430, binding = 6) buffer CreatureHorninesses
+{
+	float Horninesses[];
+};
+
+layout (std430, binding = 7) buffer CreatureCollidersIndicesAndPlacements
+{
+	uvec2 CollidersIndicesAndPlacements[];
+};
+
+layout (std430, binding = 8) buffer CreatureNewBorns
+{
+	uvec2 NewBorns[];
+};
+
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 
 uniform uint uCreatureCount;
 uniform uint uMaxNumOfColliders;
+
+uniform float uCreatureReproductionEnergyCost;
+uniform float uCreatureReproductionAimDotThreshold;
 
 void main()
 {
@@ -49,21 +67,52 @@ void main()
 		return;
 	}
 
-	uint collidersStartIndex = gid * uMaxNumOfColliders;
 
-	// Iterate our given energies and add it to our actual energy
-	float givenEnergy = 0.0;
+	// Get some stuff about ourselves
+	float energy = Energies[gid];
+	bool aHornyToReproduce = Horninesses[gid] > 0.5;
+	vec2 aForwardDir = ForwardDirections[gid];
+	
+	// Iterate our given energies and add it to our actual energy, also take care of reproduction
 	uint collidersCount = min(CollidersCounts[gid], uMaxNumOfColliders);
+	uint collidersStartIndex = gid * uMaxNumOfColliders;
 	for (uint i = 0; i < collidersCount; ++i)
 	{
 		float energyGivenByCollider = CollidersGivenEnergy[collidersStartIndex + i];
-		givenEnergy += energyGivenByCollider;
+		energy += energyGivenByCollider;
 
 		// Zerofiy the given energy
 		CollidersGivenEnergy[collidersStartIndex + i] = 0.0;
+
+		// Reproduction
+		if (aHornyToReproduce)
+		{
+			if (energy >= uCreatureReproductionEnergyCost)
+			{
+				uvec2 colliderIndexAndPlacement = CollidersIndicesAndPlacements[collidersStartIndex + i];
+				uint bGID = colliderIndexAndPlacement.x;
+
+				bool bHornyToReproduce = Horninesses[bGID] > 0.5;
+				if (bHornyToReproduce)
+				{
+					// Are we in reproduction positions?
+					vec2 bForwardDir = ForwardDirections[bGID];
+
+					if (-dot(aForwardDir, bForwardDir) > uCreatureReproductionAimDotThreshold)
+					{
+						// Place ourselves in the reproduction list - the CPU will take it from here
+						uint currentAmountOfNewborns = atomicAdd(NewBorns[0].x, 1); // x component is our count
+						NewBorns[currentAmountOfNewborns + 1] = uvec2(gid, bGID);
+
+						// Take away from our energy
+						energy -= uCreatureReproductionEnergyCost;
+					}
+				}
+			}
+		}
 	}
 	
 	// Submit
-	Energies[gid] += givenEnergy;
+	Energies[gid] = energy;
 
 }

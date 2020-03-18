@@ -67,6 +67,82 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainStructure->emplace_back(CREATURE_BRAIN_NUM_OF_OUTPUTS);
 }
 
+void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec2>* oBiasesExponents, vector<GLfloat>* oLinks, vector<GLuint>* oStructure)
+{
+	// Acquire prominent parent's brain
+	vector<GLuint> p1Structure(CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
+	vector<GLfloat> p1Links(CREATURE_BRAIN_MAX_NUM_OF_LINKS);
+	vector<vec2> p1BiasesExponents(CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
+
+	GetCreatureAttributeBySSBOIndex(creature_BrainsStructures, p1SSBO, p1Structure.data());
+	GetCreatureAttributeBySSBOIndex(creature_BrainsLinks, p1SSBO, p1Links.data());
+	GetCreatureAttributeBySSBOIndex(creature_BrainsBiasesExponents, p1SSBO, p1BiasesExponents.data());
+
+	// Make room in offspring's brain
+	oStructure->resize(CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
+	oLinks->resize(CREATURE_BRAIN_MAX_NUM_OF_LINKS);
+	oBiasesExponents->resize(CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
+	oNodes->resize(CREATURE_BRAIN_MAX_NUM_OF_NODES);
+
+	/*
+	We have 8 different mutation oriented brain copying types:
+		
+		0. No change
+		
+		Adjustment mutation (can be several)
+			1. Change weights
+			2. Change biases
+			3. Change exponents
+
+		Structure mutation (single)
+			4. Add midlevel
+			5. Remove midlevel
+			6. Add midlevel node
+			7. Remove midlevel node
+		
+	When adding nodes or midlevels, we can effectively output an equivalent brain.
+	
+	On the contrary removal of nodes or midlevels may severly harm brain functionality, and will likely
+	devolve the offspring's fitness. However we still wish to support removals for symmetry's sakes, and
+	to prevent the system from converging to full brain structures.
+	*/
+
+	GLuint linkCopyIndex = 0;
+	GLuint linkPasteIndex = 0;
+	GLuint biasExpCopyIndex = 0;
+	GLuint biasExpPasteIndex = 0;
+
+	GLuint p1NumOfLevels = p1Structure[0];
+	for (GLuint p1Level = 0; p1Level < p1NumOfLevels; ++p1Level)
+	{
+		GLuint p1NumOfNodesInLevel = p1Structure[1 + p1Level];
+		GLuint p1NumOfNodesInPrevLevel = p1Level <= 0 ? 0 : p1Structure[p1Level];
+		for (GLuint p1Node = 0; p1Node < p1NumOfNodesInLevel; ++p1Node)
+		{
+			if (p1Level > 0)
+			{
+				oBiasesExponents->at(biasExpPasteIndex) = p1BiasesExponents[biasExpCopyIndex];
+
+				biasExpCopyIndex++;
+				biasExpPasteIndex++;
+
+				for (GLuint p1PrevNode = 0; p1PrevNode < p1NumOfNodesInPrevLevel; ++p1PrevNode)
+				{
+					oLinks->at(linkPasteIndex) = p1Links[linkCopyIndex] * (1.0 + (random() * 0.01));
+
+					linkCopyIndex++;
+					linkPasteIndex++;
+				}
+			}
+		}
+
+		oStructure->at(1 + p1Level) = p1NumOfNodesInLevel;
+	}
+	oStructure->at(0) = p1NumOfLevels;
+
+}
+
+
 /////////////////////////////
 // -- CREATURE CREATION -- //
 /////////////////////////////
@@ -87,24 +163,20 @@ void AddFirstGenerationCreature()
 	data.angle = random() * 2 * M_PI;
 	data.angleVel = 0;
 
-	data.hardness = random() * random() * random() * random() * random() * random();
-	data.rad = CREATURE_MAX_RADIUS.value;
+	data.hardness = SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS.value;
+	data.rad = SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS.value;
 	
-	data.life = CREATURE_MAX_LIFE.value;
-	data.energy = CREATURE_MAX_ENERGY.value;
+	data.life = SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE.value;
+	data.energy = SIMULATION_FIRSTGEN_CREATURE_INITIAL_ENERGY.value;
 	data.meat = SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT.value;
 
-	float spikeState = random();
-	float feederState = random();
-	float shieldState = random();
-	float shieldSpan = random();
+	float spikeState = 0.0;
+	float feederState = 0.0;
+	float shieldState = 0.0;
+	float shieldSpan = 0.5;
 	data.spike = vec4(0, 0, spikeState, 0);
 	data.feeder = vec4(0, 0, feederState, 0);
 	data.shield = vec4(0, 0, shieldState, shieldSpan);
-
-	data.eyeMuscles = vec2((random() - 0.5) * 2, (random() - 0.5) * 2);
-	data.eyeConeRadius = CREATURE_EYE_MAX_CONES_RADIUS.value;
-	data.eyePupilConeCoverageFraction = random();
 
 	data.spikeLocalAngle = random() * 2 * M_PI;
 	data.feederLocalAngle = random() * 2 * M_PI;
@@ -113,9 +185,53 @@ void AddFirstGenerationCreature()
 	CreatureData_AddCreature(data);
 }
 
-void AddOffspringCreature(unsigned int parent1Index, unsigned int parent2Index)
+void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
 {
 
+	CreatureUniqueID parent1ID = CreatureData_CreatureSSBOIndexToUniqueID(p1SSBO);
+	CreatureUniqueID parent2ID = CreatureData_CreatureSSBOIndexToUniqueID(p2SSBO);
+
+	CreatureData data;
+
+	InitOffspringBrain(p1SSBO, &data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
+
+	
+	GetCreatureAttributeBySSBOIndex(creature_SkinPatterns, p1SSBO, &data.skinPattern);
+	GetCreatureAttributeBySSBOIndex(creature_SkinHues, p1SSBO, &data.skinHue);
+	data.skinSaturation = 1.0;
+	data.skinValue = 1.0;
+
+	// Place offspring at average of parent positions
+	vec2 p1Pos;
+	vec2 p2Pos;
+	GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &p1Pos);
+	GetCreatureAttributeBySSBOIndex(creature_Positions, p2SSBO, &p2Pos);
+	data.pos = vec2((p1Pos.x + p2Pos.x) / 2.0, (p1Pos.y + p2Pos.y) / 2.0);
+
+	data.vel = vec2(0, 0);
+	data.angle = random() * 2 * M_PI;
+	data.angleVel = 0;
+
+	data.hardness = SIMULATION_OFFSPRING_CREATURE_INITIAL_HARDNESS.value;
+	data.rad = SIMULATION_OFFSPRING_CREATURE_INITIAL_RADIUS.value;
+
+	data.life = SIMULATION_OFFSPRING_CREATURE_INITIAL_LIFE.value;
+	data.energy = SIMULATION_OFFSPRING_CREATURE_INITIAL_ENERGY.value;
+	data.meat = SIMULATION_OFFSPRING_CREATURE_INITIAL_MEAT.value;
+
+	float spikeState = 0;
+	float feederState = 0;
+	float shieldState = 0;
+	float shieldSpan = 0.5;
+	data.spike = vec4(0, 0, spikeState, 0);
+	data.feeder = vec4(0, 0, feederState, 0);
+	data.shield = vec4(0, 0, shieldState, shieldSpan);
+
+	GetCreatureAttributeBySSBOIndex(creature_SpikeLocalAngles, p1SSBO, &data.spikeLocalAngle);
+	GetCreatureAttributeBySSBOIndex(creature_FeederLocalAngles, p1SSBO, &data.feederLocalAngle);
+	GetCreatureAttributeBySSBOIndex(creature_ShieldLocalAngles, p1SSBO, &data.shieldLocalAngle);
+
+	CreatureData_AddCreature(data);
 }
 
 
@@ -710,7 +826,8 @@ void Simulation_Programs_Sequence()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_Feeders.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_SkinValues.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_SkinSaturations.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creatureList_Vanishes.creaturesSSBOInfo.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_Horninesses.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 13, creatureList_Vanishes.creaturesSSBOInfo.bufferHandle);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -837,12 +954,17 @@ void Simulation_Programs_Sequence()
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformUInteger(programID, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
+	SetUniformFloat(programID, "uCreatureReproductionEnergyCost", CREATURE_REPRODUCTION_ENERGY_COST.value);
+	SetUniformFloat(programID, "uCreatureReproductionAimDotThreshold", CREATURE_REPRODUCTION_AIM_DOT_THRESHOLD.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_CollidersCounts.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_CollidersGivenEnergy.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_CollidersToPosDirs.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Energies.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_ForwardDirections.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Lives.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Horninesses.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_CollidersIndicesAndPlacements.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creatureList_NewBorns.creaturesSSBOInfo.bufferHandle);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -984,6 +1106,27 @@ void VanishedCreatureRemoval()
 	}
 }
 
+void CreatureNewbornsCreation()
+{
+	GLuint unitSize = creatureList_NewBorns.creaturesSSBOInfo.unitByteSize;
+	GLuint handle = creatureList_NewBorns.creaturesSSBOInfo.bufferHandle;
+
+	// Acquire number of creatures to be created
+	GLuint numOfNewbornCreatures = ((uvec2*)creatureList_NewBorns.mapPtr)[0].x;
+
+	if (numOfNewbornCreatures <= 0) return;
+
+	// Zerofiy count, make the write immediately visible to OpenGL
+	((uvec2*)creatureList_NewBorns.mapPtr)[0].x = 0;
+	glFlushMappedNamedBufferRange(handle, 0, unitSize); // @TODO: Is this needed?
+
+	for (unsigned int i = 0; i < numOfNewbornCreatures; ++i)
+	{
+		uvec2 parentsSSBOIndices = ((uvec2*)creatureList_NewBorns.mapPtr)[i + 1];
+		AddOffspringCreature(parentsSSBOIndices.x, parentsSSBOIndices.y);
+	}
+}
+
 
 void Simulation_Render()
 {
@@ -1036,8 +1179,8 @@ void Simulation_Update()
 	// Remove creatures that vanished
 	VanishedCreatureRemoval();
 
-	// Reproduction
-	// @TODO
+	// Handle newborns
+	CreatureNewbornsCreation();
 
 
 
