@@ -227,6 +227,9 @@ Project minimum requiremenets:
 
 
 	NON-OBVIOUS-TODOS:
+	have firstgen spawn rate be affected by the ratio between alive creatures and dead creatures... if there are lots of alive creatures, it means they've got a pretty nice source of food and they should fight each other? meh
+	make device effectiveness increase with meat? creatures prefer to reproduce quickly and - yes, die quickly. BUT MAYBE THIS IS BECAUSE YOU'RE GIVING THEM A HIGH LIFE VALUE? A damaged creature is better off reproducing to immediately regain its health at no energy cost!
+	have a dynamic firstgen spawn rate to force creatures to evolve to hunt food that actually evades them
 	move alpha computation from fragment to vertex shader
 	have different selectable rendering programs to view special data like:
 		energy transactions

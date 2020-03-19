@@ -122,30 +122,28 @@ extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 1000, 1, 2000 };
 
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.9925, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.9925, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.9825, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.9825, 0.0, 1.0 };
 
 // Simulation creature settings
 extern TweakableIntegerSetting SIMULATION_NUM_OF_CREATURES_ON_INIT = { 0, 0, 1000000 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE = { 5, 0.0, 50.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 0.001, 0.0, 50.0 };
 
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_ENERGY = { 4.5, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 5.0, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE = { 5.0, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS = { 0.4, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS = { 1.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_RATE = { 0.0, 0.0, 10000.0 };
+extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_UPPER_TARGET = { 20000, 0, 10000 };
+extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_LOWER_TARGET = { 1000, 0, 10000 };
 
-// Offspring initial energy + meat should equal reproduction energy cost for a balanced system
-extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_ENERGY = { 4.5, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_MEAT = { 0.5, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_LIFE = { 5.0, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_RADIUS = { 0.01, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_HARDNESS = { 0.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_UP_SPAWN_RATE = { 15.0, 0.0, 100.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_DOWN_SPAWN_RATE = { 0.0, 0.0, 100.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_STEP = { 0.00025, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_SPAWN_RATE_EXPONENT = { 4.0, 0.0, 10.0 };
 
 // Render settings
-extern TweakableFloatSetting RENDER_CLEAR_COLOR_R = { 0.1, 0.0, 1.0 };
-extern TweakableFloatSetting RENDER_CLEAR_COLOR_G = { 0.1, 0.0, 1.0 };
-extern TweakableFloatSetting RENDER_CLEAR_COLOR_B = { 0.1, 0.0, 1.0 };
+extern TweakableFloatSetting RENDER_CLEAR_COLOR_R = { 0.025, 0.0, 1.0 };
+extern TweakableFloatSetting RENDER_CLEAR_COLOR_G = { 0.025, 0.0, 1.0 };
+extern TweakableFloatSetting RENDER_CLEAR_COLOR_B = { 0.025, 0.0, 1.0 };
+
+extern TweakableFloatSetting RENDER_CREATURE_TRANSPARENCY_ENERGY_EXPONENT = { 0.5, 0.0, 1.0 };
 
 // Creature body settings
 extern TweakableFloatSetting CREATURE_MAX_RADIUS = { 0.4, 0.3, 0.5 };
@@ -155,8 +153,8 @@ extern TweakableFloatSetting CREATURE_RADIUS_INTERPOLATION_RATE = { 0.1, 0.001, 
 extern TweakableFloatSetting CREATURE_RADIUS_PERCENTAGE_MEAT_WEIGHT = { 0.7, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_RADIUS_PERCENTAGE_MUSCLE_WEIGHT = { 0.3, 0.0, 1.0 };
 
-extern TweakableFloatSetting CREATURE_MAX_HARDNESS = { 0.65, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_MIN_HARDNESS = { 0.05, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_MAX_HARDNESS = { 2.0, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_MIN_HARDNESS = { 0.15, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_HARDNESS_INTERPOLATION_RATE = { 0.1, 0.001, 1.0 };
 
 extern TweakableFloatSetting CREATURE_MAX_SKIN_VALUE = { 1.0, 0.0, 1.0 };
@@ -167,45 +165,34 @@ extern TweakableFloatSetting CREATURE_MAX_SKIN_SATURATION = { 1.0, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_MIN_SKIN_SATURATION = { 0.2, 0.0, 1.0 };
 
 // Creature energy/meat/life settings
-extern TweakableFloatSetting CREATURE_MAX_ENERGY = { 50.0, 0.1, 50.0 };
-extern TweakableFloatSetting CREATURE_MAX_MEAT = { 5.0, 0.1, 10.0 };
-extern TweakableFloatSetting CREATURE_MAX_LIFE = { 5.0, 0.1, 10.0 };
+extern TweakableFloatSetting CREATURE_MAX_ENERGY = { 5.0, 0.1, 50.0 };
+extern TweakableFloatSetting CREATURE_MAX_MEAT = { 10.0, 0.1, 10.0 };
+extern TweakableFloatSetting CREATURE_MAX_LIFE = { 1.0, 0.1, 10.0 };
 
 extern TweakableFloatSetting CREATURE_ENERGY_TO_MEAT_CONVERSION_RATE = { 0.001, 0.1, 1.0 };
-extern TweakableFloatSetting CREATURE_MEAT_TO_ENERGY_CONVERSION_RATE = { 0.001, 0.1, 1.0 };
-extern TweakableFloatSetting CREATURE_ENERGY_TO_LIFE_CONVERSION_RATE = { 0.05, 0.1, 1.0 };
+extern TweakableFloatSetting CREATURE_MEAT_TO_ENERGY_CONVERSION_RATE = { 0.00, 0.1, 1.0 };
+extern TweakableFloatSetting CREATURE_ENERGY_TO_LIFE_CONVERSION_RATE = { 0.1, 0.1, 1.0 };
 
 extern TweakableFloatSetting CREATURE_LIFE_DRAIN_ON_NO_ENERGY = { 0.05, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_ENERGY_DRAIN_CONSTANT = { 0.0001, 0.0, 1.0 };
 
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_ENERGY = { 2.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 10.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE = { 1.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS = { 0.4, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS = { 1.0, 0.0, 10.0 };
 
-// Creature device settings
-extern TweakableFloatSetting CREATURE_ENERGY_PERCENTAGE_BASED_DEVICE_STATE_MULTIPLIER_EXPONENT = { 0.05, 0.0, 1.0 };
-
-extern TweakableFloatSetting CREATURE_DEVICE_AIM_DOT_THRESHOLD = { 0.9, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_EFFECTIVENESS = { 0.1, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_LIFE_EFFECTIVENESS = { 0.1, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_MEAT_EFFECTIVENESS = { 0.1, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
-
-extern TweakableFloatSetting CREATURE_DEVICE_STATE_INTERPOLATION_RATE = { 0.1, 0.001, 1.0 };
-
-// Creature reproduction settings
-extern TweakableFloatSetting CREATURE_REPRODUCTION_AIM_DOT_THRESHOLD = { 0.2, 0.0, 1.0 };
-
-
-// Creature movement settings
-extern TweakableFloatSetting CREATURE_ENERGY_PERCENTAGE_BASED_MOVEMENT_MULTIPLIER_EXPONENT = { 0.05, 0.0, 1.0 };
-
-extern TweakableFloatSetting CREATURE_FORWARD_MOVEMENT_EFFECTIVENESS = { 0.001, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_BACKWARD_MOVEMENT_EFFECTIVENESS = { 0.0003, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_STRAFE_MOVEMENT_EFFECTIVENESS = { 0.0001, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_TURN_MOVEMENT_EFFECTIVENESS = { 0.001, 0.0, 1.0 };
-
-extern TweakableFloatSetting CREATURE_MAX_VELOCITY_LENGTH = { 0.4, 0.1, 10.0 };
-extern TweakableFloatSetting CREATURE_MAX_ANGLE_VELOCITY_LENGTH = { 0.5, 0.1, 10.0 };
+// Offspring initial energy + meat should NOT be more than reproduction energy cost for an energy balanced system, and for evolution to occur!
+// Moreso, keeping offspring initial energy + meat + life values BELOW reproduction energy cost would discourage creatures to utilize the reproduce-quickly-die-quickly technique!
+extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_ENERGY = { 1.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_MEAT = { 0.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_LIFE = { 1.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_RADIUS = { 0.01, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_HARDNESS = { 0.0, 0.0, 10.0 };
 
 // Creature energy costs
+extern TweakableFloatSetting CREATURE_REPRODUCTION_ENERGY_COST = { 2.5, 0.0, 1.0 };
+
 extern TweakableFloatSetting CREATURE_FORWARD_MOVEMENT_ENERGY_COST = { 0.0003, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_BACKWARD_MOVEMENT_ENERGY_COST = { 0.0003, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_STRAFE_MOVEMENT_ENERGY_COST = { 0.0003, 0.0, 1.0 };
@@ -215,18 +202,39 @@ extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_ENERGY_COST = { 0.00002, 0.0
 extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_ENERGY_COST = { 0.00002, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_ENERGY_COST = { 0.00001, 0.0, 1.0 };
 
-extern TweakableFloatSetting CREATURE_REPRODUCTION_ENERGY_COST = { 5.0, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_EFFECTIVENESS = { 0.1, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_LIFE_EFFECTIVENESS = { 0.025, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_MEAT_EFFECTIVENESS = { 0.05, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
+
+
+extern TweakableFloatSetting CREATURE_FORWARD_MOVEMENT_EFFECTIVENESS = { 0.001, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_BACKWARD_MOVEMENT_EFFECTIVENESS = { 0.0003, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_STRAFE_MOVEMENT_EFFECTIVENESS = { 0.0001, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_TURN_MOVEMENT_EFFECTIVENESS = { 0.001, 0.0, 1.0 };
+
+// Creature device & reproduction
+extern TweakableFloatSetting CREATURE_ENERGY_PERCENTAGE_BASED_MOVEMENT_MULTIPLIER_EXPONENT = { 0.05, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_ENERGY_PERCENTAGE_BASED_DEVICE_STATE_MULTIPLIER_EXPONENT = { 0.1, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_STATE_INTERPOLATION_RATE = { 0.1, 0.001, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_AIM_DOT_THRESHOLD = { 0.9, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_REPRODUCTION_AIM_DOT_THRESHOLD = { 0.9, 0.0, 1.0 };
+
+
+// For normalization purposes
+extern TweakableFloatSetting CREATURE_MAX_VELOCITY_LENGTH = { 0.4, 0.1, 10.0 };
+extern TweakableFloatSetting CREATURE_MAX_ANGLE_VELOCITY_LENGTH = { 0.5, 0.1, 10.0 };
 
 // Creature death settings
-extern TweakableFloatSetting CREATURE_DEATH_WITH_MEAT_SHRINK_RATE = { 0.0001, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_WITH_MEAT_SHRINK_RATE = { 0.001, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEATH_WITHOUT_MEAT_SHRINK_RATE = { 0.01, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEATH_EXISTENCE_RADIUS_THRESHOLD = { 0.01, 0.0, 1.0 };
 
-extern TweakableFloatSetting CREATURE_DEATH_HARDNESS_TARGET = { 1.0, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_HARDNESS_TARGET = { 2.0, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEATH_HARDNESS_INTERPOLATION_RATE = { 0.05, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEATH_DEVICE_ZEROFICATION_INTERPOLATION_RATE = { 0.1, 0.0, 1.0 };
 
-extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_TARGET = { 1.0, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_TARGET = { 0.5, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_INTERPOLATION_RATE = { 0.01, 0.0, 1.0 };
 
 // Creature mutation settings

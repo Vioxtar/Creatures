@@ -42,7 +42,7 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainBiasesExponents->reserve(CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES; i++)
 	{
-		float bias = (random() - 0.5) * 5.0;
+		float bias = (random() - 0.5);
 		float activationExponent = random() * 10;
 		brainBiasesExponents->emplace_back(vec2(bias, activationExponent));
 	}
@@ -51,7 +51,7 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainLinks->reserve(CREATURE_BRAIN_MAX_NUM_OF_LINKS);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_LINKS; i++)
 	{
-		brainLinks->emplace_back(random() * random() * random() * random() * random() * random() * random());
+		brainLinks->emplace_back(random() * random() * random() * random() * random());
 	}
 
 	// @TODO: First gen is currently getting max structure for performance testing
@@ -654,17 +654,41 @@ void Simulation_Init()
 // -- SIMULATION UPDATE STEP -- //
 //////////////////////////////////
 
-float creaturesToSpawn = 0.0;
+float firstgenCreatureSpawn_CreaturesToSpawn = 0.0;
+bool firstgenCreatureSpawn_PulseActive = false;
+float firstgenCreatureSpawn_OscillateX = 0.0;
 void Simulation_FirstgenCreatureSpawns()
 {
+	// Constant spawn
+	firstgenCreatureSpawn_CreaturesToSpawn += SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE.value;
 
-	creaturesToSpawn += SIMULATION_FIRSTGEN_CREATURE_SPAWN_RATE.value;
-	while (creaturesToSpawn >= 1.0)
+
+	// Pulse spawn
+	if (firstgenCreatureSpawn_PulseActive)
 	{
-		AddFirstGenerationCreature();
-		creaturesToSpawn -= 1.0;
+		firstgenCreatureSpawn_CreaturesToSpawn += SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_RATE.value;
+		firstgenCreatureSpawn_PulseActive = creature_count + firstgenCreatureSpawn_CreaturesToSpawn < SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_UPPER_TARGET.value;
+	}
+	else
+	{
+		firstgenCreatureSpawn_PulseActive = creature_count < SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_LOWER_TARGET.value;
 	}
 
+	// Oscilalte spawn
+	float oscillateZeroToOne = cos(firstgenCreatureSpawn_OscillateX) / 2.0 + 0.5;
+	float oscillateZeroToOneExp = pow(oscillateZeroToOne, SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_SPAWN_RATE_EXPONENT.value);
+	float upRate = SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_UP_SPAWN_RATE.value;
+	float downRate = SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_DOWN_SPAWN_RATE.value;
+	float xStep = SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_STEP.value;
+	firstgenCreatureSpawn_CreaturesToSpawn += (downRate + (upRate - downRate) * oscillateZeroToOneExp);
+	firstgenCreatureSpawn_OscillateX = mod(firstgenCreatureSpawn_OscillateX + xStep, (float)(M_PI * 2.0));
+
+	// Finalize
+	while (firstgenCreatureSpawn_CreaturesToSpawn >= 1.0)
+	{
+		AddFirstGenerationCreature();
+		firstgenCreatureSpawn_CreaturesToSpawn -= 1.0;
+	}
 }
 
 void Simulation_Programs_Sequence()
@@ -1162,6 +1186,7 @@ void Simulation_Render()
 	SetUniformMatrix4(drawCallData_CreatureBody.program, "uTransform", GetSimSpaceToCameraTransform());
 	SetUniformUInteger(drawCallData_CreatureBody.program, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
 	SetUniformFloat(drawCallData_CreatureBody.program, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
+	SetUniformFloat(drawCallData_CreatureBody.program, "uCreatureTransparencyEnergyExponent", RENDER_CREATURE_TRANSPARENCY_ENERGY_EXPONENT.value);
 	glDrawElementsInstanced(GL_TRIANGLES, drawCallData_CreatureBody.numOfIndices, GL_UNSIGNED_INT, 0, numOfInstances);
 	glBindVertexArray(0);
 }

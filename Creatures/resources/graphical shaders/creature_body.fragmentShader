@@ -11,7 +11,7 @@ in vec2 oFeederEuclideanPos;
 // Per instance values
 flat in vec4 oVertexColor;
 flat in vec2 oSkinPattern;
-flat in float oEnergyPercentage;
+flat in float oEnergyFactor;
 flat in float oSpikeState;
 flat in float oFeederState;
 flat in float oShieldState;
@@ -79,7 +79,7 @@ void main()
     
     
     // Opaqueness reflects energy
-    FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oEnergyPercentage) * 10.0 * (1.0 + oEnergyPercentage)), oEnergyPercentage + 0.1);
+    FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oEnergyFactor) * 3.5), oEnergyFactor + 0.05);
     FragColor.a *= 0.975; // Still make everything ever so slightly transparent
 
     // May not be needed
