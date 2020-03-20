@@ -41,12 +41,12 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainBiasesExponents->reserve(CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES; i++)
 	{
-		GLfloat bias = pow(random(), CREATURE_BRAIN_BIAS_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_MAX_ABS_BIAS
+		GLfloat bias = pow(random(), CREATURE_BRAIN_NEW_BIAS_PERCENTAGE_EXPONENT)
+			* CREATURE_BRAIN_NEW_MAX_ABS_BIAS
 			* randomNegate();
 
-		GLfloat activationExponent = pow(random(), CREATURE_BRAIN_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_MAX_ABS_ACTIVATION_EXPONENT
+		GLfloat activationExponent = pow(random(), CREATURE_BRAIN_NEW_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT)
+			* CREATURE_BRAIN_NEW_MAX_ABS_ACTIVATION_EXPONENT
 			* randomNegate();
 
 		brainBiasesExponents->emplace_back(vec2(bias, activationExponent));
@@ -56,8 +56,8 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainLinks->reserve(CREATURE_BRAIN_MAX_NUM_OF_LINKS);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_LINKS; i++)
 	{
-		GLfloat linkWeight = pow(random(), CREATURE_BRAIN_MAX_LINK_WEIGHT_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_MAX_LINK_WEIGHT;
+		GLfloat linkWeight = pow(random(), CREATURE_BRAIN_NEW_MAX_LINK_WEIGHT_PERCENTAGE_EXPONENT)
+			* CREATURE_BRAIN_NEW_MAX_LINK_WEIGHT;
 
 		brainLinks->emplace_back(linkWeight);
 	}
@@ -116,78 +116,47 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 	to prevent the system from converging to full brain structures.
 	*/
 
-	enum BrainMutationPassType
+	enum class BrainMutationPassType
 	{
-		BRAIN_MUTATION_NONE,
-		BRAIN_MUTATION_ADJUSTMENT,
-		BRAIN_MUTATION_ADD_MIDLEVEL,
-		BRAIN_MUTATION_REM_MIDLEVEL,
-		BRAIN_MUTATION_ADD_MIDLEVEL_NODE,
-		BRAIN_MUTATION_REM_MIDLEVEL_NODE
+		NONE,
+		ADJUSTMENT,
+		ADD_MIDLEVEL,
+		REM_MIDLEVEL,
+		ADD_MIDLEVEL_NODE,
+		REM_MIDLEVEL_NODE
 	};
 
-	BrainMutationPassType mutationType;
-	float ran = random();
-	if (ran < 0.7) mutationType = BRAIN_MUTATION_NONE;
-	else if (ran < 0.8) mutationType = BRAIN_MUTATION_ADJUSTMENT;
-	else if (ran < 0.85) mutationType = BRAIN_MUTATION_ADD_MIDLEVEL;
-	else if (ran < 0.9) mutationType = BRAIN_MUTATION_REM_MIDLEVEL;
-	else if (ran < 0.95) mutationType = BRAIN_MUTATION_ADD_MIDLEVEL_NODE;
-	else if (ran < 1.0) mutationType = BRAIN_MUTATION_REM_MIDLEVEL_NODE;
+	BrainMutationPassType mutationType = BrainMutationPassType::NONE;
+	//float ran = random();
+	//if (ran < 0.1) mutationType = BrainMutationPassType::ADJUSTMENT;
+	//else if (ran < 0.15) mutationType = BrainMutationPassType::ADD_MIDLEVEL;
+	//else if (ran < 0.2) mutationType = BrainMutationPassType::REM_MIDLEVEL;
+	//else if (ran < 0.25) mutationType = BrainMutationPassType::ADD_MIDLEVEL_NODE;
+	//else if (ran < 0.3) mutationType = BrainMutationPassType::REM_MIDLEVEL_NODE;
 
 	GLuint linkCopyIndex = 0;
 	GLuint linkPasteIndex = 0;
 	GLuint biasExpCopyIndex = 0;
 	GLuint biasExpPasteIndex = 0;
+	GLuint levelCopyIndex = 0;
+	GLuint levelPasteIndex = 0;
 
 	GLuint p1NumOfLevels = p1Structure[0];
-
-	if (mutationType == BRAIN_MUTATION_NONE)
-	{
-		for (GLuint p1Level = 0; p1Level < p1NumOfLevels; ++p1Level)
-		{
-			GLuint structureIndex = p1Level + 1;
-			GLuint p1NumOfNodesInLevel = p1Structure[structureIndex];
-			GLuint p1NumOfNodesInPrevLevel = p1Level <= 0 ? 0 : p1Structure[p1Level];
-			for (GLuint p1Node = 0; p1Node < p1NumOfNodesInLevel; ++p1Node)
-			{
-				if (p1Level > 0)
-				{
-					oBiasesExponents->at(biasExpPasteIndex) = p1BiasesExponents[biasExpCopyIndex];
-
-					biasExpCopyIndex++;
-					biasExpPasteIndex++;
-
-					for (GLuint p1PrevNode = 0; p1PrevNode < p1NumOfNodesInPrevLevel; ++p1PrevNode)
-					{
-						oLinks->at(linkPasteIndex) = p1Links[linkCopyIndex];
-
-						linkCopyIndex++;
-						linkPasteIndex++;
-					}
-				}
-			}
-
-			oStructure->at(structureIndex) = p1NumOfNodesInLevel;
-		}
-		oStructure->at(0) = p1NumOfLevels;
-	}
 	
-	if (mutationType == BRAIN_MUTATION_ADJUSTMENT)
+	if (mutationType == BrainMutationPassType::ADJUSTMENT)
 	{
 		for (GLuint p1Level = 0; p1Level < p1NumOfLevels; ++p1Level)
 		{
-			GLuint structureIndex = p1Level + 1;
-			GLuint p1NumOfNodesInLevel = p1Structure[structureIndex];
-			GLuint p1NumOfNodesInPrevLevel = p1Level <= 0 ? 0 : p1Structure[p1Level];
+			GLuint p1NumOfNodesInLevel = p1Structure.at(1 + levelCopyIndex);
+			GLuint p1NumOfNodesInPrevLevel = levelCopyIndex <= 0 ? 0 : p1Structure.at(levelCopyIndex);
 			for (GLuint p1Node = 0; p1Node < p1NumOfNodesInLevel; ++p1Node)
 			{
-				if (p1Level > 0)
+				if (levelCopyIndex > 0)
 				{
-					vec2 biasExponent = p1BiasesExponents[biasExpCopyIndex];
+					vec2 biasExponent = p1BiasesExponents.at(biasExpCopyIndex);
 					GLfloat bias = biasExponent.x;
 					GLfloat exponent = biasExponent.y;
-					
+
 					// @TODO: Maybe put these mutation code snippets in a function
 
 					if (random() < CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_BIAS_CHANCE)
@@ -196,7 +165,7 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 							* CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_BIAS_MAX_ABS
 							* randomNegate();
 
-						bias = clamp(bias + mutation, -CREATURE_BRAIN_MAX_ABS_BIAS, CREATURE_BRAIN_MAX_ABS_BIAS);
+						bias = clamp(bias + mutation, -CREATURE_BRAIN_NEW_MAX_ABS_BIAS, CREATURE_BRAIN_NEW_MAX_ABS_BIAS);
 					}
 
 					if (random() < CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_ACTIVATION_EXPONENT_CHANCE)
@@ -205,7 +174,7 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 							* CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_ACTIVATION_EXPONENT_MAX_ABS
 							* randomNegate();
 
-						exponent = clamp(exponent + mutation, -CREATURE_BRAIN_MAX_ABS_ACTIVATION_EXPONENT, CREATURE_BRAIN_MAX_ABS_ACTIVATION_EXPONENT);
+						exponent = clamp(exponent + mutation, -CREATURE_BRAIN_NEW_MAX_ABS_ACTIVATION_EXPONENT, CREATURE_BRAIN_NEW_MAX_ABS_ACTIVATION_EXPONENT);
 					}
 
 					oBiasesExponents->at(biasExpPasteIndex) = vec2(bias, exponent);
@@ -222,7 +191,7 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 							GLfloat mutation = pow(random(), CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_PERCENTAGE_EXPONENT)
 								* CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_MAX;
 
-							linkWeight = clamp(linkWeight + mutation, -CREATURE_BRAIN_MAX_LINK_WEIGHT, CREATURE_BRAIN_MAX_LINK_WEIGHT);
+							linkWeight = clamp(linkWeight + mutation, -CREATURE_BRAIN_NEW_MAX_LINK_WEIGHT, CREATURE_BRAIN_NEW_MAX_LINK_WEIGHT);
 						}
 
 						oLinks->at(linkPasteIndex) = linkWeight;
@@ -233,7 +202,94 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 				}
 			}
 
-			oStructure->at(structureIndex) = p1NumOfNodesInLevel;
+			oStructure->at(1 + levelPasteIndex) = p1NumOfNodesInLevel;
+
+			levelCopyIndex++;
+			levelPasteIndex++;
+		}
+		oStructure->at(0) = p1NumOfLevels;
+	}
+
+	if (mutationType == BrainMutationPassType::ADD_MIDLEVEL)
+	{
+		// If there isn't enough room for an additional midlevel, bail
+		GLuint p1NumOfMidlevels = p1NumOfLevels - 2;
+		if (p1NumOfMidlevels >= CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS)
+		{
+			mutationType = BrainMutationPassType::NONE;
+		}
+		else
+		{
+			GLuint levelIndexToBeCopied = randomIntRange(1, p1NumOfMidlevels);
+
+			for (GLuint p1Level = 0; p1Level < p1NumOfLevels; ++p1Level)
+			{
+				GLuint p1NumOfNodesInLevel = p1Structure.at(1 + levelCopyIndex);
+				GLuint p1NumOfNodesInPrevLevel = levelCopyIndex <= 0 ? 0 : p1Structure.at(levelCopyIndex);
+
+				bool copyingActive = levelCopyIndex - 1 == levelIndexToBeCopied;
+				if (copyingActive)
+				{
+					
+				}
+
+				for (GLuint p1Node = 0; p1Node < p1NumOfNodesInLevel; ++p1Node)
+				{
+					if (levelCopyIndex > 0)
+					{
+						oBiasesExponents->at(biasExpPasteIndex) = p1BiasesExponents.at(biasExpCopyIndex);
+
+						biasExpCopyIndex++;
+						biasExpPasteIndex++;
+
+						for (GLuint p1PrevNode = 0; p1PrevNode < p1NumOfNodesInPrevLevel; ++p1PrevNode)
+						{
+							oLinks->at(linkPasteIndex) = p1Links.at(linkCopyIndex);
+
+							linkCopyIndex++;
+							linkPasteIndex++;
+						}
+					}
+				}
+
+				oStructure->at(1 + levelPasteIndex) = p1NumOfNodesInLevel;
+
+				levelCopyIndex++;
+				levelPasteIndex++;
+			}
+			oStructure->at(0) = p1NumOfLevels;
+		}
+	}
+
+	if (mutationType == BrainMutationPassType::NONE)
+	{
+		for (GLuint p1Level = 0; p1Level < p1NumOfLevels; ++p1Level)
+		{
+			GLuint p1NumOfNodesInLevel = p1Structure.at(1 + levelCopyIndex);
+			GLuint p1NumOfNodesInPrevLevel = levelCopyIndex <= 0 ? 0 : p1Structure.at(levelCopyIndex);
+			for (GLuint p1Node = 0; p1Node < p1NumOfNodesInLevel; ++p1Node)
+			{
+				if (levelCopyIndex > 0)
+				{
+					oBiasesExponents->at(biasExpPasteIndex) = p1BiasesExponents.at(biasExpCopyIndex);
+
+					biasExpCopyIndex++;
+					biasExpPasteIndex++;
+
+					for (GLuint p1PrevNode = 0; p1PrevNode < p1NumOfNodesInPrevLevel; ++p1PrevNode)
+					{
+						oLinks->at(linkPasteIndex) = p1Links.at(linkCopyIndex);
+
+						linkCopyIndex++;
+						linkPasteIndex++;
+					}
+				}
+			}
+
+			oStructure->at(1 + levelPasteIndex) = p1NumOfNodesInLevel;
+
+			levelCopyIndex++;
+			levelPasteIndex++;
 		}
 		oStructure->at(0) = p1NumOfLevels;
 	}

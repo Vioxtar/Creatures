@@ -34,7 +34,7 @@ uniform uint uMaxNumOfNodesInBrain;
 uniform uint uMaxNumOfActivatedNodesInBrain;
 uniform uint uMaxNumOfLinksInBrain;
 
-float ActivationFunction(float x, float exponent)
+float ActivationFunctionHelper(float x, float exponent)
 {
 	if (x == 0.5)
 	{
@@ -47,6 +47,18 @@ float ActivationFunction(float x, float exponent)
 	else // x > 0.5
 	{
 		return 1.0 - pow(2.0 * (1.0 - x), exponent) / 2.0;
+	}
+}
+
+float ActivationFunction(float x, float exponent)
+{
+	if (exponent < 0)
+	{
+		return -ActivationFunctionHelper(x, -exponent) + 1.0;
+	}
+	else
+	{
+		return ActivationFunctionHelper(x, exponent);
 	}
 }
 

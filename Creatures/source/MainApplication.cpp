@@ -107,7 +107,6 @@ int main()
 	double lastTime = 0;
 	int frameCount = 0;
 
-
 	// Start main loop
 	while (!glfwWindowShouldClose(window))
 	{

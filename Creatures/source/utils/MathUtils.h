@@ -28,4 +28,9 @@ namespace mathutils
 	{
 		return random() < 0.5 ? 1.0 : -1.0;
 	}
+
+	static int randomIntRange(int min, int max)
+	{
+		return min + int(random() * (max - min + 1));
+	}
 }
