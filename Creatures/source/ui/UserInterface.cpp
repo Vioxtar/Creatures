@@ -230,6 +230,12 @@ bool SelectCreatureByDistanceToMouse(CreatureUniqueID& selectedCreatureID)
 	return found;
 }
 
+bool simulationPaused = false;
+void ToggleSimulationLogic()
+{
+	simulationPaused = !simulationPaused;
+	Simulation_LogicPause(simulationPaused);
+}
 
 //////////////////////////
 // -- GLFW CALLBACKS -- //
@@ -259,10 +265,12 @@ void glfw_frame_buffer_size_callback(GLFWwindow*, int width, int height)
 
 void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	//if (key == GLFW_KEY_E && action == GLFW_PRESS)
-	//{
-		
-	//}
+	if (DearImGuiUsingKeyboard()) return;
+
+	if (key == GLFW_KEY_P && action == GLFW_PRESS)
+	{
+		ToggleSimulationLogic();
+	}
 }
 
 

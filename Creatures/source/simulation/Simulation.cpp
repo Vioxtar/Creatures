@@ -227,10 +227,11 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 				GLuint p1NumOfNodesInLevel = p1Structure.at(1 + levelCopyIndex);
 				GLuint p1NumOfNodesInPrevLevel = levelCopyIndex <= 0 ? 0 : p1Structure.at(levelCopyIndex);
 
-				bool copyingActive = levelCopyIndex - 1 == levelIndexToBeCopied;
+				bool copyingActive = levelPasteIndex - 1 == levelIndexToBeCopied;
 				if (copyingActive)
 				{
-					
+					p1Level--;
+					levelCopyIndex--;
 				}
 
 				for (GLuint p1Node = 0; p1Node < p1NumOfNodesInLevel; ++p1Node)
@@ -1344,28 +1345,37 @@ void Simulation_Render()
 	glBindVertexArray(0);
 }
 
+bool logicPause = false;
+void Simulation_LogicPause(bool enablePause)
+{
+	logicPause = enablePause;
+}
+
 void Simulation_Update()
 {
-	// Finish everything the GPU needs to do from the last frame
-	glFlush();
+	if (!logicPause)
+	{
+		// Finish everything the GPU needs to do from the last frame
+		glFlush();
 
-	// Add first generation creatures
-	Simulation_FirstgenCreatureSpawns();
+		// Add first generation creatures
+		Simulation_FirstgenCreatureSpawns();
 
-	// Program logic sequence
-	Simulation_Programs_Sequence();
-	
+		// Program logic sequence
+		Simulation_Programs_Sequence();
+
+		// Wait until OpenGL finished with all command dequeues
+		glFinish();
+
+		// Remove creatures that vanished
+		VanishedCreatureRemoval();
+
+		// Handle newborns
+		CreatureNewbornsCreation();
+	}
+
 	// Render
 	Simulation_Render();
-	
-	// Wait until OpenGL finished with all command dequeues
-	glFinish();
-
-	// Remove creatures that vanished
-	VanishedCreatureRemoval();
-
-	// Handle newborns
-	CreatureNewbornsCreation();
 
 
 
