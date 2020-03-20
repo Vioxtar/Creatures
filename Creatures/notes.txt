@@ -227,15 +227,20 @@ Project minimum requiremenets:
 
 
 	NON-OBVIOUS-TODOS:
+	creatures cant reproduce unless their meat is above some threshold? Or to be more direct, decouple reproduction energy cost to reproduction energy cost AND reproduction energy threshold!
+	have creatures be able to control their device local angles?
+	each creature has different energy/meat/life conversion rates? hmmm
 	have firstgen spawn rate be affected by the ratio between alive creatures and dead creatures... if there are lots of alive creatures, it means they've got a pretty nice source of food and they should fight each other? meh
 	make device effectiveness increase with meat? creatures prefer to reproduce quickly and - yes, die quickly. BUT MAYBE THIS IS BECAUSE YOU'RE GIVING THEM A HIGH LIFE VALUE? A damaged creature is better off reproducing to immediately regain its health at no energy cost!
 	have a dynamic firstgen spawn rate to force creatures to evolve to hunt food that actually evades them
 	move alpha computation from fragment to vertex shader
-	have different selectable rendering programs to view special data like:
-		energy transactions
+	have different selectable (through keyboard numbers!) rendering programs to view special data like:
+		energy transactions heatmap
 		reproductions
-		meats
-		generations
+		life heatmaps
+		meats heatmap
+		generations within histogram heatmap
+		TO DO THIS USE A SINGLE PROGRAM THAT SUPPORTS X HEATMAP RATIO WITH MIN/MAX UNIFORMS USED FOR NORMALIZATION, THEN JUST CHANGE BINDINGS AND UNIFORM INPUTS
 	creature tracker show creature trail?
 	make saturation actually an inherited trait, and have the pupil sight see saturation difference, meanwhile life can be reflected by opacity exponent
 	REST MECHANIC: make it so creatures can only spend X energy per frame, and if they actuate themselves too much they wont be able to regenerate - so regenerating creatures will need to move slow / halt
