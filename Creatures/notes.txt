@@ -227,6 +227,7 @@ Project minimum requiremenets:
 
 
 	NON-OBVIOUS-TODOS:
+	initial pre-simulation settings assert checks sequence + a dearIMGUI prompting system (in its own MessagePrompts.cpp)
 	creatures cant reproduce unless their meat is above some threshold? Or to be more direct, decouple reproduction energy cost to reproduction energy cost AND reproduction energy threshold!
 	have creatures be able to control their device local angles?
 	each creature has different energy/meat/life conversion rates? hmmm

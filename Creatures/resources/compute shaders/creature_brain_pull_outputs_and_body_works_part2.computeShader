@@ -111,13 +111,15 @@ uniform float uCreatureMinSkinSaturation;
 
 uniform float uCreatureLifeDrainOnNoEnergy;
 
-uniform float uCreatureDeathWithMeatShrinkRate;
+uniform float uCreatureDeathMeatRotRate;
 uniform float uCreatureDeathWithoutMeatShrinkRate;
 
 uniform float uCreatureDeathExistenceRadiusThreshold;
 uniform float uCreatureDeathHardnessTarget;
 uniform float uCreatureDeathHardnessInterpolationRate;
 uniform float uCreatureDeathDeviceZeroficationInterpolationRate;
+
+uniform float uCreatureDeathEnergyZeroficationRate;
 
 uniform float uCreatureDeathSkinValueTarget;
 uniform float uCreatureDeathSkinValueInterpolationRate;
@@ -255,13 +257,31 @@ void main()
 	}
 	else
 	{
-		// Shrink radius
-		float radiusShrinkRate = Meats[gid] > 0.0 ? uCreatureDeathWithMeatShrinkRate : uCreatureDeathWithoutMeatShrinkRate;
-		
-		float radius = Radii[gid];
-		radius *= (1.0 - radiusShrinkRate);
+		// Meat rot
+		float meat = Meats[gid];
+		meat -= uCreatureDeathMeatRotRate;
+		Meats[gid] = meat;
 
+		// Radius
+		float radius = Radii[gid];
+		if (meat > 0.0)
+		{
+			float meatPercentage = min(meat, uCreatureMaxMeat) / uCreatureMaxMeat;
+			float targetRadius = uCreatureMinRadius + (uCreatureMaxRadius - uCreatureMinRadius) * meatPercentage;
+			radius = radius * (1.0 - uCreatureRadiusInterpolationRate) + uCreatureRadiusInterpolationRate * targetRadius;
+		}
+		else
+		{
+			radius -= uCreatureDeathWithoutMeatShrinkRate;
+		}
 		Radii[gid] = radius;
+
+
+		// Energy zeroficiation
+		float energy = Energies[gid];
+		energy *= (1.0 - uCreatureDeathEnergyZeroficationRate);
+		Energies[gid] = energy;
+
 
 		// If we're below the creature existence radius threshold, remove ourselves from the simulation
 		if (radius < uCreatureDeathExistenceRadiusThreshold)

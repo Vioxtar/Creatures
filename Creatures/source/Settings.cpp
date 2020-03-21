@@ -249,13 +249,15 @@ extern TweakableFloatSetting CREATURE_MAX_VELOCITY_LENGTH = { 0.4, 0.1, 10.0 };
 extern TweakableFloatSetting CREATURE_MAX_ANGLE_VELOCITY_LENGTH = { 0.5, 0.1, 10.0 };
 
 // Creature death settings
-extern TweakableFloatSetting CREATURE_DEATH_WITH_MEAT_SHRINK_RATE = { 0.001, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEATH_WITHOUT_MEAT_SHRINK_RATE = { 0.01, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEATH_EXISTENCE_RADIUS_THRESHOLD = { 0.01, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_MEAT_ROT_RATE = { 0.0002, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_WITHOUT_MEAT_SHRINK_RATE = { 0.001, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEATH_EXISTENCE_RADIUS_THRESHOLD = { 0.0025, 0.0, 1.0 };
 
 extern TweakableFloatSetting CREATURE_DEATH_HARDNESS_TARGET = { 2.0, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEATH_HARDNESS_INTERPOLATION_RATE = { 0.05, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEATH_DEVICE_ZEROFICATION_INTERPOLATION_RATE = { 0.1, 0.0, 1.0 };
+
+extern TweakableFloatSetting CREATURE_DEATH_ENERGY_ZEROFICATION_INTERPOLATION_RATE = { 0.01, 0.0, 1.0 };
 
 extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_TARGET = { 0.25, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_INTERPOLATION_RATE = { 0.001, 0.0, 1.0 };

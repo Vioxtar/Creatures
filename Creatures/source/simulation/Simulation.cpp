@@ -210,57 +210,60 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 		oStructure->at(0) = p1NumOfLevels;
 	}
 
-	if (mutationType == BrainMutationPassType::ADD_MIDLEVEL)
-	{
-		// If there isn't enough room for an additional midlevel, bail
-		GLuint p1NumOfMidlevels = p1NumOfLevels - 2;
-		if (p1NumOfMidlevels >= CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS)
-		{
-			mutationType = BrainMutationPassType::NONE;
-		}
-		else
-		{
-			GLuint levelIndexToBeCopied = randomIntRange(1, p1NumOfMidlevels);
+	//if (mutationType == BrainMutationPassType::ADD_MIDLEVEL)
+	//{
+	//	// If there isn't enough room for an additional midlevel, bail
+	//	GLuint p1NumOfMidlevels = p1NumOfLevels - 2;
+	//	if (p1NumOfMidlevels >= CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS)
+	//	{
+	//		mutationType = BrainMutationPassType::NONE;
+	//	}
+	//	else
+	//	{
+	//		GLuint levelIndexToBeCopied = randomIntRange(1, p1NumOfMidlevels);
 
-			for (GLuint p1Level = 0; p1Level < p1NumOfLevels; ++p1Level)
-			{
-				GLuint p1NumOfNodesInLevel = p1Structure.at(1 + levelCopyIndex);
-				GLuint p1NumOfNodesInPrevLevel = levelCopyIndex <= 0 ? 0 : p1Structure.at(levelCopyIndex);
+	//		for (GLuint p1Level = 0; p1Level < p1NumOfLevels; ++p1Level)
+	//		{
+	//			GLuint p1NumOfNodesInLevel = p1Structure.at(1 + levelCopyIndex);
+	//			GLuint p1NumOfNodesInPrevLevel = levelCopyIndex <= 0 ? 0 : p1Structure.at(levelCopyIndex);
 
-				bool copyingActive = levelPasteIndex - 1 == levelIndexToBeCopied;
-				if (copyingActive)
-				{
-					p1Level--;
-					levelCopyIndex--;
-				}
+	//			bool copyingActive = levelPasteIndex - 1 == levelIndexToBeCopied;
+	//			if (copyingActive)
+	//			{
+	//				p1Level--;
+	//				levelCopyIndex--;
 
-				for (GLuint p1Node = 0; p1Node < p1NumOfNodesInLevel; ++p1Node)
-				{
-					if (levelCopyIndex > 0)
-					{
-						oBiasesExponents->at(biasExpPasteIndex) = p1BiasesExponents.at(biasExpCopyIndex);
+	//				// Keep a 'XResumeIndex' for bias/links/whatever for when copying is finished...
+	//				// Use a if (copyingActive) statements when copying links/nodes + when leaving this level's iteration to resume brain writing
+	//			}
 
-						biasExpCopyIndex++;
-						biasExpPasteIndex++;
+	//			for (GLuint p1Node = 0; p1Node < p1NumOfNodesInLevel; ++p1Node)
+	//			{
+	//				if (levelCopyIndex > 0)
+	//				{
+	//					oBiasesExponents->at(biasExpPasteIndex) = p1BiasesExponents.at(biasExpCopyIndex);
 
-						for (GLuint p1PrevNode = 0; p1PrevNode < p1NumOfNodesInPrevLevel; ++p1PrevNode)
-						{
-							oLinks->at(linkPasteIndex) = p1Links.at(linkCopyIndex);
+	//					biasExpCopyIndex++;
+	//					biasExpPasteIndex++;
 
-							linkCopyIndex++;
-							linkPasteIndex++;
-						}
-					}
-				}
+	//					for (GLuint p1PrevNode = 0; p1PrevNode < p1NumOfNodesInPrevLevel; ++p1PrevNode)
+	//					{
+	//						oLinks->at(linkPasteIndex) = p1Links.at(linkCopyIndex);
 
-				oStructure->at(1 + levelPasteIndex) = p1NumOfNodesInLevel;
+	//						linkCopyIndex++;
+	//						linkPasteIndex++;
+	//					}
+	//				}
+	//			}
 
-				levelCopyIndex++;
-				levelPasteIndex++;
-			}
-			oStructure->at(0) = p1NumOfLevels;
-		}
-	}
+	//			oStructure->at(1 + levelPasteIndex) = p1NumOfNodesInLevel;
+
+	//			levelCopyIndex++;
+	//			levelPasteIndex++;
+	//		}
+	//		oStructure->at(0) = p1NumOfLevels;
+	//	}
+	//}
 
 	if (mutationType == BrainMutationPassType::NONE)
 	{
@@ -988,12 +991,13 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureSkinValueInterpolationRate", CREATURE_SKIN_VALUE_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureLifeDrainOnNoEnergy", CREATURE_LIFE_DRAIN_ON_NO_ENERGY.value);
 	SetUniformFloat(programID, "uCreatureEnergyDrainConstant", CREATURE_ENERGY_DRAIN_CONSTANT.value);
-	SetUniformFloat(programID, "uCreatureDeathWithMeatShrinkRate", CREATURE_DEATH_WITH_MEAT_SHRINK_RATE.value);
+	SetUniformFloat(programID, "uCreatureDeathMeatRotRate", CREATURE_DEATH_MEAT_ROT_RATE.value);
 	SetUniformFloat(programID, "uCreatureDeathWithoutMeatShrinkRate", CREATURE_DEATH_WITHOUT_MEAT_SHRINK_RATE.value);
 	SetUniformFloat(programID, "uCreatureDeathExistenceRadiusThreshold", CREATURE_DEATH_EXISTENCE_RADIUS_THRESHOLD.value);
 	SetUniformFloat(programID, "uCreatureDeathHardnessTarget", CREATURE_DEATH_HARDNESS_TARGET.value);
 	SetUniformFloat(programID, "uCreatureDeathHardnessInterpolationRate", CREATURE_DEATH_HARDNESS_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureDeathDeviceZeroficationInterpolationRate", CREATURE_DEATH_DEVICE_ZEROFICATION_INTERPOLATION_RATE.value);
+	SetUniformFloat(programID, "uCreatureDeathEnergyZeroficationRate", CREATURE_DEATH_ENERGY_ZEROFICATION_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureDeathSkinValueTarget", CREATURE_DEATH_SKIN_VALUE_TARGET.value);
 	SetUniformFloat(programID, "uCreatureDeathSkinValueInterpolationRate", CREATURE_DEATH_SKIN_VALUE_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureEnergyPercentageBasedDeviceStateMultiplierExponent", CREATURE_ENERGY_PERCENTAGE_BASED_DEVICE_STATE_MULTIPLIER_EXPONENT.value);
