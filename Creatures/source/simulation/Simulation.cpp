@@ -18,6 +18,23 @@ struct InstancedDrawCallData
 // Render draw call datas
 InstancedDrawCallData drawCallData_CreatureBody;
 
+//////////////////////////
+// -- MUTATION UTILS -- //
+//////////////////////////
+
+void MutateClampedCreatureTrait(GLfloat& value, GLfloat minValue, GLfloat maxValue, GLfloat chanceToMutate, GLfloat mutationJitter, GLfloat mutationJitterPercentageExponent)
+{
+	if (random() >= chanceToMutate) return;
+	GLfloat mutation = pow(random(), mutationJitterPercentageExponent) * mutationJitter	* randomNegate();
+	value = clamp(value + mutation, minValue, maxValue);
+}
+
+void MutateCreatureTrait(GLfloat& value, GLfloat chanceToMutate, GLfloat mutationJitter, GLfloat mutationJitterPercentageExponent)
+{
+	if (random() >= chanceToMutate) return;
+	GLfloat mutation = pow(random(), mutationJitterPercentageExponent) * mutationJitter * randomNegate();
+	value += mutation;
+}
 
 
 //////////////////
@@ -108,23 +125,19 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 		GLfloat bias = biasExponent.x;
 		GLfloat exponent = biasExponent.y;
 
-		if (random() < CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_BIAS_CHANCE)
-		{
-			GLfloat mutation = pow(random(), CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_BIAS_PERCENTAGE_EXPONENT)
-				* CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_BIAS_MAX_ABS
-				* randomNegate();
+		MutateClampedCreatureTrait(bias,
+			-CREATURE_BRAIN_NEW_BIAS_MAX_ABS, CREATURE_BRAIN_NEW_BIAS_MAX_ABS,
+			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_BIAS_CHANCE,
+			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_BIAS_MAX_ABS,
+			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_BIAS_PERCENTAGE_EXPONENT
+		);
 
-			bias = clamp(bias + mutation, -CREATURE_BRAIN_NEW_BIAS_MAX_ABS, CREATURE_BRAIN_NEW_BIAS_MAX_ABS);
-		}
-
-		if (random() < CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_ACTIVATION_EXPONENT_CHANCE)
-		{
-			GLfloat mutation = pow(random(), CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT)
-				* CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_ACTIVATION_EXPONENT_MAX_ABS
-				* randomNegate();
-
-			exponent = clamp(exponent + mutation, -CREATURE_BRAIN_NEW_ACTIVATION_EXPONENT_MAX_ABS, CREATURE_BRAIN_NEW_ACTIVATION_EXPONENT_MAX_ABS);
-		}
+		MutateClampedCreatureTrait(exponent,
+			-CREATURE_BRAIN_NEW_ACTIVATION_EXPONENT_MAX_ABS, CREATURE_BRAIN_NEW_ACTIVATION_EXPONENT_MAX_ABS,
+			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_ACTIVATION_EXPONENT_CHANCE,
+			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_ACTIVATION_EXPONENT_MAX_ABS,
+			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT
+		);
 
 		oBiasesExponents->at(i) = vec2(bias, exponent);
 	}
@@ -134,14 +147,12 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 	{
 		GLfloat linkWeight = p1Links.at(i);
 
-		if (random() < CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_CHANCE)
-		{
-			GLfloat mutation = pow(random(), CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_PERCENTAGE_EXPONENT)
-				* CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_MAX_ABS
-				* randomNegate();
-
-			linkWeight = clamp(linkWeight + mutation, 0.0, CREATURE_BRAIN_NEW_LINK_WEIGHT_MAX_VAL);
-		}
+		MutateClampedCreatureTrait(linkWeight,
+			0.0, CREATURE_BRAIN_NEW_LINK_WEIGHT_MAX_VAL,
+			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_CHANCE,
+			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_MAX_ABS,
+			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_PERCENTAGE_EXPONENT
+		);
 
 		oLinks->at(i) = linkWeight;
 	}
@@ -441,24 +452,65 @@ void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
 
 	InitOffspringBrain(p1SSBO, &data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
 
-	
+	// Copy some parent values to the offspring values
 	GetCreatureAttributeBySSBOIndex(creature_SkinPatterns, p1SSBO, &data.skinPattern);
 	GetCreatureAttributeBySSBOIndex(creature_SkinHues, p1SSBO, &data.skinHue);
+	GetCreatureAttributeBySSBOIndex(creature_SpikeLocalAngles, p1SSBO, &data.spikeLocalAngle);
+	GetCreatureAttributeBySSBOIndex(creature_FeederLocalAngles, p1SSBO, &data.feederLocalAngle);
+	GetCreatureAttributeBySSBOIndex(creature_ShieldLocalAngles, p1SSBO, &data.shieldLocalAngle);
+
+	//MutateClampedCreatureTrait(data.skinPattern.x,
+	//	0.0, 1.0,
+	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_CHANCE,
+	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_MAX_ABS,
+	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_PERCENTAGE_EXPONENT
+	//);
+
+	//MutateClampedCreatureTrait(data.skinPattern.y,
+	//	0.0, 1.0,
+	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_CHANCE,
+	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_MAX_ABS,
+	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_PERCENTAGE_EXPONENT
+	//);
+
+	//MutateCreatureTrait(data.skinHue,
+	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_HUE_CHANCE,
+	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_HUE_MAX_ABS,
+	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_HUE_PERCENTAGE_EXPONENT
+	//);
+	//data.skinHue = mod(data.skinHue, 1.0f);
+
+	//MutateCreatureTrait(data.spikeLocalAngle,
+	//	CREATURE_MUTATION_DEVICE_CHANGE_SPIKE_ANGLE_CHANCE,
+	//	CREATURE_MUTATION_DEVICE_CHANGE_SPIKE_ANGLE_MAX_ABS,
+	//	CREATURE_MUTATION_DEVICE_CHANGE_SPIKE_ANGLE_PERCENTAGE_EXPONENT
+	//);
+	//data.spikeLocalAngle = mod(data.spikeLocalAngle, float(2.0 * M_PI));
+
+	//MutateCreatureTrait(data.feederLocalAngle,
+	//	CREATURE_MUTATION_DEVICE_CHANGE_FEEDER_ANGLE_CHANCE,
+	//	CREATURE_MUTATION_DEVICE_CHANGE_FEEDER_ANGLE_MAX_ABS,
+	//	CREATURE_MUTATION_DEVICE_CHANGE_FEEDER_ANGLE_PERCENTAGE_EXPONENT
+	//);
+	//data.feederLocalAngle = mod(data.feederLocalAngle, float(2.0 * M_PI));
+
+	//MutateCreatureTrait(data.shieldLocalAngle,
+	//	CREATURE_MUTATION_DEVICE_CHANGE_SHIELD_ANGLE_CHANCE,
+	//	CREATURE_MUTATION_DEVICE_CHANGE_SHIELD_ANGLE_MAX_ABS,
+	//	CREATURE_MUTATION_DEVICE_CHANGE_SHIELD_ANGLE_PERCENTAGE_EXPONENT
+	//);
+	//data.shieldLocalAngle = mod(data.shieldLocalAngle, float(2.0 * M_PI));
+
+
+	//GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &data.pos);
+
+	data.skinPattern = vec2(0.0, 0.0);
+	data.skinHue = 1.0;
 	data.skinSaturation = 1.0;
 	data.skinValue = 1.0;
 
-	// Place offspring at average of parent positions
-	//vec2 p1Pos;
-	//vec2 p2Pos;
-	//GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &p1Pos);
-	//GetCreatureAttributeBySSBOIndex(creature_Positions, p2SSBO, &p2Pos);
-	//data.pos = vec2((p1Pos.x + p2Pos.x) / 2.0, (p1Pos.y + p2Pos.y) / 2.0);
-
-	GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &data.pos);
-
-
 	data.vel = vec2(0, 0);
-	data.angle = random() * 2 * M_PI;
+	data.angle = random() * 2.0 * M_PI;
 	data.angleVel = 0;
 
 	data.hardness = SIMULATION_OFFSPRING_CREATURE_INITIAL_HARDNESS.value;
@@ -476,11 +528,7 @@ void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
 	data.feeder = vec4(0, 0, feederState, 0);
 	data.shield = vec4(0, 0, shieldState, shieldSpan);
 
-	GetCreatureAttributeBySSBOIndex(creature_SpikeLocalAngles, p1SSBO, &data.spikeLocalAngle);
-	GetCreatureAttributeBySSBOIndex(creature_FeederLocalAngles, p1SSBO, &data.feederLocalAngle);
-	GetCreatureAttributeBySSBOIndex(creature_ShieldLocalAngles, p1SSBO, &data.shieldLocalAngle);
-
-	CreatureData_AddCreature(data);
+	CreatureUniqueID newCreatureID = CreatureData_AddCreature(data);
 }
 
 
@@ -1231,6 +1279,7 @@ void Simulation_Programs_Sequence()
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformUInteger(programID, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
 	SetUniformFloat(programID, "uCreatureReproductionEnergyCost", CREATURE_REPRODUCTION_ENERGY_COST.value);
+	SetUniformFloat(programID, "uCreatureReproductionEnergyThreshold", CREATURE_REPRODUCTION_ENERGY_THRESHOLD.value);
 	SetUniformFloat(programID, "uCreatureReproductionAimDotThreshold", CREATURE_REPRODUCTION_AIM_DOT_THRESHOLD.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_CollidersCounts.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_CollidersGivenEnergy.bufferHandle);
@@ -1467,9 +1516,9 @@ void Simulation_Update()
 		CreatureNewbornsCreation();
 	}
 
+
 	// Render
 	Simulation_Render();
-
 
 
 

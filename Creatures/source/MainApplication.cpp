@@ -80,6 +80,9 @@ int main()
 	// Initialize user interface
 	UserInterface_Init(window);
 
+	// Assert validity of settings' values
+	Settings_AssertValuesValidity();
+
 	// Intiailize simulation and camera
 	Simulation_Init();
 

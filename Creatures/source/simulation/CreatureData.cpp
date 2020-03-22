@@ -348,7 +348,7 @@ void GetCreatureAttributeBySSBOIndex(CreaturesSSBOInfo creatureSSBOInfo, GLuint 
 
 	// Copy to persistent buffer
 	glCopyNamedBufferSubData(creatureSSBOInfo.bufferHandle, persistentMap_BufferHandle, amountOfBytesToCopy * creatureSSBOIndex, 0, amountOfBytesToCopy);
-
+	
 	// Write from persistent buffer
 	glGetNamedBufferSubData(persistentMap_BufferHandle, 0, amountOfBytesToCopy, data);
 }
@@ -383,7 +383,7 @@ void SetCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, GLuint creatureInd
 	glNamedBufferSubData(creatureSSBOInfo.bufferHandle, writeOffset, creatureSSBOInfo.unitByteSize, data);
 }
 
-CreatureUniqueID CreatureData_AddCreature(CreatureData newCreatureData)
+CreatureUniqueID CreatureData_AddCreature(CreatureData& newCreatureData)
 {
 
 	unsigned int newCreatureCount = creature_count + 1;

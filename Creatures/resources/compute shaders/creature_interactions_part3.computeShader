@@ -52,6 +52,7 @@ uniform uint uCreatureCount;
 uniform uint uMaxNumOfColliders;
 
 uniform float uCreatureReproductionEnergyCost;
+uniform float uCreatureReproductionEnergyThreshold;
 uniform float uCreatureReproductionAimDotThreshold;
 
 void main()
@@ -87,7 +88,7 @@ void main()
 		// Reproduction
 		if (aHornyToReproduce)
 		{
-			if (energy >= uCreatureReproductionEnergyCost)
+			if (energy >= uCreatureReproductionEnergyThreshold)
 			{
 				uvec2 colliderIndexAndPlacement = CollidersIndicesAndPlacements[collidersStartIndex + i];
 				uint bGID = colliderIndexAndPlacement.x;
@@ -105,7 +106,7 @@ void main()
 						NewBorns[currentAmountOfNewborns + 1] = uvec2(gid, bGID);
 
 						// Take away from our energy
-						energy -= uCreatureReproductionEnergyCost;
+						energy = max(energy - uCreatureReproductionEnergyCost, 0.0);
 					}
 				}
 			}
