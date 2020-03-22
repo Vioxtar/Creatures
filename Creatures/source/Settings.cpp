@@ -238,7 +238,7 @@ extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_HARDNESS = { 
 // Creature energy costs
 extern TweakableFloatSetting CREATURE_REPRODUCTION_ENERGY_COST = { 2.5, 0.0, 5.0 };
 extern TweakableFloatSetting CREATURE_REPRODUCTION_ENERGY_THRESHOLD = { 5.0, 0.0, 5.0 };
-extern TweakableFloatSetting CREATURE_REPRODUCTION_MEAT_THRESHOLD = { 5.0, 0.0, 5.0 };
+extern TweakableFloatSetting CREATURE_REPRODUCTION_MEAT_THRESHOLD = { 1.0, 0.0, 5.0 };
 
 
 extern TweakableFloatSetting CREATURE_FORWARD_MOVEMENT_ENERGY_COST = { 0.0003, 0.0, 1.0 };

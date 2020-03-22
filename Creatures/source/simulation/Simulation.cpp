@@ -439,6 +439,9 @@ void AddFirstGenerationCreature()
 	data.feederLocalAngle = random() * 2 * M_PI;
 	data.shieldLocalAngle = random() * 2 * M_PI;
 
+	data.forwardDir = vec2(0.0f, 0.0f);
+	data.rightDir = vec2(0.0f, 0.0f);
+
 	CreatureData_AddCreature(data);
 }
 
@@ -450,9 +453,10 @@ void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
 
 	CreatureData data;
 
+	// Init mutated brain
 	InitOffspringBrain(p1SSBO, &data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
 
-	// Copy some parent values to the offspring values
+	// Copy some parent values to the offspring values and mutate
 	GetCreatureAttributeBySSBOIndex(creature_SkinPatterns, p1SSBO, &data.skinPattern);
 	GetCreatureAttributeBySSBOIndex(creature_SkinHues, p1SSBO, &data.skinHue);
 	GetCreatureAttributeBySSBOIndex(creature_SpikeLocalAngles, p1SSBO, &data.spikeLocalAngle);
@@ -504,8 +508,7 @@ void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
 
 	GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &data.pos);
 
-
-
+	// Set more initial values
 	data.skinSaturation = 1.0;
 	data.skinValue = 1.0;
 
@@ -527,6 +530,9 @@ void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
 	data.spike = vec4(0, 0, spikeState, 0);
 	data.feeder = vec4(0, 0, feederState, 0);
 	data.shield = vec4(0, 0, shieldState, shieldSpan);
+
+	data.forwardDir = vec2(0.0f, 0.0f);
+	data.rightDir = vec2(0.0f, 0.0f);
 
 	CreatureUniqueID newCreatureID = CreatureData_AddCreature(data);
 }
