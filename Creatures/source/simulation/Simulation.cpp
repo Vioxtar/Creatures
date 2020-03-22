@@ -459,53 +459,53 @@ void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
 	GetCreatureAttributeBySSBOIndex(creature_FeederLocalAngles, p1SSBO, &data.feederLocalAngle);
 	GetCreatureAttributeBySSBOIndex(creature_ShieldLocalAngles, p1SSBO, &data.shieldLocalAngle);
 
-	//MutateClampedCreatureTrait(data.skinPattern.x,
-	//	0.0, 1.0,
-	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_CHANCE,
-	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_MAX_ABS,
-	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_PERCENTAGE_EXPONENT
-	//);
+	MutateClampedCreatureTrait(data.skinPattern.x,
+		0.0, 1.0,
+		CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_CHANCE,
+		CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_MAX_ABS,
+		CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_PERCENTAGE_EXPONENT
+	);
 
-	//MutateClampedCreatureTrait(data.skinPattern.y,
-	//	0.0, 1.0,
-	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_CHANCE,
-	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_MAX_ABS,
-	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_PERCENTAGE_EXPONENT
-	//);
+	MutateClampedCreatureTrait(data.skinPattern.y,
+		0.0, 1.0,
+		CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_CHANCE,
+		CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_MAX_ABS,
+		CREATURE_MUTATION_BODY_CHANGE_SKIN_PATTERN_PERCENTAGE_EXPONENT
+	);
 
-	//MutateCreatureTrait(data.skinHue,
-	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_HUE_CHANCE,
-	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_HUE_MAX_ABS,
-	//	CREATURE_MUTATION_BODY_CHANGE_SKIN_HUE_PERCENTAGE_EXPONENT
-	//);
-	//data.skinHue = mod(data.skinHue, 1.0f);
+	MutateCreatureTrait(data.skinHue,
+		CREATURE_MUTATION_BODY_CHANGE_SKIN_HUE_CHANCE,
+		CREATURE_MUTATION_BODY_CHANGE_SKIN_HUE_MAX_ABS,
+		CREATURE_MUTATION_BODY_CHANGE_SKIN_HUE_PERCENTAGE_EXPONENT
+	);
+	data.skinHue = mod(data.skinHue, 1.0f);
 
-	//MutateCreatureTrait(data.spikeLocalAngle,
-	//	CREATURE_MUTATION_DEVICE_CHANGE_SPIKE_ANGLE_CHANCE,
-	//	CREATURE_MUTATION_DEVICE_CHANGE_SPIKE_ANGLE_MAX_ABS,
-	//	CREATURE_MUTATION_DEVICE_CHANGE_SPIKE_ANGLE_PERCENTAGE_EXPONENT
-	//);
-	//data.spikeLocalAngle = mod(data.spikeLocalAngle, float(2.0 * M_PI));
+	MutateCreatureTrait(data.spikeLocalAngle,
+		CREATURE_MUTATION_DEVICE_CHANGE_SPIKE_ANGLE_CHANCE,
+		CREATURE_MUTATION_DEVICE_CHANGE_SPIKE_ANGLE_MAX_ABS,
+		CREATURE_MUTATION_DEVICE_CHANGE_SPIKE_ANGLE_PERCENTAGE_EXPONENT
+	);
+	data.spikeLocalAngle = mod(data.spikeLocalAngle, float(2.0 * M_PI));
 
-	//MutateCreatureTrait(data.feederLocalAngle,
-	//	CREATURE_MUTATION_DEVICE_CHANGE_FEEDER_ANGLE_CHANCE,
-	//	CREATURE_MUTATION_DEVICE_CHANGE_FEEDER_ANGLE_MAX_ABS,
-	//	CREATURE_MUTATION_DEVICE_CHANGE_FEEDER_ANGLE_PERCENTAGE_EXPONENT
-	//);
-	//data.feederLocalAngle = mod(data.feederLocalAngle, float(2.0 * M_PI));
+	MutateCreatureTrait(data.feederLocalAngle,
+		CREATURE_MUTATION_DEVICE_CHANGE_FEEDER_ANGLE_CHANCE,
+		CREATURE_MUTATION_DEVICE_CHANGE_FEEDER_ANGLE_MAX_ABS,
+		CREATURE_MUTATION_DEVICE_CHANGE_FEEDER_ANGLE_PERCENTAGE_EXPONENT
+	);
+	data.feederLocalAngle = mod(data.feederLocalAngle, float(2.0 * M_PI));
 
-	//MutateCreatureTrait(data.shieldLocalAngle,
-	//	CREATURE_MUTATION_DEVICE_CHANGE_SHIELD_ANGLE_CHANCE,
-	//	CREATURE_MUTATION_DEVICE_CHANGE_SHIELD_ANGLE_MAX_ABS,
-	//	CREATURE_MUTATION_DEVICE_CHANGE_SHIELD_ANGLE_PERCENTAGE_EXPONENT
-	//);
-	//data.shieldLocalAngle = mod(data.shieldLocalAngle, float(2.0 * M_PI));
+	MutateCreatureTrait(data.shieldLocalAngle,
+		CREATURE_MUTATION_DEVICE_CHANGE_SHIELD_ANGLE_CHANCE,
+		CREATURE_MUTATION_DEVICE_CHANGE_SHIELD_ANGLE_MAX_ABS,
+		CREATURE_MUTATION_DEVICE_CHANGE_SHIELD_ANGLE_PERCENTAGE_EXPONENT
+	);
+	data.shieldLocalAngle = mod(data.shieldLocalAngle, float(2.0 * M_PI));
 
 
-	//GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &data.pos);
+	GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &data.pos);
 
-	data.skinPattern = vec2(0.0, 0.0);
-	data.skinHue = 1.0;
+
+
 	data.skinSaturation = 1.0;
 	data.skinValue = 1.0;
 
@@ -1280,16 +1280,18 @@ void Simulation_Programs_Sequence()
 	SetUniformUInteger(programID, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
 	SetUniformFloat(programID, "uCreatureReproductionEnergyCost", CREATURE_REPRODUCTION_ENERGY_COST.value);
 	SetUniformFloat(programID, "uCreatureReproductionEnergyThreshold", CREATURE_REPRODUCTION_ENERGY_THRESHOLD.value);
+	SetUniformFloat(programID, "uCreatureReproductionMeatThreshold", CREATURE_REPRODUCTION_MEAT_THRESHOLD.value);
 	SetUniformFloat(programID, "uCreatureReproductionAimDotThreshold", CREATURE_REPRODUCTION_AIM_DOT_THRESHOLD.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_CollidersCounts.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_CollidersGivenEnergy.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_CollidersToPosDirs.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Energies.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_ForwardDirections.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Lives.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Horninesses.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_CollidersIndicesAndPlacements.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creatureList_NewBorns.creaturesSSBOInfo.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Meats.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Lives.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Horninesses.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_CollidersIndicesAndPlacements.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creatureList_NewBorns.creaturesSSBOInfo.bufferHandle);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);

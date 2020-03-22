@@ -10,7 +10,15 @@ using namespace glm;
 
 struct CreatureData
 {
+	// Brain
+	vector<GLfloat> brainLinks;
+	vector<GLfloat> brainNodes;
+	vector<vec2> brainBiasesExponents;
+	vector<GLuint> brainStructure;
 
+	// Sensor input data
+	vector<GLfloat> eyeConeSights;
+	vector<GLfloat> eyePupilSights;
 
 	// Devices
 	vec4 spike;
@@ -51,15 +59,6 @@ struct CreatureData
 	GLfloat feederLocalAngle;
 	GLfloat shieldLocalAngle;
 
-	// Brain
-	vector<GLfloat> brainLinks;
-	vector<GLfloat> brainNodes;
-	vector<vec2> brainBiasesExponents;
-	vector<GLuint> brainStructure;
-
-	// Sensor input data
-	vector<GLfloat> eyeConeSights;
-	vector<GLfloat> eyePupilSights;
 };
 
 

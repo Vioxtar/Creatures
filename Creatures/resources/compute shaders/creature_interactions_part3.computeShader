@@ -20,27 +20,32 @@ layout (std430, binding = 3) buffer CreatureEnergies
 	float Energies[];
 };
 
-layout (std430, binding = 4) buffer CreatureForwardDirections
+layout (std430, binding = 4) buffer CreatureMeats
+{
+	float Meats[];
+};
+
+layout (std430, binding = 5) buffer CreatureForwardDirections
 {
 	vec2 ForwardDirections[];
 };
 
-layout (std430, binding = 5) buffer CreatureLives
+layout (std430, binding = 6) buffer CreatureLives
 {
 	float Lives[];
 };
 
-layout (std430, binding = 6) buffer CreatureHorninesses
+layout (std430, binding = 7) buffer CreatureHorninesses
 {
 	float Horninesses[];
 };
 
-layout (std430, binding = 7) buffer CreatureCollidersIndicesAndPlacements
+layout (std430, binding = 8) buffer CreatureCollidersIndicesAndPlacements
 {
 	uvec2 CollidersIndicesAndPlacements[];
 };
 
-layout (std430, binding = 8) buffer CreatureNewBorns
+layout (std430, binding = 9) buffer CreatureNewBorns
 {
 	uvec2 NewBorns[];
 };
@@ -53,6 +58,7 @@ uniform uint uMaxNumOfColliders;
 
 uniform float uCreatureReproductionEnergyCost;
 uniform float uCreatureReproductionEnergyThreshold;
+uniform float uCreatureReproductionMeatThreshold;
 uniform float uCreatureReproductionAimDotThreshold;
 
 void main()
@@ -71,6 +77,7 @@ void main()
 
 	// Get some stuff about ourselves
 	float energy = Energies[gid];
+	float meat = Meats[gid];
 	bool aHornyToReproduce = Horninesses[gid] > 0.5;
 	vec2 aForwardDir = ForwardDirections[gid];
 	
@@ -88,7 +95,7 @@ void main()
 		// Reproduction
 		if (aHornyToReproduce)
 		{
-			if (energy >= uCreatureReproductionEnergyThreshold)
+			if (energy >= uCreatureReproductionEnergyThreshold && meat >= uCreatureReproductionMeatThreshold)
 			{
 				uvec2 colliderIndexAndPlacement = CollidersIndicesAndPlacements[collidersStartIndex + i];
 				uint bGID = colliderIndexAndPlacement.x;

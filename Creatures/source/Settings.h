@@ -322,6 +322,7 @@ extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_ENERGY_COST;
 
 extern TweakableFloatSetting CREATURE_REPRODUCTION_ENERGY_COST;
 extern TweakableFloatSetting CREATURE_REPRODUCTION_ENERGY_THRESHOLD;
+extern TweakableFloatSetting CREATURE_REPRODUCTION_MEAT_THRESHOLD;
 
 // Creature death settings
 extern TweakableFloatSetting CREATURE_DEATH_MEAT_ROT_RATE;
