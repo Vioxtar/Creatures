@@ -74,7 +74,8 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_LINKS; i++)
 	{
 		GLfloat linkWeight = pow(random(), CREATURE_BRAIN_NEW_LINK_WEIGHT_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_NEW_LINK_WEIGHT_MAX_VAL;
+			* CREATURE_BRAIN_NEW_LINK_WEIGHT_MAX_ABS
+			* randomNegate();
 
 		brainLinks->at(i) = (linkWeight);
 	}
@@ -148,7 +149,7 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 		GLfloat linkWeight = p1Links.at(i);
 
 		MutateClampedCreatureTrait(linkWeight,
-			0.0, CREATURE_BRAIN_NEW_LINK_WEIGHT_MAX_VAL,
+			-CREATURE_BRAIN_NEW_LINK_WEIGHT_MAX_ABS, CREATURE_BRAIN_NEW_LINK_WEIGHT_MAX_ABS,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_CHANCE,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_MAX_ABS,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_PERCENTAGE_EXPONENT
