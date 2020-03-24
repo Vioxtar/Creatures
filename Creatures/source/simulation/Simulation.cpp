@@ -985,7 +985,8 @@ void Simulation_FirstgenCreatureSpawns()
 	// Finalize
 	while (firstgenCreatureSpawn_CreaturesToSpawn >= 1.0)
 	{
-		firstgenCreatureSpawn_MovingSpawnVel += vec2((random() - 0.5) * 0.000085, (random() - 0.5) * 0.000085);
+		float movingSpawnSpeed = 0.00025;
+		firstgenCreatureSpawn_MovingSpawnVel += vec2((random() - 0.5) * movingSpawnSpeed, (random() - 0.5) * movingSpawnSpeed);
 		firstgenCreatureSpawn_MovingSpawnPos += firstgenCreatureSpawn_MovingSpawnVel;
 		if (abs(firstgenCreatureSpawn_MovingSpawnPos.x) > SIMULATION_SPACE_WIDTH.value / 2.0)
 		{
