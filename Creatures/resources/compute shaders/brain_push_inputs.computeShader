@@ -77,6 +77,8 @@ uniform float uCreatureMaxAngleVelocityLength;
 uniform uint uCreatureEyeNumOfPupilValues;
 uniform uint uCreatureEyeNumOfConesValues;
 
+uniform uint uNumOfTemporals;
+
 void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
@@ -161,7 +163,11 @@ void main()
 		inputOffset++;
 	}
 
-	// Temporals // @TODO
-	// uint firstTemporalOutputIndex = (gid + 1) * uMaxNumOfNodesInBrain - numOfTemporals;
-
+	// Temporals
+	uint firstTemporalOutputIndex = (gid + 1) * uMaxNumOfNodesInBrain - uNumOfTemporals;
+	for (uint i = 0; i < uNumOfTemporals; ++i)
+	{
+		BrainsNodes[firstInputNodeIndex + inputOffset] = BrainsNodes[firstTemporalOutputIndex + i];
+		inputOffset++;
+	}
 }

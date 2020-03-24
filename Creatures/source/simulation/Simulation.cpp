@@ -58,12 +58,12 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainBiasesExponents->resize(CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES; i++)
 	{
-		GLfloat bias = pow(random(), CREATURE_BRAIN_NEW_BIAS_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_NEW_BIAS_MAX_ABS
+		GLfloat bias = pow(random(), CREATURE_BRAIN_FIRSTGEN_BIAS_PERCENTAGE_EXPONENT)
+			* CREATURE_BRAIN_BIAS_MAX_ABS
 			* randomNegate();
 
-		GLfloat activationExponent = pow(random(), CREATURE_BRAIN_NEW_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_NEW_ACTIVATION_EXPONENT_MAX_ABS
+		GLfloat activationExponent = pow(random(), CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT)
+			* CREATURE_BRAIN_ACTIVATION_EXPONENT_MAX_ABS
 			* randomNegate();
 
 		brainBiasesExponents->at(i) = (vec2(bias, activationExponent));
@@ -73,8 +73,8 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainLinks->resize(CREATURE_BRAIN_MAX_NUM_OF_LINKS);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_LINKS; i++)
 	{
-		GLfloat linkWeight = pow(random(), CREATURE_BRAIN_NEW_LINK_WEIGHT_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_NEW_LINK_WEIGHT_MAX_ABS
+		GLfloat linkWeight = pow(random(), CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_PERCENTAGE_EXPONENT)
+			* CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS
 			* randomNegate();
 
 		brainLinks->at(i) = (linkWeight);
@@ -127,14 +127,14 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 		GLfloat exponent = biasExponent.y;
 
 		MutateClampedCreatureTrait(bias,
-			-CREATURE_BRAIN_NEW_BIAS_MAX_ABS, CREATURE_BRAIN_NEW_BIAS_MAX_ABS,
+			-CREATURE_BRAIN_BIAS_MAX_ABS, CREATURE_BRAIN_BIAS_MAX_ABS,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_BIAS_CHANCE,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_BIAS_MAX_ABS,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_BIAS_PERCENTAGE_EXPONENT
 		);
 
 		MutateClampedCreatureTrait(exponent,
-			-CREATURE_BRAIN_NEW_ACTIVATION_EXPONENT_MAX_ABS, CREATURE_BRAIN_NEW_ACTIVATION_EXPONENT_MAX_ABS,
+			-CREATURE_BRAIN_ACTIVATION_EXPONENT_MAX_ABS, CREATURE_BRAIN_ACTIVATION_EXPONENT_MAX_ABS,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_ACTIVATION_EXPONENT_CHANCE,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_ACTIVATION_EXPONENT_MAX_ABS,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT
@@ -149,7 +149,7 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 		GLfloat linkWeight = p1Links.at(i);
 
 		MutateClampedCreatureTrait(linkWeight,
-			-CREATURE_BRAIN_NEW_LINK_WEIGHT_MAX_ABS, CREATURE_BRAIN_NEW_LINK_WEIGHT_MAX_ABS,
+			-CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS, CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_CHANCE,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_MAX_ABS,
 			CREATURE_MUTATION_BRAIN_CHANGE_SINGLE_LINK_WEIGHT_PERCENTAGE_EXPONENT
@@ -405,9 +405,13 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 // -- CREATURE CREATION -- //
 /////////////////////////////
 
-void AddFirstGenerationCreature()
+void AddFirstGenerationCreature(vec2 pos, vec2 vel)
 {
 	CreatureData data;
+
+	data.pos = pos;
+	data.vel = vel;
+
 
 	InitFirstGenBrain(&data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
 	
@@ -416,8 +420,6 @@ void AddFirstGenerationCreature()
 	data.skinSaturation = 1.0;
 	data.skinValue = 1.0;
 
-	data.pos = vec2(0, 0);
-	data.vel = vec2((random() - 0.5) * 2 * 0.001, (random() - 0.5) * 2 * 0.001);
 	data.angle = random() * 2 * M_PI;
 	data.angleVel = 0;
 
@@ -943,12 +945,6 @@ void Simulation_Init()
 	InitDrawingPrograms();
 	InitUniformGrid();
 
-	// Add some creatures (TEMP)
-	for (int i = 0; i < SIMULATION_NUM_OF_CREATURES_ON_INIT.value; i++)
-	{
-		AddFirstGenerationCreature();
-	}
-
 }
 
 //////////////////////////////////
@@ -958,6 +954,8 @@ void Simulation_Init()
 float firstgenCreatureSpawn_CreaturesToSpawn = 0.0;
 bool firstgenCreatureSpawn_PulseActive = false;
 float firstgenCreatureSpawn_OscillateX = 0.0;
+vec2 firstgenCreatureSpawn_MovingSpawnPos = vec2(0, 0);
+vec2 firstgenCreatureSpawn_MovingSpawnVel = vec2(0, 0);
 void Simulation_FirstgenCreatureSpawns()
 {
 	// Constant spawn
@@ -987,7 +985,40 @@ void Simulation_FirstgenCreatureSpawns()
 	// Finalize
 	while (firstgenCreatureSpawn_CreaturesToSpawn >= 1.0)
 	{
-		AddFirstGenerationCreature();
+		firstgenCreatureSpawn_MovingSpawnVel += vec2((random() - 0.5) * 0.000085, (random() - 0.5) * 0.000085);
+		firstgenCreatureSpawn_MovingSpawnPos += firstgenCreatureSpawn_MovingSpawnVel;
+		if (abs(firstgenCreatureSpawn_MovingSpawnPos.x) > SIMULATION_SPACE_WIDTH.value / 2.0)
+		{
+			firstgenCreatureSpawn_MovingSpawnPos.x = clamp(firstgenCreatureSpawn_MovingSpawnPos.x, -SIMULATION_SPACE_WIDTH.value / 2.0, SIMULATION_SPACE_WIDTH.value / 2.0);
+			firstgenCreatureSpawn_MovingSpawnVel.x *= -0.95;
+		}
+		if (abs(firstgenCreatureSpawn_MovingSpawnPos.y) > SIMULATION_SPACE_HEIGHT.value / 2.0)
+		{
+			firstgenCreatureSpawn_MovingSpawnPos.y = clamp(firstgenCreatureSpawn_MovingSpawnPos.y, -SIMULATION_SPACE_HEIGHT.value / 2.0, SIMULATION_SPACE_HEIGHT.value / 2.0);
+			firstgenCreatureSpawn_MovingSpawnVel.y *= -0.95;
+		}
+
+		//{
+		//	int ran = randomIntRange(1, 4);
+		//	if (ran == 1)
+		//	{
+		//		firstgenCreatureSpawn_MovingSpawnPos = vec2(SIMULATION_SPACE_WIDTH.value / 2.0, SIMULATION_SPACE_HEIGHT.value / 2.0);
+		//	}
+		//	if (ran == 2)
+		//	{
+		//		firstgenCreatureSpawn_MovingSpawnPos = vec2(SIMULATION_SPACE_WIDTH.value / 2.0, -SIMULATION_SPACE_HEIGHT.value / 2.0);
+		//	}
+		//	if (ran == 3)
+		//	{
+		//		firstgenCreatureSpawn_MovingSpawnPos = vec2(-SIMULATION_SPACE_WIDTH.value / 2.0, SIMULATION_SPACE_HEIGHT.value / 2.0);
+		//	}
+		//	if (ran == 4)
+		//	{
+		//		firstgenCreatureSpawn_MovingSpawnPos = vec2(-SIMULATION_SPACE_WIDTH.value / 2.0, -SIMULATION_SPACE_HEIGHT.value / 2.0);
+		//	}
+		//}
+
+		AddFirstGenerationCreature(firstgenCreatureSpawn_MovingSpawnPos, firstgenCreatureSpawn_MovingSpawnVel);
 		firstgenCreatureSpawn_CreaturesToSpawn -= 1.0;
 	}
 }
@@ -1033,6 +1064,7 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureMaxAngleVelocityLength", CREATURE_MAX_ANGLE_VELOCITY_LENGTH.value);
 	SetUniformUInteger(programID, "uCreatureEyeNumOfPupilValues", CREATURE_EYE_NUM_OF_PUPIL_VALUES);
 	SetUniformUInteger(programID, "uCreatureEyeNumOfConesValues", CREATURE_EYE_NUM_OF_CONES_VALUES);
+	SetUniformUInteger(programID, "uNumOfTemporals", CREATURE_BRAIN_NUM_OF_TEMPORALS);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Lives.bufferHandle);

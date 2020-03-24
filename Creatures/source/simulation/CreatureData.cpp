@@ -516,8 +516,7 @@ void CreatureData_Init()
 	LoadCreatureSSBOInfosIntoIterableVectors();
 
 	// How many creatures should we support on init?
-	unsigned int numOfCreaturesOnInit = SIMULATION_NUM_OF_CREATURES_ON_INIT.value;
-	max_supported_creature_count_by_current_buffers = std::max(numOfCreaturesOnInit, TECH_CREATURES_SUPPORTED_ON_INIT_BUFFER_PREALLOCATION);
+	max_supported_creature_count_by_current_buffers = TECH_CREATURES_SUPPORTED_ON_INIT_BUFFER_PREALLOCATION;
 
 	creature_count = 0;
 
