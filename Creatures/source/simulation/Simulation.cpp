@@ -59,11 +59,11 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES; i++)
 	{
 		GLfloat bias = pow(random(), CREATURE_BRAIN_FIRSTGEN_BIAS_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_BIAS_MAX_ABS
+			* CREATURE_BRAIN_FIRSTGEN_BIAS_MAX_ABS
 			* randomNegate();
 
 		GLfloat activationExponent = pow(random(), CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_ACTIVATION_EXPONENT_MAX_ABS
+			* CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_MAX_ABS
 			* randomNegate();
 
 		brainBiasesExponents->at(i) = (vec2(bias, activationExponent));
@@ -74,7 +74,7 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_LINKS; i++)
 	{
 		GLfloat linkWeight = pow(random(), CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS
+			* CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_MAX_ABS
 			* randomNegate();
 
 		brainLinks->at(i) = (linkWeight);
@@ -113,6 +113,7 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 	// New very-possibly-naive mutation model (definitely for the lazy)
 	// Just copy the links, biasExponents, and nodes as is with a chance of error, plus (possibly) a change in structure if we can, and be done with it
 	
+
 	// Fill nodes with zeros
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_NODES; i++)
 	{
@@ -157,6 +158,7 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 
 		oLinks->at(i) = linkWeight;
 	}
+
 
 	// Finally structure
 	// @TODO: Actually mutate structure as well...
@@ -985,7 +987,7 @@ void Simulation_FirstgenCreatureSpawns()
 	// Finalize
 	while (firstgenCreatureSpawn_CreaturesToSpawn >= 1.0)
 	{
-		float movingSpawnSpeed = 0.00025;
+		float movingSpawnSpeed = SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_VELOCITY_MAGNITUDE.value;
 		firstgenCreatureSpawn_MovingSpawnVel += vec2((random() - 0.5) * movingSpawnSpeed, (random() - 0.5) * movingSpawnSpeed);
 		firstgenCreatureSpawn_MovingSpawnPos += firstgenCreatureSpawn_MovingSpawnVel;
 		if (abs(firstgenCreatureSpawn_MovingSpawnPos.x) > SIMULATION_SPACE_WIDTH.value / 2.0)

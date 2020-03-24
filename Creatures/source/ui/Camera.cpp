@@ -79,6 +79,7 @@ void Camera_Move(vec2 offset)
 void Camera_InterpolateTo(vec2 targetPos, float rate)
 {
 	if (!canGlide) return;
+	rate *= sqrt(cameraZoom);
 	cameraPos *= (1.0 - rate);
 	targetPos *= rate;
 	cameraPos -= targetPos;
