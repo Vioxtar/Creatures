@@ -273,6 +273,10 @@ void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, in
 		ToggleSimulationLogic();
 	}
 
+	if (key == GLFW_KEY_D && action == GLFW_PRESS)
+	{
+		//Simulation_ToggleNewBrainForwardPropagate();
+	}
 }
 
 

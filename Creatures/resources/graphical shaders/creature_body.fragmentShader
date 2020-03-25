@@ -38,14 +38,14 @@ void main()
         oEuclideanPos.x > -forwardDirXMul &&
         oEuclideanPos.x < forwardDirXMul &&
         oEuclideanPos.y > 0
-        ? 1.0 - oVertexSquaredDistance * 0.25
+        ? 1.0 - oVertexSquaredDistance * 0.5
         : 1.0;
    
     // Display shield
     float shieldColMul =
         oShieldDirectionDot / oVertexSquaredDistance > (1.0 - oShieldSpan) &&
         oVertexSquaredDistance > 1.0 - 0.25 * oShieldState
-        ? 1.25
+        ? 1.5
         : 1.0;
 
     // Display spike
@@ -54,7 +54,7 @@ void main()
     float spikeColMul =
         spikeYDist < 0.25 &&
         abs(spikeXMul) < spikeYDist * oSpikeState
-        ? 1.25
+        ? 1.5
         : 1.0;
 
     // Display feeder
@@ -63,7 +63,7 @@ void main()
     float feederColMul =
         feederYDist < 0.25 &&
         abs(feederXMul) < (0.25 - feederYDist) * oFeederState
-        ? 1.25
+        ? 1.5
         : 1.0;
 
     
@@ -81,6 +81,9 @@ void main()
     // Opaqueness reflects energy
     FragColor.a = max(pow(oVertexSquaredDistance, (1.0 - oEnergyFactor) * 3.5), oEnergyFactor + 0.05);
     FragColor.a *= 0.975; // Still make everything ever so slightly transparent
+    
+    // Increase alpha on skin patterns as well
+    FragColor.a *= skinPatternColMul;
 
     // May not be needed
     gl_FragDepth = oVertexSquaredDistance;

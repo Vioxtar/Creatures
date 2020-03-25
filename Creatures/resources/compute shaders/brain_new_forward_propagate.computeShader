@@ -134,7 +134,7 @@ void main()
 
 
 	// Find this worker's starting indices
-	uint yWorkerID = gl_GlobalInvocationID.y;
+	uint yWorkerID = gl_LocalInvocationID.y;
 	uint nodeStartIndexWorkerOffset = numOfNodesPerWorker * yWorkerID;
 	uint linkStartIndexWorkerOffset = numOfNodesInPrevLevel * nodeStartIndexWorkerOffset;
 	uint biasExponentStartIndexWorkerOffset = nodeStartIndexWorkerOffset;

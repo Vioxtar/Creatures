@@ -1047,6 +1047,7 @@ void Simulation_FirstgenCreatureSpawns()
 	}
 }
 
+
 void Simulation_Programs_Sequence()
 {
 
@@ -1123,7 +1124,7 @@ void Simulation_Programs_Sequence()
 	{
 		SetUniformUInteger(programID, "uLevelToCompute", levelToCompute);
 		glDispatchCompute(workGroupsNeeded, 1, 1);
-		
+
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 	}
 
