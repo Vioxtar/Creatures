@@ -1,6 +1,6 @@
 #version 460 core
 
-layout (std430, binding = 0) buffer CreatureBrainsStructures
+readonly restrict layout (std430, binding = 0) buffer CreatureBrainsStructures
 {
 	uint BrainsStructures[];
 };
@@ -10,12 +10,12 @@ layout (std430, binding = 1) buffer CreatureBrainsNodes
 	float BrainsNodes[];
 };
 
-layout (std430, binding = 2) buffer CreatureBrainsBiasesExponents
+readonly restrict layout (std430, binding = 2) buffer CreatureBrainsBiasesExponents
 {
 	vec2 BrainsBiasesExponents[];
 };
 
-layout (std430, binding = 3) buffer CreatureBrainsLinks
+readonly restrict layout (std430, binding = 3) buffer CreatureBrainsLinks
 {
 	float BrainsLinks[];
 };
@@ -26,13 +26,14 @@ layout (std430, binding = 4) buffer CreatureLives
 };
 
 
-layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
+layout (local_size_x = @LOCAL_SIZE_X@, local_size_y = @LOCAL_SIZE_Y@, local_size_z = 1) in;
 
 uniform uint uCreatureCount;
 uniform uint uMaxNumOfStructureIndices;
 uniform uint uMaxNumOfNodesInBrain;
 uniform uint uMaxNumOfActivatedNodesInBrain;
 uniform uint uMaxNumOfLinksInBrain;
+uniform uint uLevelToCompute;
 
 float ActivationFunctionHelper(float x, float exponent)
 {
@@ -76,57 +77,97 @@ void main()
 		return;
 	}
 
+
+	// Gather initial data about our structure
 	uint brainStructureStartIndex = gid * uMaxNumOfStructureIndices;
+	uint numOfLevels = BrainsStructures[brainStructureStartIndex];
+	uint numOfInputs = BrainsStructures[brainStructureStartIndex + 1];
+
+
+	// Bail if there are no more levels to be computed
+	uint numOfLevelsToComputeInEntirePropagation = numOfLevels - 1;
+	if (uLevelToCompute > numOfLevelsToComputeInEntirePropagation)
+	{
+		return;
+	}
+
+
+	// Find this creature's brain starting indices
 	uint nodesStartIndex = gid * uMaxNumOfNodesInBrain;
 	uint biasesExponentsStartIndex = gid * uMaxNumOfActivatedNodesInBrain;
 	uint linksStartIndex = gid * uMaxNumOfLinksInBrain;
 
-	uint numOfLevels = BrainsStructures[brainStructureStartIndex];
-	uint numOfInputs = BrainsStructures[brainStructureStartIndex + 1];
 
-	// Start forward propagation
-	
-	// Indices used to comfortably iterate the previous level's nodes' values
-	uint prevLevelNodeStart = nodesStartIndex;
-	uint prevLevelNodeEnd = nodesStartIndex + numOfInputs;
-
-	// The active level/node/link being processed
-	uint activeLevel = brainStructureStartIndex + 2; // + 2 and not + 1 to skip inputs level
-	uint activeNode = nodesStartIndex + numOfInputs;
-	uint activeBiasExponent = biasesExponentsStartIndex;
-	uint activeLink = linksStartIndex;
-
-	// Iterate levels (we don't actually use the level variable.. for now)
-	for (uint level = 1; level < numOfLevels; level++) // level = 1 and not level = 0 to skip inputs level
+	// Find how much of the brain we've computed so far
+	uint numOfNodesComputed = numOfInputs;
+	uint numOfLinksComputed = 0;
+	uint numOfActivatedNodesComputed = 0;
+	for (uint levelComputed = 1; levelComputed < uLevelToCompute; ++levelComputed)
 	{
-		uint numOfNodesInLevel = BrainsStructures[activeLevel];
+		uint numOfNodesInComputedPrevLevel = BrainsStructures[brainStructureStartIndex + levelComputed];
+		uint numOfNodesInComputedLevel = BrainsStructures[brainStructureStartIndex + 1 + levelComputed];
 
-		// Iterate nodes (we don't actually use the node variable.. for now)
-		for (uint node = 0; node < numOfNodesInLevel; node++)
+		numOfNodesComputed += numOfNodesInComputedLevel;
+		numOfLinksComputed += numOfNodesInComputedPrevLevel * numOfNodesInComputedLevel;
+		numOfActivatedNodesComputed += numOfNodesInComputedLevel;
+	}
+
+
+	// Find this level's starting indices
+	uint nodesToComputeStartingIndex = nodesStartIndex + numOfNodesComputed;
+	uint linksToComputeStartingIndex = linksStartIndex + numOfLinksComputed;
+	uint biasesExponentsToComputeStartingIndex = biasesExponentsStartIndex + numOfActivatedNodesComputed;
+
+
+	// Find how many nodes each worker needs to compute
+	uint numOfNodesInLevelToCompute = BrainsStructures[brainStructureStartIndex + 1 + uLevelToCompute];
+	uint numOfNodesPerWorker = numOfNodesInLevelToCompute / @LOCAL_SIZE_Y@;
+	if (numOfNodesPerWorker * @LOCAL_SIZE_Y@ < numOfNodesInLevelToCompute)
+	{
+		numOfNodesPerWorker++;
+	}
+
+	// Find start/end indices of the previous level
+	uint numOfNodesInPrevLevel = BrainsStructures[brainStructureStartIndex + uLevelToCompute];
+	uint prevLevelNodeStart = nodesToComputeStartingIndex - numOfNodesInPrevLevel;
+	uint prevLevelNodeEnd = nodesToComputeStartingIndex;
+
+
+	// Find this worker's starting indices
+	uint yWorkerID = gl_LocalInvocationID.y;
+	uint nodeStartIndexWorkerOffset = numOfNodesPerWorker * yWorkerID;
+	uint linkStartIndexWorkerOffset = numOfNodesInPrevLevel * nodeStartIndexWorkerOffset;
+	uint biasExponentStartIndexWorkerOffset = nodeStartIndexWorkerOffset;
+
+	uint activeNode = nodesToComputeStartingIndex + nodeStartIndexWorkerOffset;
+	uint activeLink = linksToComputeStartingIndex + linkStartIndexWorkerOffset;
+	uint activeBiasExponent = biasesExponentsToComputeStartingIndex + biasExponentStartIndexWorkerOffset;
+
+	// Compute
+	uint nodesToComputeEndingIndex = nodesToComputeStartingIndex + numOfNodesInLevelToCompute;
+	for (uint node = 0; node < numOfNodesPerWorker; node++)
+	{
+		if (activeNode >= nodesToComputeEndingIndex)
 		{
-			float sum = 0.0;
-
-			// Iterate the node links (and the corresponding nodes in the previous level)
-			for (uint prevLevelNode = prevLevelNodeStart; prevLevelNode < prevLevelNodeEnd; prevLevelNode++)
-			{
-				sum += BrainsNodes[prevLevelNode] * BrainsLinks[activeLink];
-				activeLink++; // We can simply advance our link index
-			}
-
-			// Set the new node value
-			vec2 biasExponent = BrainsBiasesExponents[activeBiasExponent];
-			float bias = biasExponent.x;
-			float exponent = biasExponent.y;
-			BrainsNodes[activeNode] = ActivationFunction(max(0.0, min(sum + bias, 1.0)), exponent);
-
-			activeNode++;
-			activeBiasExponent++;
+			return;
 		}
 
-		// Set the start/end node indices of the previous level for convenient iteration on the next level
-		prevLevelNodeStart = prevLevelNodeEnd;
-		prevLevelNodeEnd = prevLevelNodeEnd + numOfNodesInLevel;
+		float sum = 0.0;
 
-		activeLevel++;
+		// Iterate the node links (and the corresponding nodes in the previous level)
+		for (uint prevLevelNode = prevLevelNodeStart; prevLevelNode < prevLevelNodeEnd; prevLevelNode++)
+		{
+			sum += BrainsNodes[prevLevelNode] * BrainsLinks[activeLink];
+			activeLink++; // We can simply advance our link index
+		}
+
+		// Set the new node value
+		vec2 biasExponent = BrainsBiasesExponents[activeBiasExponent];
+		float bias = biasExponent.x;
+		float exponent = biasExponent.y;
+		BrainsNodes[activeNode] = ActivationFunction(max(0.0, min(sum + bias, 1.0)), exponent);
+
+		activeNode++;
+		activeBiasExponent++;
 	}
 }

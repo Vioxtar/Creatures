@@ -202,7 +202,6 @@
   <ItemGroup>
     <None Include="resources\compute shaders\border_physics.computeShader" />
     <None Include="resources\compute shaders\brain_forward_propagate.computeShader" />
-    <None Include="resources\compute shaders\brain_new_forward_propagate.computeShader" />
     <None Include="resources\compute shaders\brain_push_inputs.computeShader" />
     <None Include="resources\compute shaders\creature_brain_pull_outputs_and_body_works_part1.computeShader" />
     <None Include="resources\compute shaders\creature_brain_pull_outputs_and_body_works_part2.computeShader" />

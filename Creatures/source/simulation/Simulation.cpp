@@ -579,8 +579,7 @@ ProgramInfo program_CreatureSightsPart1{ TECH_CREATURE_SIGHTS_PART1_WORKGROUP_LO
 ProgramInfo program_CreatureSightsPart2{ TECH_CREATURE_SIGHTS_PART2_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_CreatureSightsPart3{ TECH_CREATURE_SIGHTS_PART3_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_BrainPushInputs{ TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_BrainForwardPropagate{ TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_BrainNewForwardPropagate{ TECH_BRAIN_NEW_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE_X };
+ProgramInfo program_BrainForwardPropagate{ TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE_X };
 ProgramInfo program_CreatureBrainPullOutputsAndBodyWorksPart1{ TECH_CREATURE_BRAIN_PULL_OUTPUTS_AND_BODY_WORKS_PART1_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_CreatureBrainPullOutputsAndBodyWorksPart2{ TECH_CREATURE_BRAIN_PULL_OUTPUTS_AND_BODY_WORKS_PART2_WORKGROUP_LOCAL_SIZE };
 ProgramInfo program_FramePreLogic{ TECH_FRAME_PRE_LOGIC_WORKGROUP_LOCAL_SIZE };
@@ -616,7 +615,6 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureSightsPart3);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPushInputs);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainForwardPropagate);
-	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainNewForwardPropagate);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureBrainPullOutputsAndBodyWorksPart1);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureBrainPullOutputsAndBodyWorksPart2);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_FramePreLogic);
@@ -877,17 +875,11 @@ void InitLogicPrograms()
 	program_BrainPushInputs.program = CreateLinkedShaderProgram(1, brainPushInputsShaderTypes, brainPushInputsShaderPaths, &replacers);
 	replacers.clear();
 
-	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_BrainForwardPropagate.workGroupLocalSize)));
+	replacers.push_back(make_pair("@LOCAL_SIZE_X@", to_string(program_BrainForwardPropagate.workGroupLocalSize)));
+	replacers.push_back(make_pair("@LOCAL_SIZE_Y@", to_string(TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE_Y)));
 	GLenum brainForwardPropagateShaderTypes[] = { GL_COMPUTE_SHADER };
 	const char* brainForwardPropagateShaderPaths[] = { "resources/compute shaders/brain_forward_propagate.computeShader" };
 	program_BrainForwardPropagate.program = CreateLinkedShaderProgram(1, brainForwardPropagateShaderTypes, brainForwardPropagateShaderPaths, &replacers);
-	replacers.clear();
-
-	replacers.push_back(make_pair("@LOCAL_SIZE_X@", to_string(program_BrainNewForwardPropagate.workGroupLocalSize)));
-	replacers.push_back(make_pair("@LOCAL_SIZE_Y@", to_string(TECH_BRAIN_NEW_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE_Y)));
-	GLenum newBrainForwardPropagateShaderTypes[] = { GL_COMPUTE_SHADER };
-	const char* newBrainForwardPropagateShaderPaths[] = { "resources/compute shaders/brain_new_forward_propagate.computeShader" };
-	program_BrainNewForwardPropagate.program = CreateLinkedShaderProgram(1, newBrainForwardPropagateShaderTypes, newBrainForwardPropagateShaderPaths, &replacers);
 	replacers.clear();
 }
 
@@ -1107,8 +1099,8 @@ void Simulation_Programs_Sequence()
 
 
 	// Brain forward propagate
-	programID = program_BrainNewForwardPropagate.program;
-	workGroupsNeeded = program_BrainNewForwardPropagate.workGroupsNeeded;
+	programID = program_BrainForwardPropagate.program;
+	workGroupsNeeded = program_BrainForwardPropagate.workGroupsNeeded;
 	glUseProgram(programID);
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformUInteger(programID, "uMaxNumOfStructureIndices", CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
