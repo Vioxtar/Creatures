@@ -550,28 +550,29 @@ void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
 
 struct ProgramInfo
 {
+	const GLuint workGroupLocalSize;
 	GLuint program;
 	GLuint workGroupsNeeded;
-	const GLuint workGroupLocalSize;
 };
 
 
-ProgramInfo program_UpdateCreaturePlacements{ 0, 0, TECH_UPDATE_CREATURE_PLACEMENTS_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_BorderPhysics{ 0, 0, TECH_BORDER_PHYSICS_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_UniformGridBind{ 0, 0, TECH_UNIFORM_GRID_BIND_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_UniformGridUnBind{ 0, 0, TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureInteractionsPart1{ 0, 0, TECH_CREATURE_INTERACTIONS_PART1_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureInteractionsPart2{ 0, 0, TECH_CREATURE_INTERACTIONS_PART2_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureInteractionsPart3{ 0, 0, TECH_CREATURE_INTERACTIONS_PART3_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureSightsPart1{ 0, 0, TECH_CREATURE_SIGHTS_PART1_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureSightsPart2{ 0, 0, TECH_CREATURE_SIGHTS_PART2_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureSightsPart3{ 0, 0, TECH_CREATURE_SIGHTS_PART3_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_BrainPushInputs{ 0, 0, TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_BrainForwardPropagate{ 0, 0, TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureBrainPullOutputsAndBodyWorksPart1{ 0, 0, TECH_CREATURE_BRAIN_PULL_OUTPUTS_AND_BODY_WORKS_PART1_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_CreatureBrainPullOutputsAndBodyWorksPart2{ 0, 0, TECH_CREATURE_BRAIN_PULL_OUTPUTS_AND_BODY_WORKS_PART2_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_FramePreLogic{ 0, 0, TECH_FRAME_PRE_LOGIC_WORKGROUP_LOCAL_SIZE };
-ProgramInfo program_FramePostLogic{ 0, 0, TECH_FRAME_POST_LOGIC_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_UpdateCreaturePlacements{ TECH_UPDATE_CREATURE_PLACEMENTS_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_BorderPhysics{ TECH_BORDER_PHYSICS_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_UniformGridBind{ TECH_UNIFORM_GRID_BIND_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_UniformGridUnBind{ TECH_UNIFORM_GRID_UNBIND_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureInteractionsPart1{ TECH_CREATURE_INTERACTIONS_PART1_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureInteractionsPart2{ TECH_CREATURE_INTERACTIONS_PART2_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureInteractionsPart3{ TECH_CREATURE_INTERACTIONS_PART3_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureSightsPart1{ TECH_CREATURE_SIGHTS_PART1_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureSightsPart2{ TECH_CREATURE_SIGHTS_PART2_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureSightsPart3{ TECH_CREATURE_SIGHTS_PART3_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_BrainPushInputs{ TECH_BRAIN_PUSH_INPUTS_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_BrainForwardPropagate{ TECH_BRAIN_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_BrainNewForwardPropagate{ TECH_BRAIN_NEW_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE_X };
+ProgramInfo program_CreatureBrainPullOutputsAndBodyWorksPart1{ TECH_CREATURE_BRAIN_PULL_OUTPUTS_AND_BODY_WORKS_PART1_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_CreatureBrainPullOutputsAndBodyWorksPart2{ TECH_CREATURE_BRAIN_PULL_OUTPUTS_AND_BODY_WORKS_PART2_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_FramePreLogic{ TECH_FRAME_PRE_LOGIC_WORKGROUP_LOCAL_SIZE };
+ProgramInfo program_FramePostLogic{ TECH_FRAME_POST_LOGIC_WORKGROUP_LOCAL_SIZE };
 
 
 unsigned int programs_CreatureCountSupportedByWorkGroups = 0;
@@ -603,6 +604,7 @@ void RecalculateAllProgramInfosNumberOfWorkGroupsNeeded()
 	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureSightsPart3);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainPushInputs);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainForwardPropagate);
+	SetProgramInfoNumOfWorkGroupsNeeded(program_BrainNewForwardPropagate);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureBrainPullOutputsAndBodyWorksPart1);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_CreatureBrainPullOutputsAndBodyWorksPart2);
 	SetProgramInfoNumOfWorkGroupsNeeded(program_FramePreLogic);
@@ -868,6 +870,13 @@ void InitLogicPrograms()
 	const char* brainForwardPropagateShaderPaths[] = { "resources/compute shaders/brain_forward_propagate.computeShader" };
 	program_BrainForwardPropagate.program = CreateLinkedShaderProgram(1, brainForwardPropagateShaderTypes, brainForwardPropagateShaderPaths, &replacers);
 	replacers.clear();
+
+	replacers.push_back(make_pair("@LOCAL_SIZE_X@", to_string(program_BrainNewForwardPropagate.workGroupLocalSize)));
+	replacers.push_back(make_pair("@LOCAL_SIZE_Y@", to_string(TECH_BRAIN_NEW_FORWARD_PROPAGATE_WORKGROUP_LOCAL_SIZE_Y)));
+	GLenum newBrainForwardPropagateShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* newBrainForwardPropagateShaderPaths[] = { "resources/compute shaders/brain_new_forward_propagate.computeShader" };
+	program_BrainNewForwardPropagate.program = CreateLinkedShaderProgram(1, newBrainForwardPropagateShaderTypes, newBrainForwardPropagateShaderPaths, &replacers);
+	replacers.clear();
 }
 
 void InitDrawingPrograms()
@@ -1026,6 +1035,19 @@ void Simulation_FirstgenCreatureSpawns()
 	}
 }
 
+bool debug_UseNewForwardPropagate = false;
+void Simulation_ToggleNewBrainForwardPropagate()
+{
+	debug_UseNewForwardPropagate = !debug_UseNewForwardPropagate;
+	if (debug_UseNewForwardPropagate)
+	{
+		cout << "USING NEW FORWARD PROPAGATE!" << endl;
+	}
+	else
+	{
+		cout << "USING OLD FORWARD PROPAGATE!" << endl;
+	}
+}
 void Simulation_Programs_Sequence()
 {
 
@@ -1085,22 +1107,48 @@ void Simulation_Programs_Sequence()
 
 
 	// Brain forward propagate
-	programID = program_BrainForwardPropagate.program;
-	workGroupsNeeded = program_BrainForwardPropagate.workGroupsNeeded;
-	glUseProgram(programID);
-	SetUniformUInteger(programID, "uCreatureCount", creature_count);
-	SetUniformUInteger(programID, "uMaxNumOfStructureIndices", CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
-	SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_NODES);
-	SetUniformUInteger(programID, "uMaxNumOfActivatedNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
-	SetUniformUInteger(programID, "uMaxNumOfLinksInBrain", CREATURE_BRAIN_MAX_NUM_OF_LINKS);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsBiasesExponents.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_BrainsLinks.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Lives.bufferHandle);
-	glDispatchCompute(workGroupsNeeded, 1, 1);
+	if (debug_UseNewForwardPropagate)
+	{
+		// @TODO: Test if we actually need to reset all those uniforms, and bind all those buffers!
+		for (GLuint levelToCompute = 1; levelToCompute < CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS + 2; ++levelToCompute)
+		{
+			programID = program_BrainNewForwardPropagate.program;
+			workGroupsNeeded = program_BrainNewForwardPropagate.workGroupsNeeded;
+			glUseProgram(programID);
+			SetUniformUInteger(programID, "uCreatureCount", creature_count);
+			SetUniformUInteger(programID, "uMaxNumOfStructureIndices", CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
+			SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_NODES);
+			SetUniformUInteger(programID, "uMaxNumOfActivatedNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
+			SetUniformUInteger(programID, "uMaxNumOfLinksInBrain", CREATURE_BRAIN_MAX_NUM_OF_LINKS);
+			SetUniformUInteger(programID, "uLevelToCompute", levelToCompute);
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsBiasesExponents.bufferHandle);
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_BrainsLinks.bufferHandle);
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Lives.bufferHandle);
+			glDispatchCompute(workGroupsNeeded, 1, 1);
 
-	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+			glMemoryBarrier(GL_ALL_BARRIER_BITS);
+		}
+	}
+	else
+	{
+		programID = program_BrainForwardPropagate.program;
+		workGroupsNeeded = program_BrainForwardPropagate.workGroupsNeeded;
+		glUseProgram(programID);
+		SetUniformUInteger(programID, "uCreatureCount", creature_count);
+		SetUniformUInteger(programID, "uMaxNumOfStructureIndices", CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
+		SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_NODES);
+		SetUniformUInteger(programID, "uMaxNumOfActivatedNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
+		SetUniformUInteger(programID, "uMaxNumOfLinksInBrain", CREATURE_BRAIN_MAX_NUM_OF_LINKS);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsBiasesExponents.bufferHandle);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_BrainsLinks.bufferHandle);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Lives.bufferHandle);
+		glDispatchCompute(workGroupsNeeded, 1, 1);
+	}
+
 
 
 
