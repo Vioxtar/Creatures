@@ -237,11 +237,6 @@ void ToggleSimulationLogic()
 	Simulation_LogicPause(simulationPaused);
 }
 
-// @DEBUG
-void SimulationNewBrainForwardPropagateDebugToggle()
-{
-	Simulation_ToggleNewBrainForwardPropagate();
-}
 
 //////////////////////////
 // -- GLFW CALLBACKS -- //
@@ -278,10 +273,6 @@ void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, in
 		ToggleSimulationLogic();
 	}
 
-	if (key == GLFW_KEY_D && action == GLFW_PRESS)
-	{
-		SimulationNewBrainForwardPropagateDebugToggle();
-	}
 }
 
 

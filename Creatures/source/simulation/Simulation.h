@@ -21,6 +21,3 @@ using namespace std;
 void Simulation_Init();
 void Simulation_Update();
 void Simulation_LogicPause(bool enablePause);
-
-// @DEBUG
-void Simulation_ToggleNewBrainForwardPropagate();

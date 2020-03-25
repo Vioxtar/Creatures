@@ -58,26 +58,38 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 	brainBiasesExponents->resize(CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES; i++)
 	{
-		GLfloat bias = pow(random(), CREATURE_BRAIN_FIRSTGEN_BIAS_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_FIRSTGEN_BIAS_MAX_ABS
-			* randomNegate();
+		GLfloat bias = 0.0;
+		if (random() < CREATURE_BRAIN_FIRSTGEN_BIAS_CHANCE_FOR_NON_NEUTRAL_VALUE)
+		{
+			bias = pow(random(), CREATURE_BRAIN_FIRSTGEN_BIAS_PERCENTAGE_EXPONENT)
+				* CREATURE_BRAIN_FIRSTGEN_BIAS_MAX_ABS
+				* randomNegate();
+		}
 
-		GLfloat activationExponent = pow(random(), CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_MAX_ABS
-			* randomNegate();
+		GLfloat activationExponent = 1.0;
+		if (random() < CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_CHANCE_FOR_NON_NEUTRAL_VALUE)
+		{
+			activationExponent = pow(random(), CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT)
+				* CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_MAX_ABS
+				* randomNegate();
+		}
 
-		brainBiasesExponents->at(i) = (vec2(bias, activationExponent));
+		brainBiasesExponents->at(i) = vec2(bias, activationExponent);
 	}
 
 	// Fill links
 	brainLinks->resize(CREATURE_BRAIN_MAX_NUM_OF_LINKS);
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_LINKS; i++)
 	{
-		GLfloat linkWeight = pow(random(), CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_PERCENTAGE_EXPONENT)
-			* CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_MAX_ABS
-			* randomNegate();
+		GLfloat linkWeight = 0.0;
+		if (random() < CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_CHANCE_FOR_NON_NEUTRAL_VALUE)
+		{
+			linkWeight = pow(random(), CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_PERCENTAGE_EXPONENT)
+				* CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_MAX_ABS
+				* randomNegate();
+		}
 
-		brainLinks->at(i) = (linkWeight);
+		brainLinks->at(i) = linkWeight;
 	}
 
 	// @TODO: First gen is currently getting max structure for performance testing
@@ -1035,19 +1047,6 @@ void Simulation_FirstgenCreatureSpawns()
 	}
 }
 
-bool debug_UseNewForwardPropagate = false;
-void Simulation_ToggleNewBrainForwardPropagate()
-{
-	debug_UseNewForwardPropagate = !debug_UseNewForwardPropagate;
-	if (debug_UseNewForwardPropagate)
-	{
-		cout << "USING NEW FORWARD PROPAGATE!" << endl;
-	}
-	else
-	{
-		cout << "USING OLD FORWARD PROPAGATE!" << endl;
-	}
-}
 void Simulation_Programs_Sequence()
 {
 
@@ -1107,46 +1106,25 @@ void Simulation_Programs_Sequence()
 
 
 	// Brain forward propagate
-	if (debug_UseNewForwardPropagate)
+	programID = program_BrainNewForwardPropagate.program;
+	workGroupsNeeded = program_BrainNewForwardPropagate.workGroupsNeeded;
+	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformUInteger(programID, "uMaxNumOfStructureIndices", CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
+	SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_NODES);
+	SetUniformUInteger(programID, "uMaxNumOfActivatedNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
+	SetUniformUInteger(programID, "uMaxNumOfLinksInBrain", CREATURE_BRAIN_MAX_NUM_OF_LINKS);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsBiasesExponents.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_BrainsLinks.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Lives.bufferHandle);
+	for (GLuint levelToCompute = 1; levelToCompute < CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS + 2; ++levelToCompute)
 	{
-		// @TODO: Test if we actually need to reset all those uniforms, and bind all those buffers!
-		for (GLuint levelToCompute = 1; levelToCompute < CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS + 2; ++levelToCompute)
-		{
-			programID = program_BrainNewForwardPropagate.program;
-			workGroupsNeeded = program_BrainNewForwardPropagate.workGroupsNeeded;
-			glUseProgram(programID);
-			SetUniformUInteger(programID, "uCreatureCount", creature_count);
-			SetUniformUInteger(programID, "uMaxNumOfStructureIndices", CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
-			SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_NODES);
-			SetUniformUInteger(programID, "uMaxNumOfActivatedNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
-			SetUniformUInteger(programID, "uMaxNumOfLinksInBrain", CREATURE_BRAIN_MAX_NUM_OF_LINKS);
-			SetUniformUInteger(programID, "uLevelToCompute", levelToCompute);
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsBiasesExponents.bufferHandle);
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_BrainsLinks.bufferHandle);
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Lives.bufferHandle);
-			glDispatchCompute(workGroupsNeeded, 1, 1);
-
-			glMemoryBarrier(GL_ALL_BARRIER_BITS);
-		}
-	}
-	else
-	{
-		programID = program_BrainForwardPropagate.program;
-		workGroupsNeeded = program_BrainForwardPropagate.workGroupsNeeded;
-		glUseProgram(programID);
-		SetUniformUInteger(programID, "uCreatureCount", creature_count);
-		SetUniformUInteger(programID, "uMaxNumOfStructureIndices", CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
-		SetUniformUInteger(programID, "uMaxNumOfNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_NODES);
-		SetUniformUInteger(programID, "uMaxNumOfActivatedNodesInBrain", CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
-		SetUniformUInteger(programID, "uMaxNumOfLinksInBrain", CREATURE_BRAIN_MAX_NUM_OF_LINKS);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_BrainsBiasesExponents.bufferHandle);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_BrainsLinks.bufferHandle);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Lives.bufferHandle);
+		SetUniformUInteger(programID, "uLevelToCompute", levelToCompute);
 		glDispatchCompute(workGroupsNeeded, 1, 1);
+		
+		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 	}
 
 

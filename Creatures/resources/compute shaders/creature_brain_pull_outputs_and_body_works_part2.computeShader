@@ -110,6 +110,7 @@ uniform float uCreatureMaxSkinSaturation;
 uniform float uCreatureMinSkinSaturation;
 
 uniform float uCreatureLifeDrainOnNoEnergy;
+uniform float uCreatureEnergyDrainConstant;
 
 uniform float uCreatureDeathMeatRotRate;
 uniform float uCreatureDeathWithoutMeatShrinkRate;
@@ -147,6 +148,16 @@ void main()
 
 	if (alive)
 	{
+
+		// Constant energy drain
+		energy -= uCreatureEnergyDrainConstant;
+
+		// No energy results in life drain
+		if (energy <= 0.0)
+		{
+			life -= uCreatureLifeDrainOnNoEnergy;
+		}
+
 		// Life <-> Energy <-> Meat conversions
 
 		float meat = Meats[gid];
@@ -178,12 +189,7 @@ void main()
 			energy -= excessEnergy;
 		}
 
-		// No energy results in life drain
-		if (energy <= 0.0)
-		{
-			life -= uCreatureLifeDrainOnNoEnergy;
-		}
-
+		
 
 		// Get some stuff about our brain
 		uint brainStructureStartIndex = gid * uMaxNumOfStructureIndices;
