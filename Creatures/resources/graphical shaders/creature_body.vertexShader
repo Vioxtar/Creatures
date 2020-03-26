@@ -75,6 +75,7 @@ layout (std430, binding = 13) buffer CreatureShields
 uniform mat4 uTransform;
 uniform uint uMaxNumOfColliders;
 uniform float uCreatureMaxEnergy;
+uniform float uCreatureMaxLife;
 uniform float uCreatureTransparencyEnergyExponent;
 
 // Per vertex values
@@ -89,6 +90,7 @@ out vec2 oFeederEuclideanPos;
 flat out vec4 oVertexColor;
 flat out vec2 oSkinPattern;
 flat out float oEnergyFactor;
+flat out float oLifePercentage;
 flat out float oSpikeState;
 flat out float oFeederState;
 flat out float oShieldState;
@@ -104,6 +106,7 @@ void main()
 	float creatureRadius = Radii[gl_InstanceID];
 	float creatureAngle = Angles[gl_InstanceID];
 	float creatureEnergyPercentage = min(Energies[gl_InstanceID], uCreatureMaxEnergy) / uCreatureMaxEnergy;
+	float creatureLifePercentage = max(0.0, min(Lives[gl_InstanceID] / uCreatureMaxLife, 1.0));
 	vec2 creatureSkinPattern = SkinPatterns[gl_InstanceID];
 	vec2 creatureForwardDir = ForwardDirections[gl_InstanceID];
 	vec3 creatureColor = vec3(SkinRGBColors[colIndex], SkinRGBColors[colIndex + 1], SkinRGBColors[colIndex + 2]);
@@ -182,6 +185,7 @@ void main()
 	oVertexColor = vec4(creatureColor.xyz, 1.0);
 	oSkinPattern = creatureSkinPattern;
 	oEnergyFactor = pow(creatureEnergyPercentage, uCreatureTransparencyEnergyExponent / (creatureEnergyPercentage + 0.05));
+	oLifePercentage = creatureLifePercentage;
 	oShieldState = creatureShieldState;
 	oShieldSpan = creatureShieldSpan;
 	oFeederState = creatureFeederState;

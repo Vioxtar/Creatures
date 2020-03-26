@@ -431,8 +431,8 @@ void AddFirstGenerationCreature(vec2 pos, vec2 vel)
 	
 	data.skinPattern = vec2(random(), random());
 	data.skinHue = random();
-	data.skinSaturation = 1.0;
-	data.skinValue = 1.0;
+	data.skinSaturation = CREATURE_MAX_SKIN_SATURATION.value;
+	data.skinLightness = CREATURE_MAX_SKIN_LIGHTNESS.value;
 
 	data.angle = random() * 2 * M_PI;
 	data.angleVel = 0;
@@ -526,8 +526,8 @@ void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
 	GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &data.pos);
 
 	// Set more initial values
-	data.skinSaturation = 1.0;
-	data.skinValue = 1.0;
+	data.skinSaturation = CREATURE_MAX_SKIN_SATURATION.value;
+	data.skinLightness = CREATURE_MAX_SKIN_LIGHTNESS.value;
 
 	data.vel = vec2(0, 0);
 	data.angle = random() * 2.0 * M_PI;
@@ -1141,6 +1141,7 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureStrafeMovementEnergyCost", CREATURE_STRAFE_MOVEMENT_ENERGY_COST.value);
 	SetUniformFloat(programID, "uCreatureTurnMovementEnergyCost", CREATURE_TURN_MOVEMENT_ENERGY_COST.value);
 	SetUniformFloat(programID, "uCreatureEyeMaxConeRadius", CREATURE_EYE_MAX_CONES_RADIUS.value);
+	SetUniformFloat(programID, "uCreatureEyeControlsInterpolationRate", CREATURE_EYE_CONTROLS_INTERPOLATION_RATE.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Lives.bufferHandle);
@@ -1182,11 +1183,11 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureDeviceShieldEnergyCost", CREATURE_DEVICE_SHIELD_ENERGY_COST.value);
 	SetUniformFloat(programID, "uCreatureDeviceFeederEnergyCost", CREATURE_DEVICE_FEEDER_ENERGY_COST.value);
 	SetUniformFloat(programID, "uCreatureDeviceStateInterpolationRate", CREATURE_DEVICE_STATE_INTERPOLATION_RATE.value);
-	SetUniformFloat(programID, "uCreatureMaxSkinValue", CREATURE_MAX_SKIN_VALUE.value);
-	SetUniformFloat(programID, "uCreatureMinSkinValue", CREATURE_MIN_SKIN_VALUE.value);
+	SetUniformFloat(programID, "uCreatureMaxSkinValue", CREATURE_MAX_SKIN_LIGHTNESS.value);
+	SetUniformFloat(programID, "uCreatureMinSkinValue", CREATURE_MIN_SKIN_LIGHTNESS.value);
 	SetUniformFloat(programID, "uCreatureMaxSkinSaturation", CREATURE_MAX_SKIN_SATURATION.value);
 	SetUniformFloat(programID, "uCreatureMinSkinSaturation", CREATURE_MIN_SKIN_SATURATION.value);
-	SetUniformFloat(programID, "uCreatureSkinValueInterpolationRate", CREATURE_SKIN_VALUE_INTERPOLATION_RATE.value);
+	SetUniformFloat(programID, "uCreatureSkinValueInterpolationRate", CREATURE_SKIN_LIGHTNESS_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureLifeDrainOnNoEnergy", CREATURE_LIFE_DRAIN_ON_NO_ENERGY.value);
 	SetUniformFloat(programID, "uCreatureEnergyDrainConstant", CREATURE_ENERGY_DRAIN_CONSTANT.value);
 	SetUniformFloat(programID, "uCreatureDeathMeatRotRate", CREATURE_DEATH_MEAT_ROT_RATE.value);
@@ -1196,8 +1197,8 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureDeathHardnessInterpolationRate", CREATURE_DEATH_HARDNESS_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureDeathDeviceZeroficationInterpolationRate", CREATURE_DEATH_DEVICE_ZEROFICATION_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureDeathEnergyZeroficationRate", CREATURE_DEATH_ENERGY_ZEROFICATION_INTERPOLATION_RATE.value);
-	SetUniformFloat(programID, "uCreatureDeathSkinValueTarget", CREATURE_DEATH_SKIN_VALUE_TARGET.value);
-	SetUniformFloat(programID, "uCreatureDeathSkinValueInterpolationRate", CREATURE_DEATH_SKIN_VALUE_INTERPOLATION_RATE.value);
+	SetUniformFloat(programID, "uCreatureDeathSkinValueTarget", CREATURE_DEATH_SKIN_LIGHTNESS_TARGET.value);
+	SetUniformFloat(programID, "uCreatureDeathSkinValueInterpolationRate", CREATURE_DEATH_SKIN_LIGHTNESS_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureEnergyPercentageBasedDeviceStateMultiplierExponent", CREATURE_ENERGY_PERCENTAGE_BASED_DEVICE_STATE_MULTIPLIER_EXPONENT.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_BrainsStructures.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_BrainsNodes.bufferHandle);
@@ -1419,8 +1420,8 @@ void Simulation_Programs_Sequence()
 	SetUniformFloat(programID, "uCreatureMinRadius", CREATURE_MIN_RADIUS.value);
 	SetUniformFloat(programID, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
 	SetUniformFloat(programID, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
-	SetUniformFloat(programID, "uCreatureMaxSkinValue", CREATURE_MAX_SKIN_VALUE.value);
-	SetUniformFloat(programID, "uCreatureMinSkinValue", CREATURE_MIN_SKIN_VALUE.value);
+	SetUniformFloat(programID, "uCreatureMaxSkinValue", CREATURE_MAX_SKIN_LIGHTNESS.value);
+	SetUniformFloat(programID, "uCreatureMinSkinValue", CREATURE_MIN_SKIN_LIGHTNESS.value);
 	SetUniformFloat(programID, "uCreatureMaxSkinSaturation", CREATURE_MAX_SKIN_SATURATION.value);
 	SetUniformFloat(programID, "uCreatureMinSkinSaturation", CREATURE_MIN_SKIN_SATURATION.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_EyePupilSights.bufferHandle);
@@ -1545,6 +1546,7 @@ void Simulation_Render()
 	SetUniformMatrix4(drawCallData_CreatureBody.program, "uTransform", GetSimSpaceToCameraTransform());
 	SetUniformUInteger(drawCallData_CreatureBody.program, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
 	SetUniformFloat(drawCallData_CreatureBody.program, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
+	SetUniformFloat(drawCallData_CreatureBody.program, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
 	SetUniformFloat(drawCallData_CreatureBody.program, "uCreatureTransparencyEnergyExponent", RENDER_CREATURE_TRANSPARENCY_ENERGY_EXPONENT.value);
 	glDrawElementsInstanced(GL_TRIANGLES, drawCallData_CreatureBody.numOfIndices, GL_UNSIGNED_INT, 0, numOfInstances);
 	glBindVertexArray(0);

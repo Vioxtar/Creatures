@@ -271,10 +271,11 @@ extern TweakableFloatSetting CREATURE_RADIUS_PERCENTAGE_MUSCLE_WEIGHT;
 extern TweakableFloatSetting CREATURE_MAX_HARDNESS;
 extern TweakableFloatSetting CREATURE_MIN_HARDNESS;
 extern TweakableFloatSetting CREATURE_HARDNESS_INTERPOLATION_RATE;
+extern TweakableFloatSetting CREATURE_EYE_CONTROLS_INTERPOLATION_RATE;
 
-extern TweakableFloatSetting CREATURE_MAX_SKIN_VALUE;
-extern TweakableFloatSetting CREATURE_MIN_SKIN_VALUE;
-extern TweakableFloatSetting CREATURE_SKIN_VALUE_INTERPOLATION_RATE;
+extern TweakableFloatSetting CREATURE_MAX_SKIN_LIGHTNESS;
+extern TweakableFloatSetting CREATURE_MIN_SKIN_LIGHTNESS;
+extern TweakableFloatSetting CREATURE_SKIN_LIGHTNESS_INTERPOLATION_RATE;
 
 extern TweakableFloatSetting CREATURE_MAX_SKIN_SATURATION;
 extern TweakableFloatSetting CREATURE_MIN_SKIN_SATURATION;
@@ -343,8 +344,8 @@ extern TweakableFloatSetting CREATURE_DEATH_DEVICE_ZEROFICATION_INTERPOLATION_RA
 
 extern TweakableFloatSetting CREATURE_DEATH_ENERGY_ZEROFICATION_INTERPOLATION_RATE;
 
-extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_TARGET;
-extern TweakableFloatSetting CREATURE_DEATH_SKIN_VALUE_INTERPOLATION_RATE;
+extern TweakableFloatSetting CREATURE_DEATH_SKIN_LIGHTNESS_TARGET;
+extern TweakableFloatSetting CREATURE_DEATH_SKIN_LIGHTNESS_INTERPOLATION_RATE;
 
 // Creature body mutation settings
 

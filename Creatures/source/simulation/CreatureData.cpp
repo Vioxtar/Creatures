@@ -405,7 +405,7 @@ CreatureUniqueID CreatureData_AddCreature(CreatureData& newCreatureData)
 	SetCreatureAttribute(creature_BrainsStructures, newCreatureIndex, newCreatureData.brainStructure.data());
 	SetCreatureAttribute(creature_SkinHues, newCreatureIndex, &newCreatureData.skinHue);
 	SetCreatureAttribute(creature_SkinSaturations, newCreatureIndex, &newCreatureData.skinSaturation);
-	SetCreatureAttribute(creature_SkinValues, newCreatureIndex, &newCreatureData.skinValue);
+	SetCreatureAttribute(creature_SkinValues, newCreatureIndex, &newCreatureData.skinLightness);
 	SetCreatureAttribute(creature_Positions, newCreatureIndex, &newCreatureData.pos);
 	SetCreatureAttribute(creature_Velocities, newCreatureIndex, &newCreatureData.vel);
 	SetCreatureAttribute(creature_Radii, newCreatureIndex, &newCreatureData.rad);

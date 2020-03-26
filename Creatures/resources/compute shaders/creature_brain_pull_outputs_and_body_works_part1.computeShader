@@ -77,6 +77,7 @@ uniform float uCreatureStrafeMovementEnergyCost;
 uniform float uCreatureTurnMovementEnergyCost;
 
 uniform float uCreatureEyeMaxConeRadius;
+uniform float uCreatureEyeControlsInterpolationRate;
 
 void main()
 {
@@ -143,10 +144,18 @@ void main()
 	AngleVelocities[gid] += movementTurn;
 
 	
-	// Eye control (outputs are written directly into eye control values instead of velocity values)
-	EyeMuscles[gid] = vec2(eyeMuscleRight - eyeMuscleLeft, eyeMuscleUp - eyeMuscleDown);
-	EyeConeRadii[gid] = eyeConeRadiusPercentage * uCreatureEyeMaxConeRadius;
-	EyePupilConeCoverageFractions[gid] = eyePupilConeCoverageFraction;
+	// Eye controls
+	vec2 oldEyeMuscles = EyeMuscles[gid];
+	float oldEyeConeRadius = EyeConeRadii[gid];
+	float oldEyePupilConeCoverageFraction = EyePupilConeCoverageFractions[gid];
+	
+	vec2 targetEyeMuscles = vec2(eyeMuscleRight - eyeMuscleLeft, eyeMuscleUp - eyeMuscleDown);
+	float targetEyeRadius = eyeConeRadiusPercentage * uCreatureEyeMaxConeRadius;
+	float targetEyePupilConeCoverageFraction = eyePupilConeCoverageFraction;
+
+	EyeMuscles[gid] = targetEyeMuscles * uCreatureEyeControlsInterpolationRate + oldEyeMuscles * (1.0 - uCreatureEyeControlsInterpolationRate);
+	EyeConeRadii[gid] = targetEyeRadius * uCreatureEyeControlsInterpolationRate + oldEyeConeRadius * (1.0 - uCreatureEyeControlsInterpolationRate);
+	EyePupilConeCoverageFractions[gid] = targetEyePupilConeCoverageFraction * uCreatureEyeControlsInterpolationRate + oldEyePupilConeCoverageFraction * (1.0 - uCreatureEyeControlsInterpolationRate);
 
 
 	// Energy deductions

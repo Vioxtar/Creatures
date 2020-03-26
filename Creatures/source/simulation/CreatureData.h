@@ -29,7 +29,7 @@ struct CreatureData
 	vec2 skinPattern;
 	GLfloat skinHue;
 	GLfloat skinSaturation;
-	GLfloat skinValue;
+	GLfloat skinLightness;
 
 	// Placement
 	vec2 pos;

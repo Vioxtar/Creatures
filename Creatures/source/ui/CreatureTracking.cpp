@@ -190,7 +190,7 @@ class CreatureTracker
 				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[3], barDimensions, "Feeder Prominence");
 				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[4], barDimensions, "Forward Aim Prominence");
 				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[5], barDimensions, "Skin Hue Difference");
-				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[6], barDimensions, "Skin Value");
+				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[6], barDimensions, "Skin Lightness");
 				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[7], barDimensions, "Skin Saturation");
 				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[8], barDimensions, "Skin Pattern Difference");
 				ImGui::ProgressBar(creatureSnapShot.eyePupilSights[9], barDimensions, "Life");

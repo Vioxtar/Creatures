@@ -12,10 +12,12 @@ in vec2 oFeederEuclideanPos;
 flat in vec4 oVertexColor;
 flat in vec2 oSkinPattern;
 flat in float oEnergyFactor;
+flat in float oLifePercentage;
 flat in float oSpikeState;
 flat in float oFeederState;
 flat in float oShieldState;
 flat in float oShieldSpan;
+
 
 out vec4 FragColor;
 out float gl_FragDepth;
@@ -37,7 +39,7 @@ void main()
     float forwardDirColMul = 
         oEuclideanPos.x > -forwardDirXMul &&
         oEuclideanPos.x < forwardDirXMul &&
-        oEuclideanPos.y > 0
+        oEuclideanPos.y > (1.0 - oLifePercentage)
         ? 1.0 - oVertexSquaredDistance * 0.5
         : 1.0;
    
