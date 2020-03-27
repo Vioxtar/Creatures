@@ -165,7 +165,7 @@ void main()
 		vec2 biasExponent = BrainsBiasesExponents[activeBiasExponent];
 		float bias = biasExponent.x;
 		float exponent = biasExponent.y;
-		BrainsNodes[activeNode] = ActivationFunction(max(0.0, min(sum + bias, 1.0)), exponent);
+		BrainsNodes[activeNode] = max(-1.0, min(sum, 1.0)); //ActivationFunction(max(0.0, min(sum + bias, 1.0)), exponent);
 
 		activeNode++;
 		activeBiasExponent++;

@@ -100,9 +100,9 @@ extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES = 60;
 extern const float CREATURE_DEFAULT_BODY_MASS = 0.01;
 
 // Creature brain settings
-extern const uint16_t CREATURE_BRAIN_NUM_OF_TEMPORALS = 16;
-extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS = 3;
-extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 25;
+extern const uint16_t CREATURE_BRAIN_NUM_OF_TEMPORALS = 0;
+extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS = 1;
+extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 10;
 
 extern const float CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS = 1000.0;
 extern const float CREATURE_BRAIN_BIAS_MAX_ABS = 1000.0;
@@ -173,17 +173,17 @@ extern TweakableFloatSetting UI_CREATURE_TRACKER_CAMERA_ZOOM_BASED_FOLLOW_INTERP
 
 
 // Simulation space settings
-extern TweakableFloatSetting SIMULATION_SPACE_WIDTH = { 1000, 1, 2000 };
-extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 1000, 1, 2000 };
+extern TweakableFloatSetting SIMULATION_SPACE_WIDTH = { 200, 1, 2000 };
+extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 200, 1, 2000 };
 
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.9965, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.9875, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.9875, 0.0, 1.0 };
 
 // Simulation creature settings
 
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 4.0, 0.0, 50.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 0.04, 0.0, 50.0 };
 
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_RATE = { 0.0, 0.0, 10000.0 };
 extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_UPPER_TARGET = { 30000, 0, 10000 };
@@ -194,7 +194,7 @@ extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_DOWN_SPAWN_R
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_STEP = { 0.0001, 0.0, 10.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_SPAWN_RATE_EXPONENT = { 30.0, 0.0, 10.0 };
 
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_VELOCITY_MAGNITUDE = { 0.0001, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_VELOCITY_MAGNITUDE = { 0.0, 0.0, 10.0 };
 
 // Render settings
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_R = { 0.035, 0.0, 1.0 };
@@ -307,7 +307,7 @@ extern TweakableFloatSetting CREATURE_DEATH_SKIN_LIGHTNESS_INTERPOLATION_RATE = 
 
 // Creature eye settings
 extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 10.0, 0.1, 30.0 };
-extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 2.0, 0.1, 3.0 };
+extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 6.0, 0.1, 10.0 };
 
 
 
@@ -321,9 +321,9 @@ extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 2.0, 0.1, 3.0 };
 extern const uint16_t CREATURE_EYE_NUM_OF_CONES_VALUES = CREATURE_EYE_NUM_OF_CONES * CREATURE_EYE_NUM_OF_VALUES_IN_SINGLE_CONE;
 
 // Calculate buffer size extern constants (used to define the size of each structure/node/link creature attributes)
-extern const uint16_t CREATURE_BRAIN_NUM_OF_INPUTS = 9 + CREATURE_EYE_NUM_OF_PUPIL_VALUES + CREATURE_EYE_NUM_OF_CONES_VALUES + CREATURE_BRAIN_NUM_OF_TEMPORALS;
+extern const uint16_t CREATURE_BRAIN_NUM_OF_INPUTS = 6 + CREATURE_EYE_NUM_OF_PUPIL_VALUES + CREATURE_EYE_NUM_OF_CONES_VALUES + CREATURE_BRAIN_NUM_OF_TEMPORALS;
 
-extern const uint16_t CREATURE_BRAIN_NUM_OF_OUTPUTS = 19 + CREATURE_BRAIN_NUM_OF_TEMPORALS;
+extern const uint16_t CREATURE_BRAIN_NUM_OF_OUTPUTS = 14 + CREATURE_BRAIN_NUM_OF_TEMPORALS;
 
 extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_NODES = CREATURE_BRAIN_NUM_OF_INPUTS + CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS * CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL + CREATURE_BRAIN_NUM_OF_OUTPUTS;
 

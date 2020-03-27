@@ -102,20 +102,13 @@ void main()
 	uint firstOutputIndex = (gid + 1) * uMaxNumOfNodesInBrain - numOfOutputs;
 
 	// Acquire brain outputs
-	float movementForward = max(0.0, min(BrainsNodes[firstOutputIndex + 0], 1.0));		
-	float movementBackward = max(0.0, min(BrainsNodes[firstOutputIndex + 1], 1.0));
-	float movementStrafeRight = max(0.0, min(BrainsNodes[firstOutputIndex + 2], 1.0));
-	float movementStrafeLeft = max(0.0, min(BrainsNodes[firstOutputIndex + 3], 1.0));
-	float movementTurnClockwise = max(0.0, min(BrainsNodes[firstOutputIndex + 4], 1.0));
-	float movementTurnAntiClockwise = max(0.0, min(BrainsNodes[firstOutputIndex + 5], 1.0));
-	float eyeMuscleRight = max(0.0, min(BrainsNodes[firstOutputIndex + 6], 1.0));
-	float eyeMuscleLeft = max(0.0, min(BrainsNodes[firstOutputIndex + 7], 1.0));
-	float eyeMuscleUp = max(0.0, min(BrainsNodes[firstOutputIndex + 8], 1.0));
-	float eyeMuscleDown = max(0.0, min(BrainsNodes[firstOutputIndex + 9], 1.0));
-	float eyeConeRadiusPercentage = max(0.0, min(BrainsNodes[firstOutputIndex + 10], 1.0));
-	float eyePupilConeCoverageFraction = max(0.0, min(BrainsNodes[firstOutputIndex + 11], 1.0));
-
-
+	float outputMovementForwardBackwards = max(-1.0, min(BrainsNodes[firstOutputIndex + 0], 1.0));		
+	float outputMovementStrafeRightLeft = max(-1.0, min(BrainsNodes[firstOutputIndex + 1], 1.0));
+	float outputMovementTurnClockwise = max(-1.0, min(BrainsNodes[firstOutputIndex + 2], 1.0));
+	float outputEyeMuscleRightLeft = max(-1.0, min(BrainsNodes[firstOutputIndex + 3], 1.0));
+	float outputEyeMuscleUpDown = max(-1.0, min(BrainsNodes[firstOutputIndex + 4], 1.0));
+	float outputEyeConeRadiusPercentage = max(0.0, min(BrainsNodes[firstOutputIndex + 5], 1.0));
+	float outputEyePupilConeCoverageFraction = max(0.0, min(BrainsNodes[firstOutputIndex + 6], 1.0));
 
 	// Obtain energy and calculate our movement multiplier - used to make creatures on low energies move slower
 	float energy = Energies[gid];
@@ -123,24 +116,19 @@ void main()
 	float energyPercentageBasedMovementMultiplier = pow(energyPercentage, uCreatureEnergyPercentageBasedMovementMultiplierExponent);
 
 	// Scale our movement actuations per our energy
-	movementForward *= energyPercentageBasedMovementMultiplier;
-	movementBackward *= energyPercentageBasedMovementMultiplier;
-	movementStrafeRight *= energyPercentageBasedMovementMultiplier;
-	movementStrafeLeft *= energyPercentageBasedMovementMultiplier;
-	movementTurnClockwise *= energyPercentageBasedMovementMultiplier;
-	movementTurnAntiClockwise *= energyPercentageBasedMovementMultiplier;
+	outputMovementForwardBackwards *= energyPercentageBasedMovementMultiplier;
+	outputMovementStrafeRightLeft *= energyPercentageBasedMovementMultiplier;
+	outputMovementTurnClockwise *= energyPercentageBasedMovementMultiplier;
 
 
 	// Forward/backward right/left movement actuation
-	float movementForwardBackward = 
-		movementForward * uCreatureForwardMovementEffectiveness -
-		movementBackward * uCreatureBackwardMovementEffectivness;
-	float movementRightLeft = (movementStrafeRight - movementStrafeLeft) * uCreatureStrafeMovementEffectivness;
+	float movementForwardBackward = outputMovementForwardBackwards * (outputMovementForwardBackwards > 0.0 ? uCreatureForwardMovementEffectiveness : uCreatureBackwardMovementEffectivness);
+	float movementRightLeft = outputMovementStrafeRightLeft * uCreatureStrafeMovementEffectivness;
 	vec2 eventualMovementVelocityAdd = ForwardDirections[gid] * movementForwardBackward + RightDirections[gid] * movementRightLeft;
 	Velocities[gid] += eventualMovementVelocityAdd;
 
 	// Turning movement actuation
-	float movementTurn = (movementTurnClockwise - movementTurnAntiClockwise) * uCreatureTurnMovementEffectiveness;
+	float movementTurn = outputMovementTurnClockwise * uCreatureTurnMovementEffectiveness;
 	AngleVelocities[gid] += movementTurn;
 
 	
@@ -149,9 +137,9 @@ void main()
 	float oldEyeConeRadius = EyeConeRadii[gid];
 	float oldEyePupilConeCoverageFraction = EyePupilConeCoverageFractions[gid];
 	
-	vec2 targetEyeMuscles = vec2(eyeMuscleRight - eyeMuscleLeft, eyeMuscleUp - eyeMuscleDown);
-	float targetEyeRadius = eyeConeRadiusPercentage * uCreatureEyeMaxConeRadius;
-	float targetEyePupilConeCoverageFraction = eyePupilConeCoverageFraction;
+	vec2 targetEyeMuscles = vec2(outputEyeMuscleRightLeft, outputEyeMuscleUpDown);
+	float targetEyeRadius = outputEyeConeRadiusPercentage * uCreatureEyeMaxConeRadius;
+	float targetEyePupilConeCoverageFraction = outputEyePupilConeCoverageFraction;
 
 	EyeMuscles[gid] = targetEyeMuscles * uCreatureEyeControlsInterpolationRate + oldEyeMuscles * (1.0 - uCreatureEyeControlsInterpolationRate);
 	EyeConeRadii[gid] = targetEyeRadius * uCreatureEyeControlsInterpolationRate + oldEyeConeRadius * (1.0 - uCreatureEyeControlsInterpolationRate);
@@ -160,10 +148,9 @@ void main()
 
 	// Energy deductions
 	float energyToDeduct =
-		movementForward * uCreatureForwardMovementEnergyCost
-		+ movementBackward * uCreatureBackwardMovementEnergyCost
-		+ (movementStrafeRight + movementStrafeLeft) * uCreatureStrafeMovementEnergyCost
-		+ (movementTurnClockwise + movementTurnAntiClockwise) * uCreatureTurnMovementEnergyCost;
+		abs(outputMovementForwardBackwards) * (outputMovementForwardBackwards > 0.0 ? uCreatureForwardMovementEnergyCost : uCreatureBackwardMovementEnergyCost)
+		+ abs(outputMovementStrafeRightLeft) * uCreatureStrafeMovementEnergyCost
+		+ abs(outputMovementTurnClockwise) * uCreatureTurnMovementEnergyCost;
 
 	Energies[gid] = max(energy - energyToDeduct, 0);
 }

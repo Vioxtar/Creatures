@@ -201,13 +201,13 @@ void main()
 		uint firstOutputIndex = (gid + 1) * uMaxNumOfNodesInBrain - numOfOutputs;
 
 		// Acquire brain outputs
-		float radiusMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 12], 1.0));
-		float hardnessMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 13], 1.0));
-		float deviceSpikeStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 14], 1.0));
-		float deviceShieldStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 15], 1.0));
-		float deviceFeederStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 16], 1.0));
-		float skinValueMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 17], 1.0));
-		float hornyMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 18], 1.0));
+		float radiusMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 7], 1.0));
+		float hardnessMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 8], 1.0));
+		float deviceSpikeStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 9], 1.0));
+		float deviceShieldStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 10], 1.0));
+		float deviceFeederStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 11], 1.0));
+		float skinValueMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 12], 1.0));
+		float hornyMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 13], 1.0));
 
 		// Radius
 		float radius = Radii[gid];

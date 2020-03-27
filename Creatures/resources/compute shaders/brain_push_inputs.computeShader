@@ -119,43 +119,31 @@ void main()
 	float normForthBack = dot(velocity, forwardDir) / uCreatureMaxVelocityLength;
 	float normRightLeft = dot(velocity, rightDir) / uCreatureMaxVelocityLength;
 	
-	float forward = max(0.0, min(normForthBack, 1.0));
-	float backward = max(0.0, min(-normForthBack, 1.0));
-	float right = max(0.0, min(normRightLeft, 1.0));
-	float left = max(0.0, min(-normRightLeft, 1.0));
-
-	BrainsNodes[firstInputNodeIndex + 3] = forward;
-	BrainsNodes[firstInputNodeIndex + 4] = backward;
-	BrainsNodes[firstInputNodeIndex + 5] = right;
-	BrainsNodes[firstInputNodeIndex + 6] = left;
+	BrainsNodes[firstInputNodeIndex + 3] = max(-1.0, min(normForthBack, 1.0)); // Clamped because we may be travelling more than max velocity
+	BrainsNodes[firstInputNodeIndex + 4] = max(-1.0, min(normRightLeft, 1.0)); // Clamped because we may be travelling more than max velocity
 
 	// Angle movements
 	float angleVelocityNorm = AngleVelocities[gid] / uCreatureMaxAngleVelocityLength;
-
-	float clockwise = max(angleVelocityNorm, 0);
-	float antiClockwise = max(-angleVelocityNorm, 0);
-
-	BrainsNodes[firstInputNodeIndex + 7] = clockwise;
-	BrainsNodes[firstInputNodeIndex + 8] = antiClockwise;
+	BrainsNodes[firstInputNodeIndex + 5] = max(-1.0, min(angleVelocityNorm, 1.0)); // Clamped because we may be travelling more than max velocity;
 
 	// Eye pupil sights (all are normalized)
 	uint pupilSightStartIndex = gid * uCreatureEyeNumOfPupilValues;
 
-	BrainsNodes[firstInputNodeIndex + 9] = EyePupilSights[pupilSightStartIndex + 0]; // Activation
-	BrainsNodes[firstInputNodeIndex + 10] = EyePupilSights[pupilSightStartIndex + 1]; // Shield prominence
-	BrainsNodes[firstInputNodeIndex + 11] = EyePupilSights[pupilSightStartIndex + 2]; // Spike prominence
-	BrainsNodes[firstInputNodeIndex + 12] = EyePupilSights[pupilSightStartIndex + 3]; // Feeder prominence
-	BrainsNodes[firstInputNodeIndex + 13] = EyePupilSights[pupilSightStartIndex + 4]; // Forward aim prominence
-	BrainsNodes[firstInputNodeIndex + 14] = EyePupilSights[pupilSightStartIndex + 5]; // Skin hue difference
-	BrainsNodes[firstInputNodeIndex + 15] = EyePupilSights[pupilSightStartIndex + 6]; // Skin value
-	BrainsNodes[firstInputNodeIndex + 16] = EyePupilSights[pupilSightStartIndex + 7]; // Skin saturation
-	BrainsNodes[firstInputNodeIndex + 17] = EyePupilSights[pupilSightStartIndex + 8]; // Skin pattern difference
-	BrainsNodes[firstInputNodeIndex + 18] = EyePupilSights[pupilSightStartIndex + 9]; // Life
-	BrainsNodes[firstInputNodeIndex + 19] = EyePupilSights[pupilSightStartIndex + 10]; // Energy
-	BrainsNodes[firstInputNodeIndex + 20] = EyePupilSights[pupilSightStartIndex + 11]; // Radius
+	BrainsNodes[firstInputNodeIndex + 6] = EyePupilSights[pupilSightStartIndex + 0]; // Activation
+	BrainsNodes[firstInputNodeIndex + 7] = EyePupilSights[pupilSightStartIndex + 1]; // Shield prominence
+	BrainsNodes[firstInputNodeIndex + 8] = EyePupilSights[pupilSightStartIndex + 2]; // Spike prominence
+	BrainsNodes[firstInputNodeIndex + 9] = EyePupilSights[pupilSightStartIndex + 3]; // Feeder prominence
+	BrainsNodes[firstInputNodeIndex + 10] = EyePupilSights[pupilSightStartIndex + 4]; // Forward aim prominence
+	BrainsNodes[firstInputNodeIndex + 11] = EyePupilSights[pupilSightStartIndex + 5]; // Skin hue difference
+	BrainsNodes[firstInputNodeIndex + 12] = EyePupilSights[pupilSightStartIndex + 6]; // Skin value
+	BrainsNodes[firstInputNodeIndex + 13] = EyePupilSights[pupilSightStartIndex + 7]; // Skin saturation
+	BrainsNodes[firstInputNodeIndex + 14] = EyePupilSights[pupilSightStartIndex + 8]; // Skin pattern difference
+	BrainsNodes[firstInputNodeIndex + 15] = EyePupilSights[pupilSightStartIndex + 9]; // Life
+	BrainsNodes[firstInputNodeIndex + 16] = EyePupilSights[pupilSightStartIndex + 10]; // Energy
+	BrainsNodes[firstInputNodeIndex + 17] = EyePupilSights[pupilSightStartIndex + 11]; // Radius
 
 	// Eye cone sights
-	uint inputOffset = 21;
+	uint inputOffset = 18;
 	uint conesSightStartIndex = gid * uCreatureEyeNumOfConesValues;
 	for (uint i = 0; i < uCreatureEyeNumOfConesValues; ++i)
 	{
