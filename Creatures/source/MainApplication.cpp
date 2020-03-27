@@ -110,6 +110,9 @@ int main()
 	double lastTime = 0;
 	int frameCount = 0;
 
+	// @TEMP placement
+	srand(462);
+
 	// Start main loop
 	while (!glfwWindowShouldClose(window))
 	{
