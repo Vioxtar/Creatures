@@ -63,6 +63,11 @@ float ActivationFunction(float x, float exponent)
 	}
 }
 
+float SecondActivationFunction(float x, float exponent)
+{
+	return (1.0 - (2.0 / (1.0 + pow(2.0, exponent * x))));
+}
+
 void main()
 {
 	
@@ -165,7 +170,7 @@ void main()
 		vec2 biasExponent = BrainsBiasesExponents[activeBiasExponent];
 		float bias = biasExponent.x;
 		float exponent = biasExponent.y;
-		BrainsNodes[activeNode] = max(-1.0, min(sum, 1.0)); //ActivationFunction(max(0.0, min(sum + bias, 1.0)), exponent);
+		BrainsNodes[activeNode] = SecondActivationFunction(sum + bias, exponent); //max(-1.0, min(sum, 1.0)); //ActivationFunction(max(0.0, min(sum + bias, 1.0)), exponent);
 
 		activeNode++;
 		activeBiasExponent++;
