@@ -178,12 +178,12 @@ extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 200, 1, 2000 };
 
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.9875, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.975, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.9875, 0.0, 1.0 };
 
 // Simulation creature settings
 
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 0.04, 0.0, 50.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 0.0565, 0.0, 50.0 };
 
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_RATE = { 0.0, 0.0, 10000.0 };
 extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_UPPER_TARGET = { 30000, 0, 10000 };
@@ -264,8 +264,8 @@ extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_ENERGY_COST = { 0.00002, 0.0,
 extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_ENERGY_COST = { 0.00001, 0.0, 1.0 };
 
 extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_EFFECTIVENESS = { 0.1, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_LIFE_EFFECTIVENESS = { 0.035, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_MEAT_EFFECTIVENESS = { 0.035, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_LIFE_EFFECTIVENESS = { 0.01, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_MEAT_EFFECTIVENESS = { 0.09, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
 
 
@@ -307,7 +307,7 @@ extern TweakableFloatSetting CREATURE_DEATH_SKIN_LIGHTNESS_INTERPOLATION_RATE = 
 
 // Creature eye settings
 extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 10.0, 0.1, 30.0 };
-extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 6.0, 0.1, 10.0 };
+extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 10.0, 0.1, 10.0 };
 
 
 
