@@ -15,7 +15,7 @@
 #include "ui/Camera.h"
 
 
-#define ENABLE_DEBUG
+//#define ENABLE_DEBUG
 
 
 int main()
@@ -111,7 +111,7 @@ int main()
 	int frameCount = 0;
 
 	// @TEMP placement
-	srand(462);
+	srand(519864358123);
 
 	// Start main loop
 	while (!glfwWindowShouldClose(window))

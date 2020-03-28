@@ -459,6 +459,9 @@ void AddFirstGenerationCreature(vec2 pos, vec2 vel)
 	data.forwardDir = vec2(0.0f, 0.0f);
 	data.rightDir = vec2(0.0f, 0.0f);
 
+	data.eyeConeRadius = 0.0;
+	data.eyePos = vec2(0, 0);
+
 	CreatureData_AddCreature(data);
 }
 
@@ -550,6 +553,9 @@ void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
 
 	data.forwardDir = vec2(0.0f, 0.0f);
 	data.rightDir = vec2(0.0f, 0.0f);
+
+	data.eyeConeRadius = 0.0;
+	data.eyePos = vec2(0, 0);
 
 	CreatureUniqueID newCreatureID = CreatureData_AddCreature(data);
 }

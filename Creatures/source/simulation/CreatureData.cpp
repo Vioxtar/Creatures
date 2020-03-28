@@ -424,6 +424,7 @@ CreatureUniqueID CreatureData_AddCreature(CreatureData& newCreatureData)
 	SetCreatureAttribute(creature_Shields, newCreatureIndex, &newCreatureData.shield);
 	SetCreatureAttribute(creature_EyeMuscles, newCreatureIndex, &newCreatureData.eyeMuscles);
 	SetCreatureAttribute(creature_EyeConeRadii, newCreatureIndex, &newCreatureData.eyeConeRadius);
+	SetCreatureAttribute(creature_EyePositions, newCreatureIndex, &newCreatureData.eyePos);
 	SetCreatureAttribute(creature_EyePupilConeCoverageFraction, newCreatureIndex, &newCreatureData.eyePupilConeCoverageFraction);
 	SetCreatureAttribute(creature_Energies, newCreatureIndex, &newCreatureData.energy);
 	SetCreatureAttribute(creature_Meats, newCreatureIndex, &newCreatureData.meat);
