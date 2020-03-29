@@ -100,6 +100,7 @@ class CreatureTracker
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		if (ImGui::CollapsingHeader("Brain"))
 		{
+
 			vec2 brainPos = ImGui::GetCursorScreenPos();
 			vec2 brainSize = ImGui::GetContentRegionAvail();
 
@@ -110,10 +111,18 @@ class CreatureTracker
 			brainSize.y -= brainShrink * 2.0;
 			
 			vec2 nodePos = vec2(0, 0);
+			vector<vec2> nodePositions;
+			nodePositions.resize(CREATURE_BRAIN_MAX_NUM_OF_NODES);
+			float nodeDrawRadius = 10.0;
+
 			unsigned int nodeIndex = 0;
+			unsigned int linkIndex = 0;
+
+			// Draw node links, collect node positions, calculate node draw radius
 
 			unsigned int numOfLevels = creatureSnapShot.brainStructure[0];
 			float spaceBetweenLevels = brainSize.x / (numOfLevels);
+
 			for (unsigned int level = 1; level <= numOfLevels; ++level)
 			{
 				unsigned int numOfNodesInLevel = creatureSnapShot.brainStructure[level];
@@ -123,67 +132,111 @@ class CreatureTracker
 
 				for (unsigned int node = 1; node <= numOfNodesInLevel; ++node)
 				{
+					// Collect position
 					vec2 nodeDrawPos = brainPos + offset + nodePos;
-					float nodeDrawRadius = 10;
-					float nodeActivation = creatureSnapShot.brainNodes[nodeIndex];
-					bool negativeNodeActivation = nodeActivation < 0.0;
+					nodePositions[nodeIndex] = nodeDrawPos;
 
-					// @TEMP @DEBUG
-					if (nodeActivation > 1.0 || nodeActivation < -1.0)
-					{
-						cout << nodeActivation << endl;
-					}					
-
-					drawList->AddCircle(
-						nodeDrawPos,
-						nodeDrawRadius,
-						IM_COL32(
-							UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_R,
-							UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_G,
-							UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_B,
-							UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA
-						),
-						UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS,
-						UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_THICKNESS
-					);
-
-					if (negativeNodeActivation)
-					{
-						drawList->AddCircleFilled(
-							nodeDrawPos,
-							nodeDrawRadius * -nodeActivation,
-							IM_COL32(
-								255 - UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_R,
-								255 - UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_G,
-								255 - UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_B,
-								UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA
-							),
-							UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS
-						);
-					}
-					else
-					{
-						drawList->AddCircleFilled(
-							nodeDrawPos,
-							nodeDrawRadius * nodeActivation,
-							IM_COL32(
-								UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_R,
-								UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_G,
-								UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_B,
-								UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA
-							),
-							UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS
-						);
-					}
-
-					
 					nodePos.y += spaceBetweenNodes;
 					nodeIndex++;
+
+					// Draw links
+					if (level <= 1) continue;
+					unsigned int numOfNodesInPrevLevel = creatureSnapShot.brainStructure[level - 1];
+					unsigned int prevLevelIndexOffset = nodeIndex - node - numOfNodesInPrevLevel;
+					for (unsigned int prevLevelNode = 0; prevLevelNode < numOfNodesInPrevLevel; ++prevLevelNode)
+					{
+						unsigned int prevNodeIndex = prevLevelIndexOffset + prevLevelNode;
+						vec2 prevLevelNodeDrawPos = nodePositions[prevNodeIndex];
+
+						float linkWeight = creatureSnapShot.brainLinks[linkIndex];
+						float linkNormalizedWeight = linkWeight / CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS;
+						float linkNormalizedActivation = creatureSnapShot.brainNodes[prevNodeIndex] * linkNormalizedWeight;
+						float linkThickness = abs(linkNormalizedWeight) * UI_CREATURE_TRACKER_BRAIN_LINK_MAX_WIDTH;
+
+						float linkColorR = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_R;
+						float linkColorG = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_G;
+						float linkColorB = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_B;
+
+						if (linkNormalizedActivation > 0.0)
+						{
+							linkColorR = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_R * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_R * linkNormalizedActivation;
+							linkColorG = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_G * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_G * linkNormalizedActivation;
+							linkColorB = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_B * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_B * linkNormalizedActivation;
+						}
+						else if (linkNormalizedActivation < 0.0)
+						{
+							linkNormalizedActivation = -linkNormalizedActivation;
+							linkColorR = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_R * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_R * linkNormalizedActivation;
+							linkColorG = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_G * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_G * linkNormalizedActivation;
+							linkColorB = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_B * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_B * linkNormalizedActivation;
+						}
+
+						drawList->AddLine(
+							prevLevelNodeDrawPos,
+							nodeDrawPos,
+							ImColor(linkColorR, linkColorG, linkColorB, 1.0f),
+							linkThickness
+						);
+
+						linkIndex++;
+					}
 				}
 				nodePos.x += spaceBetweenLevels;
 				nodePos.y = 0;
 			}
 
+
+			// Draw node backgrounds
+			for (unsigned int i = 0; i < nodeIndex; ++i)
+			{
+				vec2 nodeDrawPos = nodePositions[i];
+				drawList->AddCircleFilled(
+					nodeDrawPos,
+					nodeDrawRadius,
+					IM_COL32(
+						UI_CREATURE_TRACKER_BRAIN_NODE_BACKGROUND_COLOR_R,
+						UI_CREATURE_TRACKER_BRAIN_NODE_BACKGROUND_COLOR_G,
+						UI_CREATURE_TRACKER_BRAIN_NODE_BACKGROUND_COLOR_B,
+						UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA
+					),
+					UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS
+				);
+			}
+
+			// Draw nodes activations
+			for (unsigned int i = 0; i < nodeIndex; ++i)
+			{
+				vec2 nodeDrawPos = nodePositions[i];
+				float nodeActivation = creatureSnapShot.brainNodes[i];
+				if (nodeActivation < 0.0)
+				{
+					drawList->AddCircleFilled(
+						nodeDrawPos,
+						nodeDrawRadius * -nodeActivation,
+						IM_COL32(
+							UI_CREATURE_TRACKER_BRAIN_NEGATIVE_VALUE_COLOR_R,
+							UI_CREATURE_TRACKER_BRAIN_NEGATIVE_VALUE_COLOR_G,
+							UI_CREATURE_TRACKER_BRAIN_NEGATIVE_VALUE_COLOR_B,
+							UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA
+						),
+						UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS
+					);
+				}
+				else
+				{
+					drawList->AddCircleFilled(
+						nodeDrawPos,
+						nodeDrawRadius * nodeActivation,
+						IM_COL32(
+							UI_CREATURE_TRACKER_BRAIN_POSITIVE_VALUE_COLOR_R,
+							UI_CREATURE_TRACKER_BRAIN_POSITIVE_VALUE_COLOR_G,
+							UI_CREATURE_TRACKER_BRAIN_POSITIVE_VALUE_COLOR_B,
+							UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA
+						),
+						UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS
+					);
+				}
+			}
 		}
 	}
 

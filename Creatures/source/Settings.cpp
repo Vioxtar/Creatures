@@ -30,16 +30,24 @@ extern const float UI_CREATURE_TRACKER_EYE_PUPIL_SIGHTS_BAR_WIDTH = 200.0;
 
 extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_NUM_OF_SEGMENTS = 25;
 extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_ALPHA = 255;
-extern const float UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_THICKNESS = 3.0;
 
-extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_R = 255;
-extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_G = 200;
-extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_COLOR_B = 0;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_POSITIVE_VALUE_COLOR_R = 255;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_POSITIVE_VALUE_COLOR_G = 200;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_POSITIVE_VALUE_COLOR_B = 0;
 
-extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_R = 50;
-extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_G = 50;
-extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_OUTLINE_COLOR_B = 50;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NEGATIVE_VALUE_COLOR_R = 0;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NEGATIVE_VALUE_COLOR_G = 55;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NEGATIVE_VALUE_COLOR_B = 255;
 
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_BACKGROUND_COLOR_R = 30;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_BACKGROUND_COLOR_G = 30;
+extern const unsigned int UI_CREATURE_TRACKER_BRAIN_NODE_BACKGROUND_COLOR_B = 30;
+
+extern const float UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_R = 20 / 255.0f;
+extern const float UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_G = 20 / 255.0f;
+extern const float UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_B = 20 / 255.0f;
+
+extern const float UI_CREATURE_TRACKER_BRAIN_LINK_MAX_WIDTH = 50.0;
 
 // Technical settings
 extern const unsigned int TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 25000;
@@ -100,16 +108,16 @@ extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES = 60;
 extern const float CREATURE_DEFAULT_BODY_MASS = 0.01;
 
 // Creature brain settings
-extern const uint16_t CREATURE_BRAIN_NUM_OF_TEMPORALS = 0;
-extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS = 1;
-extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 10;
+extern const uint16_t CREATURE_BRAIN_NUM_OF_TEMPORALS = 16;
+extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS = 3;
+extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 30;
 
-extern const float CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS = 1000.0;
-extern const float CREATURE_BRAIN_BIAS_MAX_ABS = 1000.0;
-extern const float CREATURE_BRAIN_ACTIVATION_EXPONENT_MAX_ABS = 1000.0;
+extern const float CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS = 10.0;
+extern const float CREATURE_BRAIN_BIAS_MAX_ABS = 10.0;
+extern const float CREATURE_BRAIN_ACTIVATION_EXPONENT_MAX_ABS = 10.0;
 
 // Creature firstgen brain settings
-extern const float CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_CHANCE_FOR_NON_NEUTRAL_VALUE = 1.0;
+extern const float CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_CHANCE_FOR_NON_NEUTRAL_VALUE = 0.1;
 extern const float CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_MAX_ABS = 1.0;
 extern const float CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_PERCENTAGE_EXPONENT = 1.0;
 
@@ -178,7 +186,7 @@ extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 1000, 1, 2000 };
 
 // Simulation physics settings
 extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
-extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.9875, 0.0, 1.0 };
+extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.985, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.9875, 0.0, 1.0 };
 
 // Simulation creature settings
@@ -217,7 +225,7 @@ extern TweakableFloatSetting CREATURE_HARDNESS_INTERPOLATION_RATE = { 0.1, 0.001
 
 extern TweakableFloatSetting CREATURE_MAX_SKIN_LIGHTNESS = { 0.85, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_MIN_SKIN_LIGHTNESS = { 0.15, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_SKIN_LIGHTNESS_INTERPOLATION_RATE = { 0.1, 0.001, 1.0 };
+extern TweakableFloatSetting CREATURE_SKIN_LIGHTNESS_INTERPOLATION_RATE = { 0.025, 0.001, 1.0 };
 
 extern TweakableFloatSetting CREATURE_MAX_SKIN_SATURATION = { 1.0, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_MIN_SKIN_SATURATION = { 0.2, 0.0, 1.0 };
@@ -345,6 +353,15 @@ extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES = 1 + 1 + CREATU
 // The max number of colliders is the maximum amount of circles of minimal radius that can simultaneously touch a single circle of maximal radius
 extern const GLuint CREATURE_MAX_NUM_OF_COLLIDERS = floor(M_PI / asin(CREATURE_MIN_RADIUS.min / (CREATURE_MAX_RADIUS.max + CREATURE_MIN_RADIUS.min)));
 
+
+// UI settings
+extern const float UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_R = float(UI_CREATURE_TRACKER_BRAIN_NEGATIVE_VALUE_COLOR_R) / 255.0f;
+extern const float UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_G = float(UI_CREATURE_TRACKER_BRAIN_NEGATIVE_VALUE_COLOR_G) / 255.0f;
+extern const float UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_B = float(UI_CREATURE_TRACKER_BRAIN_NEGATIVE_VALUE_COLOR_B) / 255.0f;
+
+extern const float UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_R = float(UI_CREATURE_TRACKER_BRAIN_POSITIVE_VALUE_COLOR_R) / 255.0f;
+extern const float UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_G = float(UI_CREATURE_TRACKER_BRAIN_POSITIVE_VALUE_COLOR_G) / 255.0f;
+extern const float UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_B = float(UI_CREATURE_TRACKER_BRAIN_POSITIVE_VALUE_COLOR_B) / 255.0f;
 
 
 //////////////////////////////////
