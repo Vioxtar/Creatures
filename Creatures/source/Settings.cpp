@@ -183,7 +183,7 @@ extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.9875, 0.0
 
 // Simulation creature settings
 
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 0.5, 0.0, 50.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 1.0, 0.0, 50.0 };
 
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_RATE = { 0.0, 0.0, 10000.0 };
 extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_UPPER_TARGET = { 30000, 0, 10000 };
@@ -191,10 +191,10 @@ extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_C
 
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_UP_SPAWN_RATE = { 0.0, 0.0, 100.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_DOWN_SPAWN_RATE = { 0.0, 0.0, 100.0 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_STEP = { 0.0001, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_SPAWN_RATE_EXPONENT = { 30.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_STEP = { 0.001, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_SPAWN_RATE_EXPONENT = { 2.0, 0.0, 10.0 };
 
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_VELOCITY_MAGNITUDE = { 0.001, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_VELOCITY_MAGNITUDE = { 0.0, 0.0, 10.0 };
 
 // Render settings
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_R = { 0.035, 0.0, 1.0 };
@@ -238,7 +238,7 @@ extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_ENERGY = { 2.0
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 10.0, 0.0, 10.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE = { 1.0, 0.0, 10.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS = { 0.4, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS = { 1.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS = { 0.0, 0.0, 10.0 };
 
 // Offspring initial energy + meat should NOT be more than reproduction energy cost for an energy balanced system, and for evolution to occur!
 // Moreso, keeping offspring initial energy + meat + life values BELOW reproduction energy cost would discourage creatures to utilize the reproduce-quickly-die-quickly technique!
@@ -306,7 +306,7 @@ extern TweakableFloatSetting CREATURE_DEATH_SKIN_LIGHTNESS_INTERPOLATION_RATE = 
 // Creature body mutation settings
 
 // Creature eye settings
-extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 10.0, 0.1, 30.0 };
+extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 12.0, 0.1, 100.0 };
 extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 3.0, 0.1, 10.0 };
 
 
