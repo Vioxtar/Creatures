@@ -148,14 +148,14 @@ class CreatureTracker
 						unsigned int prevNodeIndex = prevLevelIndexOffset + prevLevelNode;
 						vec2 prevLevelNodeDrawPos = nodePositions[prevNodeIndex];
 
-						float linkWeight = creatureSnapShot.brainLinks[linkIndex];
-						float linkNormalizedWeight = linkWeight / CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS;
-						float linkNormalizedActivation = creatureSnapShot.brainNodes[prevNodeIndex] * linkNormalizedWeight;
-						float linkThickness = abs(linkNormalizedWeight) * UI_CREATURE_TRACKER_BRAIN_LINK_MAX_WIDTH;
+						float linkNormalizedWeight = creatureSnapShot.brainLinks[linkIndex] / UI_CREATURE_TRACKER_BRAIN_LINK_WEIGHT_MAX_ABS_NORMALIZER;
+						float linkNormalizedActivation = creatureSnapShot.brainNodes[prevNodeIndex] * linkNormalizedWeight;		
 
 						float linkColorR = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_R;
 						float linkColorG = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_G;
 						float linkColorB = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_B;
+						float linkAlpha = abs(linkNormalizedWeight);
+						float linkThickness = abs(linkNormalizedWeight) * UI_CREATURE_TRACKER_BRAIN_LINK_MAX_WIDTH;
 
 						if (linkNormalizedActivation > 0.0)
 						{
@@ -174,7 +174,7 @@ class CreatureTracker
 						drawList->AddLine(
 							prevLevelNodeDrawPos,
 							nodeDrawPos,
-							ImColor(linkColorR, linkColorG, linkColorB, 1.0f),
+							ImColor(linkColorR, linkColorG, linkColorB, linkAlpha),
 							linkThickness
 						);
 
