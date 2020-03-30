@@ -317,7 +317,7 @@ extern TweakableFloatSetting CREATURE_DEATH_SKIN_LIGHTNESS_INTERPOLATION_RATE = 
 
 // Creature eye settings
 extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 12.0, 0.1, 100.0 };
-extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 3.0, 0.1, 10.0 };
+extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 10.0, 0.1, 10.0 };
 
 
 
