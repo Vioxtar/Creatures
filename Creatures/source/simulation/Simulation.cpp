@@ -1043,7 +1043,7 @@ void Simulation_FirstgenCreatureSpawns()
 		//	}
 		//}
 
-		AddFirstGenerationCreature(vec2(-50, -50), vec2(0.0, 0.0));
+		AddFirstGenerationCreature(firstgenCreatureSpawn_MovingSpawnPos, vec2(0.0, 0.0));
 		firstgenCreatureSpawn_CreaturesToSpawn -= 1.0;
 	}
 }
