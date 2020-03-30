@@ -69,6 +69,9 @@
     <ClCompile Include="source\MainApplication.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\ui\WindowsHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\compute shaders\border_physics.computeShader" />
@@ -170,6 +173,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\ui\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ui\WindowsHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

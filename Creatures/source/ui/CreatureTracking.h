@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include "imgui/imgui.h"
 #include "CreatureDataInterface.h"
 #include <map>

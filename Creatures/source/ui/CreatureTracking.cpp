@@ -1,5 +1,6 @@
 #include "CreatureTracking.h"
 #include <deque>
+#include "WindowsHandler.h"
 
 class CreatureTracker;
 
@@ -16,8 +17,7 @@ class CreatureTracker
 {
 	CreatureUniqueID creatureID;
 	CreatureData creatureSnapShot;
-	string windowTitle;
-	bool active;
+	WindowID windowID;
 
 	bool cameraFollow;
 
@@ -33,9 +33,9 @@ class CreatureTracker
 	void Show()
 	{
 
-		if (!ImGui::Begin(windowTitle.c_str(), &active))
+		if (!WindowsHandler::BeginAndUpdate(windowID))
 		{
-			ImGui::End();
+			WindowsHandler::InactivateWindow();
 			return;
 		}
 
@@ -44,7 +44,7 @@ class CreatureTracker
 		ShowEyes();
 		ShowBrain();
 
-		ImGui::End();
+		WindowsHandler::InactivateWindow();
 	}
 
 	void ShowMisc()
@@ -198,29 +198,39 @@ class CreatureTracker
 						float linkColorR = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_R;
 						float linkColorG = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_G;
 						float linkColorB = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_B;
-						float linkAlpha = abs(linkNormalizedWeight);
-						float linkThickness = abs(linkNormalizedWeight) * UI_CREATURE_TRACKER_BRAIN_LINK_MAX_WIDTH;
+						float linkAlpha = abs(linkNormalizedActivation);
+						float linkThickness = abs(linkNormalizedActivation) * UI_CREATURE_TRACKER_BRAIN_LINK_MAX_WIDTH;
 
 						if (linkNormalizedActivation > 0.0)
 						{
-							linkColorR = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_R * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_R * linkNormalizedActivation;
-							linkColorG = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_G * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_G * linkNormalizedActivation;
-							linkColorB = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_B * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_B * linkNormalizedActivation;
+							drawList->AddLine(
+								prevLevelNodeDrawPos,
+								nodeDrawPos,
+								ImColor(
+									UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_R,
+									UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_G,
+									UI_CREATURE_TRACKER_BRAIN_LINK_POSITIVE_VALUE_COLOR_B,
+									linkAlpha
+								),
+								linkThickness
+							);
 						}
 						else if (linkNormalizedActivation < 0.0)
 						{
-							linkNormalizedActivation = -linkNormalizedActivation;
-							linkColorR = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_R * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_R * linkNormalizedActivation;
-							linkColorG = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_G * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_G * linkNormalizedActivation;
-							linkColorB = UI_CREATURE_TRACKER_BRAIN_LINK_NEUTRAL_COLOR_B * (1.0 - linkNormalizedActivation) + UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_B * linkNormalizedActivation;
+							drawList->AddLine(
+								prevLevelNodeDrawPos,
+								nodeDrawPos,
+								ImColor(
+									UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_R,
+									UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_G,
+									UI_CREATURE_TRACKER_BRAIN_LINK_NEGATIVE_VALUE_COLOR_B,
+									linkAlpha
+								),
+								linkThickness
+							);
 						}
 
-						drawList->AddLine(
-							prevLevelNodeDrawPos,
-							nodeDrawPos,
-							ImColor(linkColorR, linkColorG, linkColorB, linkAlpha),
-							linkThickness
-						);
+						
 
 						linkIndex++;
 					}
@@ -430,15 +440,13 @@ class CreatureTracker
 	void Close()
 	{
 		expiredCreatureTrackers.push_back(creatureID);
+		WindowsHandler::UnRegisterWindow(windowID);
 	}
 
 public:
 
-	CreatureTracker(CreatureUniqueID creatureID) :
-		creatureID(creatureID), active(true)
+	CreatureTracker(CreatureUniqueID creatureID) : creatureID(creatureID)
 	{
-		windowTitle = "Creature ";
-		windowTitle.append(to_string(creatureID));
 
 		cameraFollow = false;
 
@@ -447,6 +455,17 @@ public:
 		overlay_RightDir = false;
 		overlay_Eye = true;
 
+		// Get initial snapshot
+		UpdateCreatureData();
+
+		string title = "Creature ";
+		title.append(to_string(creatureID));
+
+		windowID = WindowsHandler::RegisterNewWindow(
+			title,
+			SimulationSpaceToViewportSpace(creatureSnapShot.pos),
+			vec2(UI_CREATURE_TRACKER_MIN_WINDOW_WIDTH, UI_CREATURE_TRACKER_MIN_WINDOW_HEIGHT)
+		);
 	}
 
 	CreatureTracker(const CreatureTracker&) = delete;
@@ -454,7 +473,7 @@ public:
 	void Update()
 	{
 
-		if (!active)
+		if (!WindowsHandler::IsWindowActive(windowID))
 		{
 			Close();
 			return;
