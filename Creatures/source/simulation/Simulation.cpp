@@ -705,7 +705,7 @@ GLuint ugrid_GridYDim;
 GLfloat ugrid_SimWidth;
 GLfloat ugrid_SimHeight;
 GLuint ugrid_IndicesInTile;
-
+GLfloat ugrid_TileSize;
 
 void BuildUniformGrid()
 {
@@ -718,7 +718,7 @@ void BuildUniformGrid()
 
 	float physicalInteractionDistOverlap = newMaxCreatureRadius * 2.0; // Multiply by two, because creatures > newMaxCreatureRadius distant from each other can still interact due to overlaps!
 	float senseInteractionDist = newMaxCreatureSenseRadius; // Creatures sensors do not overlap in any way!
-	float newInteractDist = std::max(physicalInteractionDistOverlap, senseInteractionDist);
+	float newInteractDist = std::min(physicalInteractionDistOverlap, senseInteractionDist);
 
 	bool interactDistChanged = ugrid_LastInteractDist != newInteractDist;
 	bool minCreatureRadiusChanged = ugrid_LastMinCreatureRadius != newMinCreatureRadius;
@@ -730,6 +730,7 @@ void BuildUniformGrid()
 		return;
 
 	// Things changed, we need to rebuild the uniform grid and update a bunch of values
+	ugrid_TileSize = newInteractDist;
 
 	// A small buffer around our simulation width/height ensures that creatures never over-step our uniform grid space
 	// as long as they remain within the actual simulation space
@@ -1042,10 +1043,12 @@ void Simulation_FirstgenCreatureSpawns()
 		//	}
 		//}
 
-		AddFirstGenerationCreature(firstgenCreatureSpawn_MovingSpawnPos, vec2(0.0, 0.0));
+		AddFirstGenerationCreature(vec2(-50, -50), vec2(0.0, 0.0));
 		firstgenCreatureSpawn_CreaturesToSpawn -= 1.0;
 	}
 }
+
+
 
 
 void Simulation_Programs_Sequence()
@@ -1375,6 +1378,7 @@ void Simulation_Programs_Sequence()
 	SetUniformUInteger(programID, "uCreatureCount", creature_count);
 	SetUniformVector2f(programID, "uSimDimensions", vec2(ugrid_SimWidth, ugrid_SimHeight));
 	SetUniformVector2ui(programID, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
+	SetUniformFloat(programID, "uGridTileSize", ugrid_TileSize);
 	SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
 	SetUniformUInteger(programID, "uCreatureEyeNumOfCones", CREATURE_EYE_NUM_OF_CONES);
 	SetUniformUInteger(programID, "uCreatureEyeNumOfValuesInSingleCone", CREATURE_EYE_NUM_OF_VALUES_IN_SINGLE_CONE);
