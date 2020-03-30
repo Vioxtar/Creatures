@@ -1,4 +1,5 @@
 #include "CreatureTracking.h"
+#include <deque>
 
 class CreatureTracker;
 
@@ -7,6 +8,9 @@ map<CreatureUniqueID, CreatureTracker> activeCreatureTrackers;
 // Expired creature trackers to be deleted
 vector<CreatureUniqueID> expiredCreatureTrackers;
 
+// Vectors to be used by all active creature trackers to avoid per-creature-tracker memory allocations
+vector<vec2> creatureTracker_BrainNodePositions;
+vector<float> creatureTracker_PlotData;
 
 class CreatureTracker
 {
@@ -22,6 +26,10 @@ class CreatureTracker
 	bool overlay_RightDir;
 	bool overlay_Eye;
 
+	deque<float> plot_Life;
+	deque<float> plot_Energy;
+	deque<float> plot_Meat;
+
 	void Show()
 	{
 
@@ -32,6 +40,7 @@ class CreatureTracker
 		}
 
 		ShowMisc();
+		ShowBodyParams();
 		ShowEyes();
 		ShowBrain();
 
@@ -95,6 +104,43 @@ class CreatureTracker
 		}
 	}
 
+
+	void ShowBodyParams()
+	{
+
+		vec2 plotDimensions = vec2(ImGui::GetContentRegionAvail().x, 50);
+
+		deque<float>::iterator it = plot_Life.begin();
+		unsigned int plotSize = plot_Life.size();
+		for (unsigned int i = 0; i < UI_CREATURE_TRACKER_PLOT_NUM_OF_VALUES; ++i)
+		{
+			float value = i < plotSize ? *it : 0.0;
+			creatureTracker_PlotData[i] = value;
+			it++;
+		}
+		ImGui::PlotLines("", creatureTracker_PlotData.data(), UI_CREATURE_TRACKER_PLOT_NUM_OF_VALUES, 0, "Life", 0, CREATURE_MAX_LIFE.value, plotDimensions);
+
+		it = plot_Energy.begin();
+		plotSize = plot_Energy.size();
+		for (unsigned int i = 0; i < UI_CREATURE_TRACKER_PLOT_NUM_OF_VALUES; ++i)
+		{
+			float value = i < plotSize ? *it : 0.0;
+			creatureTracker_PlotData[i] = value;
+			it++;
+		}
+		ImGui::PlotLines("", creatureTracker_PlotData.data(), UI_CREATURE_TRACKER_PLOT_NUM_OF_VALUES, 0, "Energy", 0, CREATURE_MAX_ENERGY.value, plotDimensions);
+
+		it = plot_Meat.begin();
+		plotSize = plot_Meat.size();
+		for (unsigned int i = 0; i < UI_CREATURE_TRACKER_PLOT_NUM_OF_VALUES; ++i)
+		{
+			float value = i < plotSize ? *it : 0.0;
+			creatureTracker_PlotData[i] = value;
+			it++;
+		}
+		ImGui::PlotLines("", creatureTracker_PlotData.data(), UI_CREATURE_TRACKER_PLOT_NUM_OF_VALUES, 0, "Meat", 0, CREATURE_MAX_MEAT.value, plotDimensions);
+	}
+
 	void ShowBrain()
 	{
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
@@ -111,8 +157,6 @@ class CreatureTracker
 			brainSize.y -= brainShrink * 2.0;
 			
 			vec2 nodePos = vec2(0, 0);
-			vector<vec2> nodePositions;
-			nodePositions.resize(CREATURE_BRAIN_MAX_NUM_OF_NODES);
 			float nodeDrawRadius = 10.0;
 
 			unsigned int nodeIndex = 0;
@@ -134,7 +178,7 @@ class CreatureTracker
 				{
 					// Collect position
 					vec2 nodeDrawPos = brainPos + offset + nodePos;
-					nodePositions[nodeIndex] = nodeDrawPos;
+					creatureTracker_BrainNodePositions[nodeIndex] = nodeDrawPos;
 
 					nodePos.y += spaceBetweenNodes;
 					nodeIndex++;
@@ -146,7 +190,7 @@ class CreatureTracker
 					for (unsigned int prevLevelNode = 0; prevLevelNode < numOfNodesInPrevLevel; ++prevLevelNode)
 					{
 						unsigned int prevNodeIndex = prevLevelIndexOffset + prevLevelNode;
-						vec2 prevLevelNodeDrawPos = nodePositions[prevNodeIndex];
+						vec2 prevLevelNodeDrawPos = creatureTracker_BrainNodePositions[prevNodeIndex];
 
 						float linkNormalizedWeight = creatureSnapShot.brainLinks[linkIndex] / UI_CREATURE_TRACKER_BRAIN_LINK_WEIGHT_MAX_ABS_NORMALIZER;
 						float linkNormalizedActivation = creatureSnapShot.brainNodes[prevNodeIndex] * linkNormalizedWeight;		
@@ -189,7 +233,7 @@ class CreatureTracker
 			// Draw node backgrounds
 			for (unsigned int i = 0; i < nodeIndex; ++i)
 			{
-				vec2 nodeDrawPos = nodePositions[i];
+				vec2 nodeDrawPos = creatureTracker_BrainNodePositions[i];
 				drawList->AddCircleFilled(
 					nodeDrawPos,
 					nodeDrawRadius,
@@ -206,7 +250,7 @@ class CreatureTracker
 			// Draw nodes activations
 			for (unsigned int i = 0; i < nodeIndex; ++i)
 			{
-				vec2 nodeDrawPos = nodePositions[i];
+				vec2 nodeDrawPos = creatureTracker_BrainNodePositions[i];
 				float nodeActivation = creatureSnapShot.brainNodes[i];
 				if (nodeActivation < 0.0)
 				{
@@ -363,6 +407,26 @@ class CreatureTracker
 		creatureSnapShot = GetCreatureSnapshot(creatureID);
 	}
 
+	void GatherPlotData()
+	{
+		plot_Life.push_front(creatureSnapShot.life);
+		plot_Energy.push_front(creatureSnapShot.energy);
+		plot_Meat.push_front(creatureSnapShot.meat);
+
+		if (plot_Life.size() > UI_CREATURE_TRACKER_PLOT_NUM_OF_VALUES)
+		{
+			plot_Life.pop_back();
+		}
+		if (plot_Energy.size() > UI_CREATURE_TRACKER_PLOT_NUM_OF_VALUES)
+		{
+			plot_Energy.pop_back();
+		}
+		if (plot_Meat.size() > UI_CREATURE_TRACKER_PLOT_NUM_OF_VALUES)
+		{
+			plot_Meat.pop_back();
+		}
+	}
+
 	void Close()
 	{
 		expiredCreatureTrackers.push_back(creatureID);
@@ -382,6 +446,7 @@ public:
 		overlay_ForwardDir = false;
 		overlay_RightDir = false;
 		overlay_Eye = true;
+
 	}
 
 	CreatureTracker(const CreatureTracker&) = delete;
@@ -400,6 +465,7 @@ public:
 		{
 			// Our creature is valid
 			UpdateCreatureData();
+			GatherPlotData();
 			Show();
 		}
 		catch (out_of_range& e)
@@ -438,5 +504,6 @@ void UpdateCreatureTrackers()
 
 void CreatureTracking_Init()
 {
-	
+	creatureTracker_BrainNodePositions.resize(CREATURE_BRAIN_MAX_NUM_OF_NODES);
+	creatureTracker_PlotData.resize(UI_CREATURE_TRACKER_PLOT_NUM_OF_VALUES);
 }

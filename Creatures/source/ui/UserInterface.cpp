@@ -275,7 +275,7 @@ void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, in
 
 	if (key == GLFW_KEY_D && action == GLFW_PRESS)
 	{
-
+		show_demo_window = !show_demo_window;
 	}
 }
 

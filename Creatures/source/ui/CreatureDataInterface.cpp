@@ -28,6 +28,10 @@ CreatureData GetCreatureSnapshot(CreatureUniqueID creatureID)
 	GetCreatureAttributeByUniqueID(creature_EyePositions, creatureID, &snapShot.eyePos);
 	GetCreatureAttributeByUniqueID(creature_EyeConeRadii, creatureID, &snapShot.eyeConeRadius);
 	GetCreatureAttributeByUniqueID(creature_Angles, creatureID, &snapShot.angle);
+	GetCreatureAttributeByUniqueID(creature_Energies, creatureID, &snapShot.energy);
+	GetCreatureAttributeByUniqueID(creature_Meats, creatureID, &snapShot.meat);
+	GetCreatureAttributeByUniqueID(creature_Lives, creatureID, &snapShot.life);
+
 
 	snapShot.eyeConeSights.reserve(CREATURE_EYE_NUM_OF_CONES_VALUES);
 	GetCreatureAttributeByUniqueID(creature_EyeConeSights, creatureID, snapShot.eyeConeSights.data());

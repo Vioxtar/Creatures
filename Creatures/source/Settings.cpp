@@ -51,6 +51,8 @@ extern const float UI_CREATURE_TRACKER_BRAIN_LINK_MAX_WIDTH = 5.0;
 
 extern const float UI_CREATURE_TRACKER_BRAIN_LINK_WEIGHT_MAX_ABS_NORMALIZER = 2.0;
 
+extern const unsigned int UI_CREATURE_TRACKER_PLOT_NUM_OF_VALUES = 500;
+
 // Technical settings
 extern const unsigned int TECH_CREATURE_CAPACITY_INCREASE_ON_BUFFER_CAPACITY_BREACH = 25000;
 extern const unsigned int TECH_CREATURES_SUPPORTED_ON_INIT_BUFFER_PREALLOCATION = 100000;
@@ -317,7 +319,7 @@ extern TweakableFloatSetting CREATURE_DEATH_SKIN_LIGHTNESS_INTERPOLATION_RATE = 
 
 // Creature eye settings
 extern TweakableFloatSetting CREATURE_EYE_MAX_PROBE_DISTANCE = { 12.0, 0.1, 100.0 };
-extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 10.0, 0.1, 10.0 };
+extern TweakableFloatSetting CREATURE_EYE_MAX_CONES_RADIUS = { 5.0, 0.1, 10.0 };
 
 
 
