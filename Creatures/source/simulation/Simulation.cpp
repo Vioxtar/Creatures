@@ -717,8 +717,8 @@ void BuildUniformGrid()
 	float newSimulationHeight = SIMULATION_SPACE_HEIGHT.value;
 
 	float physicalInteractionDistOverlap = newMaxCreatureRadius * 2.0; // Multiply by two, because creatures > newMaxCreatureRadius distant from each other can still interact due to overlaps!
-	float senseInteractionDist = newMaxCreatureSenseRadius; // Creatures sensors do not overlap in any way!
-	float newInteractDist = std::min(physicalInteractionDistOverlap, senseInteractionDist);
+	//float senseInteractionDist = newMaxCreatureSenseRadius; // Creatures sensors do not overlap in any way!
+	float newInteractDist = physicalInteractionDistOverlap; //std::min(physicalInteractionDistOverlap, senseInteractionDist);
 
 	bool interactDistChanged = ugrid_LastInteractDist != newInteractDist;
 	bool minCreatureRadiusChanged = ugrid_LastMinCreatureRadius != newMinCreatureRadius;
