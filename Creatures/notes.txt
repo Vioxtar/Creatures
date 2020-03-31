@@ -1,5 +1,17 @@
 
 
+TRAINING WHEEL PROTOCOL - How to speed up simulation stage zero
+Training wheel protocol is active only when a condition such as:
+	- max generation is below a certain threshold
+	- average generation is below a certain threshold
+	- num of different species (?) is below a certain threshold
+
+... is satisfied. If active, the training wheel protocol follows the following procedure:
+1. During certain frames of the simulation, gather all creature_OffspringCount data and find the X best creatures that have the highest offspring counts
+2. Load highest scoring creatures' brain/device local angles into a queue
+3. With high probability, instead of spawning a fully-randomized firstgen, pop a selected creature and spawn a training-wheels creature, mutate its brain and local angles, randomize hue and skin pattern, and throw back into simulation
+
+... all training wheel'd creatures spawn as firstgens. We can keep track of previously spawned training wheel'd creatures and decrement their scores by the number of attempts they've had
 
 
 

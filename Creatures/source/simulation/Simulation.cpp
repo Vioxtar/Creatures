@@ -1598,11 +1598,11 @@ void Simulation_Update()
 
 
 
-	// @DEBUG
-	if (random() > 0.99)
-	{
-		cout << creature_count << endl;
-	}
+	//// @DEBUG
+	//if (random() > 0.99)
+	//{
+	//	cout << creature_count << endl;
+	//}
 
 	// @DEBUG sum energy
 	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, creature_Energies.ssbo);
