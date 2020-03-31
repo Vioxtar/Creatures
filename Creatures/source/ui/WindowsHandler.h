@@ -13,7 +13,6 @@ using namespace glm;
 
 namespace WindowsHandler
 {
-
 	WindowID RegisterNewWindow(string title, vec2 initPos, vec2 minDimensions);
 
 	void UnRegisterWindow(WindowID windowID);

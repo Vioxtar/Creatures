@@ -8,12 +8,16 @@
 using namespace glm;
 using namespace std;
 
-void Camera_Init();
-void Camera_Update(double frameTime);
+namespace Camera
+{
+	void Initialize();
+	void Update(double frameTime);
 
-void Camera_Move(vec2 offset);
-void Camera_InterpolateTo(vec2 targetPos, float rate);
-void Camera_Enable_Glide(bool glide);
-void Camera_Zoom(float zoom);
+	void Move(vec2 offset);
+	void InterpolatePositionTo(vec2 targetPos, float rate);
+	void EnableGlide(bool glide);
+	void Zoom(float zoom);
 
-mat4 GetSimSpaceToCameraTransform();
+	mat4 GetSimSpaceToCameraTransform();
+}
+

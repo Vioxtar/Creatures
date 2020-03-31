@@ -20,36 +20,40 @@
 using namespace std;
 using namespace glm;
 
-///////////////////////////////////////////
-// -- DEAR IMGUI / GLFW INIT & UPDATE -- //
-///////////////////////////////////////////
 
-void UserInterface_Init(GLFWwindow* window);
+namespace UserInterface
+{
+	///////////////////////////////////////////
+	// -- DEAR IMGUI / GLFW INIT & UPDATE -- //
+	///////////////////////////////////////////
 
-void UserInterface_PreUpdate();
+	void Initialize(GLFWwindow* window);
 
-void UserInterface_Update();
+	void PreUpdate();
 
-void UserInterface_PostUpdate();
+	void Update();
 
-//////////////////////////
-// -- GLFW CALLBACKS -- //
-//////////////////////////
+	void PostUpdate();
 
-void glfw_frame_buffer_size_callback(GLFWwindow*, int width, int height);
+	//////////////////////////
+	// -- GLFW CALLBACKS -- //
+	//////////////////////////
 
-void glfw_cursor_position_callback(GLFWwindow* window, double x, double y);
+	void glfw_frame_buffer_size_callback(GLFWwindow*, int width, int height);
 
-void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+	void glfw_cursor_position_callback(GLFWwindow* window, double x, double y);
 
-void glfw_scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
+	void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
-void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	void glfw_scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 
-//////////////////////////////
-// -- SPACE TRANSLATIONS -- //
-//////////////////////////////
+	void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-vec2 ViewportSpaceToSimulationSpace(vec2 pos);
-vec2 SimulationSpaceToViewportSpace(vec2 pos);
-float SimulationScaleToViewportScale(float scaleVal);
+	//////////////////////////////
+	// -- SPACE TRANSLATIONS -- //
+	//////////////////////////////
+
+	vec2 ViewportSpaceToSimulationSpace(vec2 pos);
+	vec2 SimulationSpaceToViewportSpace(vec2 pos);
+	float SimulationScaleToViewportScale(float scaleVal);
+}

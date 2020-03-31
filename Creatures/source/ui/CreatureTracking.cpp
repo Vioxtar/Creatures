@@ -55,7 +55,7 @@ class CreatureTracker
 		ImGui::Checkbox("Follow", &cameraFollow);
 		if (cameraFollow)
 		{
-			Camera_InterpolateTo(creatureSnapShot.pos, UI_CREATURE_TRACKER_CAMERA_ZOOM_BASED_FOLLOW_INTERPOLATION_RATE.value);
+			Camera::InterpolatePositionTo(creatureSnapShot.pos, UI_CREATURE_TRACKER_CAMERA_ZOOM_BASED_FOLLOW_INTERPOLATION_RATE.value);
 		}
 
 		// Draw creature halo

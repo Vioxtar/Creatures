@@ -69,17 +69,17 @@ int main()
 	/////////////////////////////////
 
 	// Setup viewport
-	glfwSetFramebufferSizeCallback(window, glfw_frame_buffer_size_callback);
-	glfw_frame_buffer_size_callback(window, startingWidth, startingHeight);
+	glfwSetFramebufferSizeCallback(window, UserInterface::glfw_frame_buffer_size_callback);
+	UserInterface::glfw_frame_buffer_size_callback(window, startingWidth, startingHeight);
 
 	// Intialize input callbacks
-	glfwSetCursorPosCallback(window, glfw_cursor_position_callback);
-	glfwSetKeyCallback(window, glfw_key_callback);
-	glfwSetMouseButtonCallback(window, glfw_mouse_button_callback);
-	glfwSetScrollCallback(window, glfw_scroll_callback);
+	glfwSetCursorPosCallback(window, UserInterface::glfw_cursor_position_callback);
+	glfwSetKeyCallback(window, UserInterface::glfw_key_callback);
+	glfwSetMouseButtonCallback(window, UserInterface::glfw_mouse_button_callback);
+	glfwSetScrollCallback(window, UserInterface::glfw_scroll_callback);
 
 	// Initialize user interface
-	UserInterface_Init(window);
+	UserInterface::Initialize(window);
 
 	// Assert validity of settings' values
 	Settings_AssertValuesValidity();
@@ -140,16 +140,16 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		// Poll input events and start a new frame
-		UserInterface_PreUpdate();
+		UserInterface::PreUpdate();
 		
 		// Update camera, simulation and user interface
-		Camera_Update(timeDiff);
+		Camera::Update(timeDiff);
 		Simulation::Update();
 		Renderer::Render();
-		UserInterface_Update();
+		UserInterface::Update();
 
 		// Render user interface
-		UserInterface_PostUpdate();
+		UserInterface::PostUpdate();
 
 		glfwSwapBuffers(window);
 	}

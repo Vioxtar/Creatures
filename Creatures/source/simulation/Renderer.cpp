@@ -113,7 +113,7 @@ void Renderer::Render()
 
 	glBindVertexArray(drawCallData_CreatureBody.VAO);
 	glUseProgram(drawCallData_CreatureBody.program);
-	SetUniformMatrix4(drawCallData_CreatureBody.program, "uTransform", GetSimSpaceToCameraTransform());
+	SetUniformMatrix4(drawCallData_CreatureBody.program, "uTransform", Camera::GetSimSpaceToCameraTransform());
 	SetUniformUInteger(drawCallData_CreatureBody.program, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
 	SetUniformFloat(drawCallData_CreatureBody.program, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
 	SetUniformFloat(drawCallData_CreatureBody.program, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);

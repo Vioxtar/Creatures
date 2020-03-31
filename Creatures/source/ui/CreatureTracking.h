@@ -5,6 +5,8 @@
 #include <map>
 #include "UserInterface.h"
 
+using namespace UserInterface;
+
 void StartTrackingCreature(CreatureUniqueID creatureID);
 
 void UpdateCreatureTrackers();

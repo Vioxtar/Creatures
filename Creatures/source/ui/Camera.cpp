@@ -45,7 +45,7 @@ void UpdateCameraPlacement()
 	simToCamTransform = translate(simToCamTransform, vec3(cameraPos.x, cameraPos.y, 0.0));
 }
 
-void Camera_Init()
+void Camera::Initialize()
 {
 	// Load camera cached settings
 	maxZoomOut = CAMERA_MAX_ZOOM_OUT;
@@ -59,24 +59,24 @@ void Camera_Init()
 	cameraZoomTarget = CAMERA_START_ZOOM_TARGET;
 }
 
-void Camera_Update(double frameTime)
+void Camera::Update(double frameTime)
 {
 	lastFrameTime = (float)frameTime;
 	UpdateCameraPlacement();
 }
 
-void Camera_Enable_Glide(bool glide)
+void Camera::EnableGlide(bool glide)
 {
 	canGlide = glide;
 }
 
-void Camera_Move(vec2 offset)
+void Camera::Move(vec2 offset)
 {
 	cameraPos += offset;
 	cameraVel = offset;
 }
 
-void Camera_InterpolateTo(vec2 targetPos, float rate)
+void Camera::InterpolatePositionTo(vec2 targetPos, float rate)
 {
 	if (!canGlide) return;
 	rate *= sqrt(cameraZoom);
@@ -85,7 +85,7 @@ void Camera_InterpolateTo(vec2 targetPos, float rate)
 	cameraPos -= targetPos;
 }
 
-void Camera_Zoom(float zoom)
+void Camera::Zoom(float zoom)
 {
 	float zoomTargetAdd = zoom * CAMERA_ZOOM_SCROLL_SCALE;
 	zoomTargetAdd *= cameraZoom; // Zoom out less the more we're already zoomed out
@@ -93,7 +93,7 @@ void Camera_Zoom(float zoom)
 	cameraZoomTarget = mathutils::clamp(cameraZoomTarget + zoomTargetAdd, CAMERA_MAX_ZOOM_OUT, CAMERA_MAX_ZOOM_IN);
 }
 
-mat4 GetSimSpaceToCameraTransform()
+mat4 Camera::GetSimSpaceToCameraTransform()
 {
 	return simToCamTransform;
 }

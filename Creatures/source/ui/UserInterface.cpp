@@ -29,12 +29,12 @@ vec2 ViewportSpaceToCameraSpace(vec2 pos)
 }
 vec2 CameraSpaceToSimulationSpace(vec2 pos)
 {
-	mat4 simSpaceToCameraSpace = GetSimSpaceToCameraTransform();
+	mat4 simSpaceToCameraSpace = Camera::GetSimSpaceToCameraTransform();
 	mat4 cameraSpaceToSimSpace = inverse(simSpaceToCameraSpace);
 	vec4 simPosition = cameraSpaceToSimSpace * vec4(pos.x, pos.y, 1.0, 1.0);
 	return simPosition;
 }
-vec2 ViewportSpaceToSimulationSpace(vec2 pos)
+vec2 UserInterface::ViewportSpaceToSimulationSpace(vec2 pos)
 {
 	return CameraSpaceToSimulationSpace(ViewportSpaceToCameraSpace(pos));
 }
@@ -53,24 +53,24 @@ vec2 CameraSpaceToViewportSpace(vec2 pos)
 }
 vec2 SimulationSpaceToCameraSpace(vec2 pos)
 {
-	mat4 simSpaceToCameraSpace = GetSimSpaceToCameraTransform();
+	mat4 simSpaceToCameraSpace = Camera::GetSimSpaceToCameraTransform();
 	vec4 camPosition = simSpaceToCameraSpace * vec4(pos.x, pos.y, 1.0, 1.0);
 	return camPosition;
 }
-vec2 SimulationSpaceToViewportSpace(vec2 pos)
+vec2 UserInterface::SimulationSpaceToViewportSpace(vec2 pos)
 {
 	return CameraSpaceToViewportSpace(SimulationSpaceToCameraSpace(pos));
 }
 
 
-float SimulationScaleToViewportScale(float scaleVal)
+float UserInterface::SimulationScaleToViewportScale(float scaleVal)
 {
 	// Scale factor is the distance between the viewport equivalents of (1,0) and (0,0)
 	vec2 simOne = vec2(1, 0);
 	vec2 simZero = vec2(0, 0);
 
-	vec2 viewportOne = SimulationSpaceToViewportSpace(simOne);
-	vec2 viewportZero = SimulationSpaceToViewportSpace(simZero);
+	vec2 viewportOne = UserInterface::SimulationSpaceToViewportSpace(simOne);
+	vec2 viewportZero = UserInterface::SimulationSpaceToViewportSpace(simZero);
 
 	return abs(viewportOne.x - viewportZero.x) * scaleVal;
 }
@@ -96,10 +96,10 @@ void DearImGuiPopMainStyle()
 // -- DEAR IMGUI / GLFW INIT & UPDATE -- //
 ///////////////////////////////////////////
 
-void UserInterface_Init(GLFWwindow* window)
+void UserInterface::Initialize(GLFWwindow* window)
 {
 	// Initialize camera and creature tracking
-	Camera_Init();
+	Camera::Initialize();
 	CreatureTracking_Init();
 
 	// Setup Dear ImGui context
@@ -131,7 +131,7 @@ void UserInterface_Init(GLFWwindow* window)
 
 }
 
-void UserInterface_PreUpdate()
+void UserInterface::PreUpdate()
 {
 
 	// Poll and handle events (inputs, window resize, etc.)
@@ -147,7 +147,7 @@ void UserInterface_PreUpdate()
 }
 
 bool show_demo_window = false; // @DEBUG
-void UserInterface_Update()
+void UserInterface::Update()
 {
 	// @DEBUG
 	if (show_demo_window)
@@ -162,7 +162,7 @@ void UserInterface_Update()
 	DearImGuiPopMainStyle();
 }
 
-void UserInterface_PostUpdate()
+void UserInterface::PostUpdate()
 {
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -195,7 +195,7 @@ double currMouseXPos, currMouseYPos = 0;
 
 vec2 GetMouseSimPos()
 {
-	return ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
+	return UserInterface::ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
 }
 
 
@@ -242,7 +242,7 @@ void ToggleSimulationLogic()
 // -- GLFW CALLBACKS -- //
 //////////////////////////
 
-void glfw_frame_buffer_size_callback(GLFWwindow*, int width, int height)
+void UserInterface::glfw_frame_buffer_size_callback(GLFWwindow*, int width, int height)
 {
 	currWindowWidth = width;
 	currWindowHeight = height;
@@ -264,7 +264,7 @@ void glfw_frame_buffer_size_callback(GLFWwindow*, int width, int height)
 }
 
 
-void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void UserInterface::glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (DearImGuiUsingKeyboard()) return;
 
@@ -280,24 +280,24 @@ void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, in
 }
 
 
-void glfw_cursor_position_callback(GLFWwindow* window, double x, double y)
+void UserInterface::glfw_cursor_position_callback(GLFWwindow* window, double x, double y)
 {
 
 	if (DearImGuiUsingMouse()) return;
 
 	if (rmbPressed)
 	{
-		vec2 oldMouseSimPos = ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
-		vec2 newMouseSimPos = ViewportSpaceToSimulationSpace(vec2(x, y));
+		vec2 oldMouseSimPos = UserInterface::ViewportSpaceToSimulationSpace(vec2(currMouseXPos, currMouseYPos));
+		vec2 newMouseSimPos = UserInterface::ViewportSpaceToSimulationSpace(vec2(x, y));
 		vec2 offset = newMouseSimPos - oldMouseSimPos;
-		Camera_Move(offset);
+		Camera::Move(offset);
 	}
 
 	currMouseXPos = x;
 	currMouseYPos = y;
 }
 
-void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+void UserInterface::glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	// Regardless of DearImGui, update our own mousePressed variables
 	if (button == GLFW_MOUSE_BUTTON_LEFT)
@@ -313,7 +313,7 @@ void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int 
 
 	if (button == GLFW_MOUSE_BUTTON_RIGHT)
 	{
-		Camera_Enable_Glide(!rmbPressed);
+		Camera::EnableGlide(!rmbPressed);
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
@@ -328,9 +328,9 @@ void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int 
 	}
 }
 
-void glfw_scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
+void UserInterface::glfw_scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
 {
 	if (DearImGuiUsingMouse()) return;
 
-	Camera_Zoom(yOffset);
+	Camera::Zoom(yOffset);
 }
