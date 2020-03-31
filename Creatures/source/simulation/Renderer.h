@@ -18,9 +18,8 @@
 using namespace glm;
 using namespace std;
 
-namespace Simulation
+namespace Renderer
 {
 	void Initialize();
-	void Update();
-	void LogicPause(bool enablePause);
+	void Render();
 }

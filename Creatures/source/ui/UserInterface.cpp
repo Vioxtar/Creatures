@@ -234,7 +234,7 @@ bool simulationPaused = false;
 void ToggleSimulationLogic()
 {
 	simulationPaused = !simulationPaused;
-	Simulation_LogicPause(simulationPaused);
+	Simulation::LogicPause(simulationPaused);
 }
 
 

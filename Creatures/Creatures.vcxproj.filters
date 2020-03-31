@@ -72,6 +72,9 @@
     <ClCompile Include="source\ui\WindowsHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\simulation\Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\compute shaders\border_physics.computeShader" />
@@ -176,6 +179,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\ui\WindowsHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\simulation\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

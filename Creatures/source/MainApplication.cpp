@@ -11,6 +11,7 @@
 
 #include "Settings.h"
 
+#include "simulation/Renderer.h"
 #include "simulation/Simulation.h"
 #include "ui/Camera.h"
 
@@ -83,8 +84,9 @@ int main()
 	// Assert validity of settings' values
 	Settings_AssertValuesValidity();
 
-	// Intiailize simulation and camera
-	Simulation_Init();
+	// Intiailize simulation and renderer
+	Simulation::Initialize();
+	Renderer::Initialize();
 
 	// Try and disable microstutters with V-Sync off
 	glfwSwapInterval(0);
@@ -142,7 +144,8 @@ int main()
 		
 		// Update camera, simulation and user interface
 		Camera_Update(timeDiff);
-		Simulation_Update();
+		Simulation::Update();
+		Renderer::Render();
 		UserInterface_Update();
 
 		// Render user interface

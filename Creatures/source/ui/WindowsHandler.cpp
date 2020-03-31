@@ -73,7 +73,9 @@ void WindowTick(WindowData& windowData)
 	// Did the user close the window? If so activate closing state
 	if (!windowData.active)
 	{
+		// Keep the window visible
 		windowData.active = true;
+
 		windowData.closing = true;
 	}
 
@@ -86,7 +88,7 @@ void WindowTick(WindowData& windowData)
 		SmoothWindowBorderPositioning(windowData, windowData.targetBordersPositions);
 
 		// If we're small enough, close the window
-		if (windowData.size.y <= UI_DEARIMGUI_WINDOW_CLOSING_PIXEL_SIZE_THRESHOLD && windowData.size.x <= UI_DEARIMGUI_WINDOW_CLOSING_PIXEL_SIZE_THRESHOLD)
+		if (windowData.size.y <= UI_DEARIMGUI_WINDOW_CLOSING_PIXEL_SIZE_THRESHOLD || windowData.size.x <= UI_DEARIMGUI_WINDOW_CLOSING_PIXEL_SIZE_THRESHOLD)
 		{
 			windowData.active = false;
 			WindowsHandler::UnRegisterWindow(windowData.id);
@@ -102,7 +104,7 @@ void WindowTick(WindowData& windowData)
 		return;
 	}
 
-	// Did we just uncollapse?
+	// Did we just uncollapse? @TODO: Actually make this work
 	if (windowData.needToResolveCollapse)
 	{
 		windowData.pos = ImGui::GetWindowPos();
@@ -123,7 +125,7 @@ void WindowTick(WindowData& windowData)
 	}
 
 
-	// We're no longer being interacted with, however we were interacted with last frame
+	// We're no longer being interacted with, resolve
 	if (windowData.needToResolveInteraction)
 	{
 		windowData.needToResolveInteraction = false;

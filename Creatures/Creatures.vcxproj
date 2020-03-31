@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\simulation\Renderer.cpp" />
     <ClCompile Include="source\ui\Camera.cpp" />
     <ClCompile Include="source\simulation\CreatureData.cpp" />
     <ClCompile Include="source\simulation\Simulation.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="source\imgui\imstb_rectpack.h" />
     <ClInclude Include="source\imgui\imstb_textedit.h" />
     <ClInclude Include="source\imgui\imstb_truetype.h" />
+    <ClInclude Include="source\simulation\Renderer.h" />
     <ClInclude Include="source\ui\Camera.h" />
     <ClInclude Include="source\simulation\CreatureData.h" />
     <ClInclude Include="source\simulation\Simulation.h" />
