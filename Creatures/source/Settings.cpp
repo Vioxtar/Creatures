@@ -118,9 +118,9 @@ extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES = 60;
 extern const float CREATURE_DEFAULT_BODY_MASS = 0.01;
 
 // Creature brain settings
-extern const uint16_t CREATURE_BRAIN_NUM_OF_TEMPORALS = 16;
-extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS = 3;
-extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 30;
+extern const uint16_t CREATURE_BRAIN_NUM_OF_TEMPORALS = 0;
+extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS = 1;
+extern const uint16_t CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL = 10;
 
 extern const float CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS = 10.0;
 extern const float CREATURE_BRAIN_BIAS_MAX_ABS = 10.0;
@@ -201,7 +201,7 @@ extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.9875, 0.0
 
 // Simulation creature settings
 
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 3.0, 0.0, 50.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 0.05, 0.0, 50.0 };
 
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_RATE = { 0.0, 0.0, 10000.0 };
 extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_UPPER_TARGET = { 30000, 0, 10000 };

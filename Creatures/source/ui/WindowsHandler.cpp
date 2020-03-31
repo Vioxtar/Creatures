@@ -14,6 +14,9 @@ struct WindowData
 	vec2 minDim;
 	bool show;
 	bool closing;
+
+	vec4 borderPositionsBeforeEdit;
+	vec4 borderPositionsLastEditDelta;
 };
 
 
@@ -26,6 +29,13 @@ void SmoothWindowReSize(WindowData& windowData, vec2 targetSize)
 	vec2 oldSize = ImGui::GetWindowSize();
 	windowData.dim = targetSize * UI_DEARIMGUI_WINDOW_SMOOTH_RESIZE_RATE + oldSize * (1.0f - UI_DEARIMGUI_WINDOW_SMOOTH_RESIZE_RATE);
 	ImGui::SetWindowSize(windowData.dim);
+}
+
+vec4 GetBorderPositions()
+{
+	vec2 pos = ImGui::GetWindowPos();
+	vec2 size = ImGui::GetWindowSize();
+	return vec4(pos.x, pos.y, pos.x + size.x, pos.y + size.y);
 }
 
 void WindowTick(WindowData& windowData)
@@ -46,12 +56,36 @@ void WindowTick(WindowData& windowData)
 		}
 		return;
 	}
-	   
-	vec2 currWindowSize = ImGui::GetWindowSize();
-	SmoothWindowReSize(windowData, vec2(
-		std::max(currWindowSize.x, windowData.minDim.x),
-		std::max(currWindowSize.y, windowData.minDim.y)
-	));
+
+	bool beingEdited = ImGui::IsAnyMouseDown();
+
+	if (beingEdited)
+	{
+		windowData.borderPositionsLastEditDelta = windowData.borderPositionsBeforeEdit - GetBorderPositions();
+		return;
+	}
+	else
+	{
+		windowData.borderPositionsBeforeEdit = GetBorderPositions();
+	}
+
+
+	if (windowData.borderPositionsLastEditDelta != vec4())
+	{
+		cout << "leftBorderDiff " << windowData.borderPositionsLastEditDelta.x << endl;
+		cout << "rightBorderDiff " << windowData.borderPositionsLastEditDelta.z << endl;
+		cout << "upBorderDiff " << windowData.borderPositionsLastEditDelta.y << endl;
+		cout << "downBorderDiff " << windowData.borderPositionsLastEditDelta.w << endl;
+	}
+
+	windowData.borderPositionsLastEditDelta = vec4();
+
+	//vec2 currWindowSize = ImGui::GetWindowSize();
+	//SmoothWindowReSize(windowData, vec2(
+	//	std::max(currWindowSize.x, windowData.minDim.x),
+	//	std::max(currWindowSize.y, windowData.minDim.y)
+	//));
+
 }
 
 
