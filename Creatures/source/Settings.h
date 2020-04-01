@@ -235,6 +235,10 @@ SimSettingsChangedSubscriber SimulationSettingsChangedSubscribe(SimSettingsChang
 // UI settings
 extern TweakableFloatSetting UI_CREATURE_TRACKER_CAMERA_ZOOM_BASED_FOLLOW_INTERPOLATION_RATE;
 
+// Evolution incubation settings
+extern TweakableIntegerSetting EVOLUTION_INCUBATION_TRAINING_WHEELS_GENERATION_UPPER_THRESHOLD;
+extern TweakableFloatSetting EVOLUTION_INCUBATION_TRAINING_WHEELS_OFFSPRING_COUNT_SCORE_WEIGHT;
+extern TweakableFloatSetting EVOLUTION_INCUBATION_TRAINING_WHEELS_GENERATION_SCORE_WEIGHT;
 
 // Simulation space settings
 extern TweakableFloatSetting SIMULATION_SPACE_WIDTH;

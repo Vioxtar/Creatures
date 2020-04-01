@@ -406,31 +406,43 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 namespace TrainingWheels
 {
 	bool active = false;
-	queue<CreatureData> creaturesToAdd;
+	queue<pair<CreatureData, float>> creaturesToAdd;
 	float enqueuedCreaturesAverageScore = 0.0;
-
-	void UpdateScoreThresholdBasedOnCurrentCreaturesToAdd()
-	{
-		// The idea here is we iterate on the current creatures to add, and base our score threshold on said creatures.
-		// The more creatures we have, and the higher their scores, the higher the score threshold
-		// We can generalize this so that: newScoreThreshold = average scores of currently enqueued creatures
-		// This way we only add creatures that increase the average
-		//... actually this function should be entirely voided because we can just update the average ourselves, or in other words the creature score threshold itself, upon creature push and pop
-	}
 
 	void GiveDeadCreature(CreatureUniqueID creatureID)
 	{
 		// This is where we test whether or not a recently past creature should be enqueued...
 		// This only happens if its score is above enqueuedCreaturesAverageScore, where a creature's
 		// score rises with the number of children it produced and decreases with its generation number
-		// So new creature's training wheels score can be = (# of children * weight1) / (generation * weight2)
+		// So new creature's training wheels score can be = (# of children * weight1) / (generation * weight2)... should also consider a max generation threshold just to be safe
 
 		// If enqueued, we update the average score as well
+
+		// We should also do any sort of mutating here, generate a CreatureData instance and enqueue that so that it's ready for drop off
+		
+		
+		GLuint ssbo = CreatureData_CreatureUniqueIDToSSBOIndex(creatureID);
+		
+		GLuint generation;
+		GetCreatureAttributeBySSBOIndex(creature_Generations, ssbo, &generation);
+
+		if (generation > EVOLUTION_INCUBATION_TRAINING_WHEELS_GENERATION_UPPER_THRESHOLD.value) return;
+
+		GLuint offspringCount;
+		GetCreatureAttributeBySSBOIndex(creature_OffspringCounts, ssbo, &offspringCount);
+
+		float score =
+			(offspringCount * EVOLUTION_INCUBATION_TRAINING_WHEELS_OFFSPRING_COUNT_SCORE_WEIGHT.value) /
+			(generation * EVOLUTION_INCUBATION_TRAINING_WHEELS_GENERATION_SCORE_WEIGHT.value);
+
+		if (score <= enqueuedCreaturesAverageScore) return;
+
+
 	}
 
 	bool HasCreatureToGive()
 	{
-		// self explanatory, is queue size > 0?
+		return creaturesToAdd.size() > 0;
 	}
 
 	CreatureData TakeFirstgenCreature()
@@ -438,6 +450,8 @@ namespace TrainingWheels
 		// This is where the default spawn firstgen logic asks the training wheels protocol to give it a creature to spawn
 		// In this case, we simply return the already mutated CreatureData instance by popping it from the queue
 		// Only gets called under the assumption there's a creature to provide
+
+		// Dont forget to update score!
 	}
 
 
@@ -449,8 +463,13 @@ namespace TrainingWheels
 		// 1. Only call this once every couple of frames (bad)
 		// 2. Keep an active statistics packet of information that we update every time we add or remove creatures and use those constantly updated statistics (good)
 		// Obviously we should work with 2...
+
+		// however to simplify this further (temporary), just store the current max generation here and return true iff maxGen < threshold
+	
+		active = true;
 	}
 }
+
 
 void AddFirstGenerationCreature(vec2 pos, vec2 vel)
 {

@@ -173,8 +173,8 @@ void main()
 		float exponent = biasExponent.y;
 		//BrainsNodes[activeNode] = AltSigmoidActivationFunction(max(-1.0, min(sum + bias, 1.0)), exponent);
 		//BrainsNodes[activeNode] = ActivationFunction(max(0.0, min(sum + bias, 1.0)), exponent);
-		//BrainsNodes[activeNode] = max(-1.0, min(sum + bias, 1.0));
-		BrainsNodes[activeNode] = max(-1.0, min(sum, 1.0));
+		BrainsNodes[activeNode] = max(-1.0, min(sum + bias, 1.0));
+		//BrainsNodes[activeNode] = max(-1.0, min(sum, 1.0));
 
 		activeNode++;
 		activeBiasExponent++;
