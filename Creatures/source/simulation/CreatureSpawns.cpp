@@ -1,4 +1,5 @@
 #include "CreatureSpawns.h"
+#include <queue>
 
 
 //////////////////////////
@@ -402,6 +403,55 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 // -- FIRST GENERATION CREATURE SPAWNING, EVOLUTION INCUBATION AND TRAINING WHEELS PROTOCOL -- //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+namespace TrainingWheels
+{
+	bool active = false;
+	queue<CreatureData> creaturesToAdd;
+	float enqueuedCreaturesAverageScore = 0.0;
+
+	void UpdateScoreThresholdBasedOnCurrentCreaturesToAdd()
+	{
+		// The idea here is we iterate on the current creatures to add, and base our score threshold on said creatures.
+		// The more creatures we have, and the higher their scores, the higher the score threshold
+		// We can generalize this so that: newScoreThreshold = average scores of currently enqueued creatures
+		// This way we only add creatures that increase the average
+		//... actually this function should be entirely voided because we can just update the average ourselves, or in other words the creature score threshold itself, upon creature push and pop
+	}
+
+	void GiveDeadCreature(CreatureUniqueID creatureID)
+	{
+		// This is where we test whether or not a recently past creature should be enqueued...
+		// This only happens if its score is above enqueuedCreaturesAverageScore, where a creature's
+		// score rises with the number of children it produced and decreases with its generation number
+		// So new creature's training wheels score can be = (# of children * weight1) / (generation * weight2)
+
+		// If enqueued, we update the average score as well
+	}
+
+	bool HasCreatureToGive()
+	{
+		// self explanatory, is queue size > 0?
+	}
+
+	CreatureData TakeFirstgenCreature()
+	{
+		// This is where the default spawn firstgen logic asks the training wheels protocol to give it a creature to spawn
+		// In this case, we simply return the already mutated CreatureData instance by popping it from the queue
+		// Only gets called under the assumption there's a creature to provide
+	}
+
+
+	void ActivateOrInactiveIfNeeded()
+	{
+		// This is where we check if the training wheels protocol should be active or inactive
+		// Ideally we would have just iterated all active creatures and check the resulting generations histogram
+		// or something like that, but that's not too performant to do every frame - so we have two prominent options:
+		// 1. Only call this once every couple of frames (bad)
+		// 2. Keep an active statistics packet of information that we update every time we add or remove creatures and use those constantly updated statistics (good)
+		// Obviously we should work with 2...
+	}
+}
+
 void AddFirstGenerationCreature(vec2 pos, vec2 vel)
 {
 	CreatureData data;
@@ -449,8 +499,6 @@ void AddFirstGenerationCreature(vec2 pos, vec2 vel)
 
 	CreatureData_AddCreature(data);
 }
-
-
 
 float firstgenCreatureSpawn_CreaturesToSpawn = 0.0;
 bool firstgenCreatureSpawn_PulseActive = false;
