@@ -804,7 +804,7 @@ void HandleVanishedCreatures()
 	// Remove creatures based on the unique IDs we found
 	for (unsigned int i = 0; i < numOfVanishedCreatures; ++i)
 	{
-		CreatureData_RemoveCreatureByUniqueID(vanishedCreatureIDs[i]);
+		CreatureSpawns::RemoveCreatureByUniqueID(vanishedCreatureIDs[i]);
 	}
 }
 

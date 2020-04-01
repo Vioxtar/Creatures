@@ -398,9 +398,9 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 }
 
 
-/////////////////////////////
-// -- CREATURE CREATION -- //
-/////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// -- FIRST GENERATION CREATURE SPAWNING, EVOLUTION INCUBATION AND TRAINING WHEELS PROTOCOL -- //
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AddFirstGenerationCreature(vec2 pos, vec2 vel)
 {
@@ -451,8 +451,6 @@ void AddFirstGenerationCreature(vec2 pos, vec2 vel)
 }
 
 
-
-bool trainingWheelsOn = false;
 
 float firstgenCreatureSpawn_CreaturesToSpawn = 0.0;
 bool firstgenCreatureSpawn_PulseActive = false;
@@ -612,3 +610,7 @@ void CreatureSpawns::AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SS
 	CreatureUniqueID newCreatureID = CreatureData_AddCreature(data);
 }
 
+void CreatureSpawns::RemoveCreatureByUniqueID(CreatureUniqueID creatureID)
+{
+	CreatureData_RemoveCreatureByUniqueID(creatureID);
+}
