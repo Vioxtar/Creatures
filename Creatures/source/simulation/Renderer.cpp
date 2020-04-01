@@ -14,8 +14,8 @@ struct InstancedDrawCallData
 };
 
 // Render draw call datas
-InstancedDrawCallData drawCallData_CreatureBody;
-
+InstancedDrawCallData drawCallData_DefaultCreatureBody;
+InstancedDrawCallData drawCallData_CreatureHeatmap;
 
 void InitOpenGLSettings()
 {
@@ -34,7 +34,7 @@ void InitOpenGLSettings()
 void InitDrawingPrograms()
 {
 
-	// Creature body
+	// Default creature body
 	{
 		vector<vec2> creatureBodyVerts;
 		creatureBodyVerts.push_back(vec2(0, 0));
@@ -56,20 +56,20 @@ void InitDrawingPrograms()
 		};
 		GLuint creatureBodyProgram = CreateLinkedShaderProgram(2, creatureBodyShaderTypes, creatureBodyShaderPaths, NULL);
 
-		drawCallData_CreatureBody.program = creatureBodyProgram;
-		drawCallData_CreatureBody.numOfIndices = creatureBodyElementIndices.size() * 3;
+		drawCallData_DefaultCreatureBody.program = creatureBodyProgram;
+		drawCallData_DefaultCreatureBody.numOfIndices = creatureBodyElementIndices.size() * 3;
 
-		glGenVertexArrays(1, &drawCallData_CreatureBody.VAO);
-		glBindVertexArray(drawCallData_CreatureBody.VAO);
+		glGenVertexArrays(1, &drawCallData_DefaultCreatureBody.VAO);
+		glBindVertexArray(drawCallData_DefaultCreatureBody.VAO);
 
 		// Create vertices buffer
-		glGenBuffers(1, &drawCallData_CreatureBody.VBO);
-		glBindBuffer(GL_ARRAY_BUFFER, drawCallData_CreatureBody.VBO);
+		glGenBuffers(1, &drawCallData_DefaultCreatureBody.VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, drawCallData_DefaultCreatureBody.VBO);
 		glBufferData(GL_ARRAY_BUFFER, creatureBodyVerts.size() * sizeof(vec2), creatureBodyVerts.data(), GL_STATIC_DRAW);
 
 		// Create elements buffer
-		glGenBuffers(1, &drawCallData_CreatureBody.EBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawCallData_CreatureBody.EBO);
+		glGenBuffers(1, &drawCallData_DefaultCreatureBody.EBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawCallData_DefaultCreatureBody.EBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, creatureBodyElementIndices.size() * sizeof(uvec3), creatureBodyElementIndices.data(), GL_STATIC_DRAW);
 
 		// Vertex positions
@@ -111,13 +111,13 @@ void Renderer::Render()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_Feeders.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 13, creature_Shields.bufferHandle);
 
-	glBindVertexArray(drawCallData_CreatureBody.VAO);
-	glUseProgram(drawCallData_CreatureBody.program);
-	SetUniformMatrix4(drawCallData_CreatureBody.program, "uTransform", Camera::GetSimSpaceToCameraTransform());
-	SetUniformUInteger(drawCallData_CreatureBody.program, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
-	SetUniformFloat(drawCallData_CreatureBody.program, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
-	SetUniformFloat(drawCallData_CreatureBody.program, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
-	SetUniformFloat(drawCallData_CreatureBody.program, "uCreatureTransparencyEnergyExponent", RENDER_CREATURE_TRANSPARENCY_ENERGY_EXPONENT.value);
-	glDrawElementsInstanced(GL_TRIANGLES, drawCallData_CreatureBody.numOfIndices, GL_UNSIGNED_INT, 0, numOfInstances);
+	glBindVertexArray(drawCallData_DefaultCreatureBody.VAO);
+	glUseProgram(drawCallData_DefaultCreatureBody.program);
+	SetUniformMatrix4(drawCallData_DefaultCreatureBody.program, "uTransform", Camera::GetSimSpaceToCameraTransform());
+	SetUniformUInteger(drawCallData_DefaultCreatureBody.program, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
+	SetUniformFloat(drawCallData_DefaultCreatureBody.program, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
+	SetUniformFloat(drawCallData_DefaultCreatureBody.program, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
+	SetUniformFloat(drawCallData_DefaultCreatureBody.program, "uCreatureTransparencyEnergyExponent", RENDER_CREATURE_TRANSPARENCY_ENERGY_EXPONENT.value);
+	glDrawElementsInstanced(GL_TRIANGLES, drawCallData_DefaultCreatureBody.numOfIndices, GL_UNSIGNED_INT, 0, numOfInstances);
 	glBindVertexArray(0);
 }

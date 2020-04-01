@@ -10,6 +10,8 @@ using namespace glm;
 
 struct CreatureData
 {
+	GLuint generation;
+
 	// Brain
 	vector<GLfloat> brainLinks;
 	vector<GLfloat> brainNodes;

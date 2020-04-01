@@ -399,6 +399,7 @@ CreatureUniqueID CreatureData_AddCreature(CreatureData& newCreatureData)
 
 	GLuint newCreatureIndex = creature_count;
 
+	SetCreatureAttribute(creature_Generations, newCreatureIndex, &newCreatureData.generation);
 	SetCreatureAttribute(creature_BrainsLinks, newCreatureIndex, newCreatureData.brainLinks.data());
 	SetCreatureAttribute(creature_BrainsNodes, newCreatureIndex, newCreatureData.brainNodes.data());
 	SetCreatureAttribute(creature_BrainsBiasesExponents, newCreatureIndex, newCreatureData.brainBiasesExponents.data());
