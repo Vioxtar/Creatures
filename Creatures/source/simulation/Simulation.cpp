@@ -826,6 +826,12 @@ void HandleNewbornCreatures()
 	{
 		uvec2 parentsSSBOIndices = ((uvec2*)creatureList_NewBorns.mapPtr)[i + 1];
 		CreatureSpawns::AddOffspringCreature(parentsSSBOIndices.x, parentsSSBOIndices.y);
+
+		GLuint offspringCount;
+		GetCreatureAttributeBySSBOIndex(creature_OffspringCounts, parentsSSBOIndices.x, &offspringCount);
+
+		offspringCount++;
+		SetCreatureAttribute(creature_OffspringCounts, parentsSSBOIndices.x, &offspringCount);
 	}
 }
 

@@ -426,18 +426,20 @@ namespace TrainingWheels
 		GLuint generation;
 		GetCreatureAttributeBySSBOIndex(creature_Generations, ssbo, &generation);
 
-		if (generation > EVOLUTION_INCUBATION_TRAINING_WHEELS_GENERATION_UPPER_THRESHOLD.value) return;
+		if (generation > TRAINING_WHEELS_GENERATION_UPPER_THRESHOLD.value) return;
 
 		GLuint offspringCount;
 		GetCreatureAttributeBySSBOIndex(creature_OffspringCounts, ssbo, &offspringCount);
 
 		float score =
-			(offspringCount * EVOLUTION_INCUBATION_TRAINING_WHEELS_OFFSPRING_COUNT_SCORE_WEIGHT.value) /
-			(generation * EVOLUTION_INCUBATION_TRAINING_WHEELS_GENERATION_SCORE_WEIGHT.value);
+			(offspringCount * TRAINING_WHEELS_OFFSPRING_COUNT_SCORE_WEIGHT.value) /
+			(generation * TRAINING_WHEELS_GENERATION_SCORE_WEIGHT.value);
 
 		if (score <= enqueuedCreaturesAverageScore) return;
 
+		// Create our to-be-enqueued creature data
 
+		CreatureData data;
 	}
 
 	bool HasCreatureToGive()
@@ -445,7 +447,7 @@ namespace TrainingWheels
 		return creaturesToAdd.size() > 0;
 	}
 
-	CreatureData TakeFirstgenCreature()
+	void AddFirstGenerationCreature(vec2 pos, vec2 vel)
 	{
 		// This is where the default spawn firstgen logic asks the training wheels protocol to give it a creature to spawn
 		// In this case, we simply return the already mutated CreatureData instance by popping it from the queue
@@ -466,7 +468,7 @@ namespace TrainingWheels
 
 		// however to simplify this further (temporary), just store the current max generation here and return true iff maxGen < threshold
 	
-		active = true;
+		//active = true;
 	}
 }
 
@@ -479,6 +481,7 @@ void AddFirstGenerationCreature(vec2 pos, vec2 vel)
 	data.vel = vel;
 
 	data.generation = 1;
+	data.offspringCount = 0;
 
 	InitFirstGenBrain(&data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
 
@@ -588,6 +591,8 @@ void CreatureSpawns::AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SS
 
 	GetCreatureAttributeBySSBOIndex(creature_Generations, p1SSBO, &data.generation);
 	data.generation++;
+
+	data.offspringCount = 0;
 
 	// Init mutated brain
 	InitOffspringBrain(p1SSBO, &data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);

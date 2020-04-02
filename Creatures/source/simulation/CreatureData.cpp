@@ -57,6 +57,7 @@ extern CreaturesSSBOInfo creature_Horninesses{ sizeof(GLfloat) };
 
 // Creature misc
 extern CreaturesSSBOInfo creature_Generations{ sizeof(GLuint) };
+extern CreaturesSSBOInfo creature_OffspringCounts{ sizeof(GLuint) };
 extern CreaturesSSBOInfo creature_UniformGridTiles{ sizeof(GLint) };
 
 // Colliders
@@ -149,6 +150,7 @@ void LoadCreatureSSBOInfosIntoIterableVectors()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Harndesses);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Horninesses);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Generations);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_OffspringCounts);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_UniformGridTiles);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeVec2);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeSecondVec2);
@@ -399,6 +401,7 @@ CreatureUniqueID CreatureData_AddCreature(CreatureData& newCreatureData)
 
 	GLuint newCreatureIndex = creature_count;
 
+	SetCreatureAttribute(creature_OffspringCounts, newCreatureIndex, &newCreatureData.offspringCount);
 	SetCreatureAttribute(creature_Generations, newCreatureIndex, &newCreatureData.generation);
 	SetCreatureAttribute(creature_BrainsLinks, newCreatureIndex, newCreatureData.brainLinks.data());
 	SetCreatureAttribute(creature_BrainsNodes, newCreatureIndex, newCreatureData.brainNodes.data());

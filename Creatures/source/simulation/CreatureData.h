@@ -11,6 +11,7 @@ using namespace glm;
 struct CreatureData
 {
 	GLuint generation;
+	GLuint offspringCount;
 
 	// Brain
 	vector<GLfloat> brainLinks;
@@ -107,6 +108,7 @@ struct MappedCreaturesSSBOInfo
 void GetCreatureAttributeBySSBOIndex(CreaturesSSBOInfo creatureSSBOInfo, GLuint creatureSSBOIndex, void* data);
 void GetCreatureAttributeByUniqueID(CreaturesSSBOInfo creatureSSBOInfo, CreatureUniqueID creatureID, void* data);
 void GetCreatureAttributes(CreaturesSSBOInfo creatureSSBOInfo, void* data);
+void SetCreatureAttribute(CreaturesSSBOInfo creatureSSBOInfo, GLuint creatureIndex, const void* data);
 
 // Brains
 extern CreaturesSSBOInfo creature_BrainsLinks;
@@ -141,6 +143,7 @@ extern CreaturesSSBOInfo creature_Horninesses;
 
 // Creature misc
 extern CreaturesSSBOInfo creature_Generations;
+extern CreaturesSSBOInfo creature_OffspringCounts;
 extern CreaturesSSBOInfo creature_UniformGridTiles;
 
 // Colliders
