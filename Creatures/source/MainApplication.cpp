@@ -112,6 +112,15 @@ int main()
 	double lastTime = 0;
 	int frameCount = 0;
 
+
+	add better mutations model
+		use 2*arctan(x) / pi for activations and unclamp values
+		remove hardcoded eye controls
+		decouple + keep negatives ?
+		add grid
+		scan for other temp shit
+		research and implement lstms.Yes, that's right.
+
 	// Start main loop
 	while (!glfwWindowShouldClose(window))
 	{

@@ -141,9 +141,14 @@ void main()
 	float targetEyeRadius = (1.0 - outputEyeConeRadiusSqueezePercentage) * uCreatureEyeMaxConeRadius;
 	float targetEyePupilConeCoverageFraction = outputEyePupilConeCoverageFraction;
 
-	EyeMuscles[gid] = targetEyeMuscles * uCreatureEyeControlsInterpolationRate + oldEyeMuscles * (1.0 - uCreatureEyeControlsInterpolationRate);
-	EyeConeRadii[gid] = targetEyeRadius * uCreatureEyeControlsInterpolationRate + oldEyeConeRadius * (1.0 - uCreatureEyeControlsInterpolationRate);
-	EyePupilConeCoverageFractions[gid] = targetEyePupilConeCoverageFraction * uCreatureEyeControlsInterpolationRate + oldEyePupilConeCoverageFraction * (1.0 - uCreatureEyeControlsInterpolationRate);
+	//EyeMuscles[gid] = targetEyeMuscles * uCreatureEyeControlsInterpolationRate + oldEyeMuscles * (1.0 - uCreatureEyeControlsInterpolationRate);
+	//EyeConeRadii[gid] = targetEyeRadius * uCreatureEyeControlsInterpolationRate + oldEyeConeRadius * (1.0 - uCreatureEyeControlsInterpolationRate);
+	//EyePupilConeCoverageFractions[gid] = targetEyePupilConeCoverageFraction * uCreatureEyeControlsInterpolationRate + oldEyePupilConeCoverageFraction * (1.0 - uCreatureEyeControlsInterpolationRate);
+
+
+	EyeMuscles[gid] = vec2(0, 0);
+	EyeConeRadii[gid] = uCreatureEyeMaxConeRadius;
+	EyePupilConeCoverageFractions[gid] = 0.1;
 
 
 	// Energy deductions
