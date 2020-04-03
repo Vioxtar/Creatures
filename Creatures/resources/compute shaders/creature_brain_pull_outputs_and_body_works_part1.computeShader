@@ -107,7 +107,7 @@ void main()
 	float outputMovementTurnClockwise = max(-1.0, min(BrainsNodes[firstOutputIndex + 2], 1.0));
 	float outputEyeMuscleRightLeft = max(-1.0, min(BrainsNodes[firstOutputIndex + 3], 1.0));
 	float outputEyeMuscleUpDown = max(-1.0, min(BrainsNodes[firstOutputIndex + 4], 1.0));
-	float outputEyeConeRadiusPercentage = max(0.0, min(BrainsNodes[firstOutputIndex + 5], 1.0));
+	float outputEyeConeRadiusSqueezePercentage = max(0.0, min(BrainsNodes[firstOutputIndex + 5], 1.0));
 	float outputEyePupilConeCoverageFraction = max(0.0, min(BrainsNodes[firstOutputIndex + 6], 1.0));
 
 	// Obtain energy and calculate our movement multiplier - used to make creatures on low energies move slower
@@ -138,7 +138,7 @@ void main()
 	float oldEyePupilConeCoverageFraction = EyePupilConeCoverageFractions[gid];
 	
 	vec2 targetEyeMuscles = vec2(outputEyeMuscleRightLeft, outputEyeMuscleUpDown);
-	float targetEyeRadius = outputEyeConeRadiusPercentage * uCreatureEyeMaxConeRadius;
+	float targetEyeRadius = (1.0 - outputEyeConeRadiusSqueezePercentage) * uCreatureEyeMaxConeRadius;
 	float targetEyePupilConeCoverageFraction = outputEyePupilConeCoverageFraction;
 
 	EyeMuscles[gid] = targetEyeMuscles * uCreatureEyeControlsInterpolationRate + oldEyeMuscles * (1.0 - uCreatureEyeControlsInterpolationRate);

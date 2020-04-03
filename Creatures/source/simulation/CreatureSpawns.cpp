@@ -398,192 +398,12 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 	*/
 }
 
+////////////////////////////
+// -- OFFSPRING SPAWNS -- //
+////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-// -- FIRST GENERATION CREATURE SPAWNING, EVOLUTION INCUBATION AND TRAINING WHEELS PROTOCOL -- //
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-namespace TrainingWheels
+void SpawnOffspringCreature(unsigned int p1SSBO, unsigned p2SSBO)
 {
-	bool active = false;
-	queue<pair<CreatureData, float>> creaturesToAdd;
-	float enqueuedCreaturesAverageScore = 0.0;
-
-	void GiveDeadCreature(CreatureUniqueID creatureID)
-	{
-		// This is where we test whether or not a recently past creature should be enqueued...
-		// This only happens if its score is above enqueuedCreaturesAverageScore, where a creature's
-		// score rises with the number of children it produced and decreases with its generation number
-		// So new creature's training wheels score can be = (# of children * weight1) / (generation * weight2)... should also consider a max generation threshold just to be safe
-
-		// If enqueued, we update the average score as well
-
-		// We should also do any sort of mutating here, generate a CreatureData instance and enqueue that so that it's ready for drop off
-		
-		
-		GLuint ssbo = CreatureData_CreatureUniqueIDToSSBOIndex(creatureID);
-		
-		GLuint generation;
-		GetCreatureAttributeBySSBOIndex(creature_Generations, ssbo, &generation);
-
-		if (generation > TRAINING_WHEELS_GENERATION_UPPER_THRESHOLD.value) return;
-
-		GLuint offspringCount;
-		GetCreatureAttributeBySSBOIndex(creature_OffspringCounts, ssbo, &offspringCount);
-
-		float score =
-			(offspringCount * TRAINING_WHEELS_OFFSPRING_COUNT_SCORE_WEIGHT.value) /
-			(generation * TRAINING_WHEELS_GENERATION_SCORE_WEIGHT.value);
-
-		if (score <= enqueuedCreaturesAverageScore) return;
-
-		// Create our to-be-enqueued creature data
-
-		CreatureData data;
-	}
-
-	bool HasCreatureToGive()
-	{
-		return creaturesToAdd.size() > 0;
-	}
-
-	void AddFirstGenerationCreature(vec2 pos, vec2 vel)
-	{
-		// This is where the default spawn firstgen logic asks the training wheels protocol to give it a creature to spawn
-		// In this case, we simply return the already mutated CreatureData instance by popping it from the queue
-		// Only gets called under the assumption there's a creature to provide
-
-		// Dont forget to update score!
-	}
-
-
-	void ActivateOrInactiveIfNeeded()
-	{
-		// This is where we check if the training wheels protocol should be active or inactive
-		// Ideally we would have just iterated all active creatures and check the resulting generations histogram
-		// or something like that, but that's not too performant to do every frame - so we have two prominent options:
-		// 1. Only call this once every couple of frames (bad)
-		// 2. Keep an active statistics packet of information that we update every time we add or remove creatures and use those constantly updated statistics (good)
-		// Obviously we should work with 2...
-
-		// however to simplify this further (temporary), just store the current max generation here and return true iff maxGen < threshold
-	
-		//active = true;
-	}
-}
-
-
-void AddFirstGenerationCreature(vec2 pos, vec2 vel)
-{
-	CreatureData data;
-
-	data.pos = pos;
-	data.vel = vel;
-
-	data.generation = 1;
-	data.offspringCount = 0;
-
-	InitFirstGenBrain(&data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
-
-	data.skinPattern = vec2(random(), random());
-	data.skinHue = random();
-	data.skinSaturation = CREATURE_MAX_SKIN_SATURATION.value;
-	data.skinLightness = CREATURE_MAX_SKIN_LIGHTNESS.value;
-
-	data.angle = random() * 2 * M_PI;
-	data.angleVel = 0;
-
-	data.hardness = SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS.value;
-	data.rad = SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS.value;
-
-	data.life = SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE.value;
-	data.energy = SIMULATION_FIRSTGEN_CREATURE_INITIAL_ENERGY.value;
-	data.meat = SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT.value;
-
-	float spikeState = 0.0;
-	float feederState = 0.0;
-	float shieldState = 0.0;
-	float shieldSpan = 0.5;
-	data.spike = vec4(0, 0, spikeState, 0);
-	data.feeder = vec4(0, 0, feederState, 0);
-	data.shield = vec4(0, 0, shieldState, shieldSpan);
-
-	data.spikeLocalAngle = random() * 2 * M_PI;
-	data.feederLocalAngle = random() * 2 * M_PI;
-	data.shieldLocalAngle = random() * 2 * M_PI;
-
-	data.forwardDir = vec2(0.0f, 0.0f);
-	data.rightDir = vec2(0.0f, 0.0f);
-
-	data.eyeConeRadius = 0.0;
-	data.eyePos = vec2(0, 0);
-	data.eyeMuscles = vec2(0.0, 0.0);
-
-	CreatureData_AddCreature(data);
-}
-
-float firstgenCreatureSpawn_CreaturesToSpawn = 0.0;
-bool firstgenCreatureSpawn_PulseActive = false;
-float firstgenCreatureSpawn_OscillateX = 0.0;
-vec2 firstgenCreatureSpawn_MovingSpawnPos = vec2(0, 0);
-vec2 firstgenCreatureSpawn_MovingSpawnVel = vec2(0, 0);
-void FirstgenCreatureSpawns()
-{
-	// Constant spawn
-	firstgenCreatureSpawn_CreaturesToSpawn += SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE.value;
-
-
-	// Pulse spawn
-	if (firstgenCreatureSpawn_PulseActive)
-	{
-		firstgenCreatureSpawn_CreaturesToSpawn += SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_RATE.value;
-		firstgenCreatureSpawn_PulseActive = creature_count + firstgenCreatureSpawn_CreaturesToSpawn < SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_UPPER_TARGET.value;
-	}
-	else
-	{
-		firstgenCreatureSpawn_PulseActive = creature_count < SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_LOWER_TARGET.value;
-	}
-
-	// Oscilalte spawn
-	float oscillateZeroToOne = cos(firstgenCreatureSpawn_OscillateX) / 2.0 + 0.5;
-	float oscillateZeroToOneExp = pow(oscillateZeroToOne, SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_SPAWN_RATE_EXPONENT.value);
-	float upRate = SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_UP_SPAWN_RATE.value;
-	float downRate = SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_DOWN_SPAWN_RATE.value;
-	float xStep = SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_STEP.value;
-	firstgenCreatureSpawn_CreaturesToSpawn += (downRate + (upRate - downRate) * oscillateZeroToOneExp);
-	firstgenCreatureSpawn_OscillateX = mod(firstgenCreatureSpawn_OscillateX + xStep, (float)(M_PI * 2.0));
-
-	// Finalize
-	while (firstgenCreatureSpawn_CreaturesToSpawn >= 1.0)
-	{
-		float movingSpawnSpeed = SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_VELOCITY_MAGNITUDE.value;
-		firstgenCreatureSpawn_MovingSpawnVel += vec2((random() - 0.5) * movingSpawnSpeed, (random() - 0.5) * movingSpawnSpeed);
-		firstgenCreatureSpawn_MovingSpawnPos += firstgenCreatureSpawn_MovingSpawnVel;
-		if (abs(firstgenCreatureSpawn_MovingSpawnPos.x) > SIMULATION_SPACE_WIDTH.value / 2.0)
-		{
-			firstgenCreatureSpawn_MovingSpawnPos.x = clamp(firstgenCreatureSpawn_MovingSpawnPos.x, -SIMULATION_SPACE_WIDTH.value / 2.0, SIMULATION_SPACE_WIDTH.value / 2.0);
-			firstgenCreatureSpawn_MovingSpawnVel.x *= -0.95;
-		}
-		if (abs(firstgenCreatureSpawn_MovingSpawnPos.y) > SIMULATION_SPACE_HEIGHT.value / 2.0)
-		{
-			firstgenCreatureSpawn_MovingSpawnPos.y = clamp(firstgenCreatureSpawn_MovingSpawnPos.y, -SIMULATION_SPACE_HEIGHT.value / 2.0, SIMULATION_SPACE_HEIGHT.value / 2.0);
-			firstgenCreatureSpawn_MovingSpawnVel.y *= -0.95;
-		}
-
-		AddFirstGenerationCreature(firstgenCreatureSpawn_MovingSpawnPos, vec2(0.0, 0.0));
-		firstgenCreatureSpawn_CreaturesToSpawn -= 1.0;
-	}
-}
-
-
-void CreatureSpawns::Update()
-{
-	FirstgenCreatureSpawns();
-}
-
-void CreatureSpawns::AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
-{
-
 	CreatureUniqueID parent1ID = CreatureData_CreatureSSBOIndexToUniqueID(p1SSBO);
 	CreatureUniqueID parent2ID = CreatureData_CreatureSSBOIndexToUniqueID(p2SSBO);
 
@@ -682,7 +502,313 @@ void CreatureSpawns::AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SS
 	CreatureUniqueID newCreatureID = CreatureData_AddCreature(data);
 }
 
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// -- FIRST GENERATION CREATURE SPAWNING, EVOLUTION INCUBATION AND TRAINING WHEELS PROTOCOL -- //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace TrainingWheels
+{
+	bool active = false;
+	queue<pair<CreatureData, float>> creaturesToAdd;
+	float enqueuedCreaturesAverageScore = 0.0;
+	float maxScore = 0.0;
+
+	void InputDeadCreature(CreatureUniqueID creatureID)
+	{
+		//cout << "Training wheels: Received dead creature input!" << endl;
+
+		GLuint ssbo = CreatureData_CreatureUniqueIDToSSBOIndex(creatureID);
+		
+		GLuint generation;
+		GetCreatureAttributeBySSBOIndex(creature_Generations, ssbo, &generation);
+
+		//cout << "\t generation: " << generation << endl;
+
+		if (generation > TRAINING_WHEELS_GENERATION_UPPER_THRESHOLD.value) return;
+
+		GLuint offspringCount;
+		GetCreatureAttributeBySSBOIndex(creature_OffspringCounts, ssbo, &offspringCount);
+
+		float score =
+			(offspringCount * TRAINING_WHEELS_OFFSPRING_COUNT_SCORE_WEIGHT.value) /
+			(1.0 + generation * TRAINING_WHEELS_GENERATION_SCORE_WEIGHT.value);
+
+		//cout << "\t score: " << score << " where current score threshold is " << enqueuedCreaturesAverageScore << endl;
+
+		if (score <= enqueuedCreaturesAverageScore) return;
+
+		// Retrieve creature data to be train wheel'd
+
+		CreatureData data;
+		
+		data.brainNodes.reserve(CREATURE_BRAIN_MAX_NUM_OF_NODES);
+		data.brainLinks.reserve(CREATURE_BRAIN_MAX_NUM_OF_LINKS);
+		data.brainBiasesExponents.reserve(CREATURE_BRAIN_MAX_NUM_OF_ACTIVATED_NODES);
+		data.brainStructure.reserve(CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
+		
+		GetCreatureAttributeBySSBOIndex(creature_BrainsNodes, ssbo, data.brainNodes.data());
+		GetCreatureAttributeBySSBOIndex(creature_BrainsLinks, ssbo, data.brainLinks.data());
+		GetCreatureAttributeBySSBOIndex(creature_BrainsBiasesExponents, ssbo, data.brainBiasesExponents.data());
+		GetCreatureAttributeBySSBOIndex(creature_BrainsStructures, ssbo, data.brainStructure.data());
+
+		GetCreatureAttributeBySSBOIndex(creature_SpikeLocalAngles, ssbo, &data.spikeLocalAngle);
+		GetCreatureAttributeBySSBOIndex(creature_FeederLocalAngles, ssbo, &data.feederLocalAngle);
+		GetCreatureAttributeBySSBOIndex(creature_ShieldLocalAngles, ssbo, &data.shieldLocalAngle);
+	
+		// Update score
+		unsigned int oldQueueSize = creaturesToAdd.size();
+		enqueuedCreaturesAverageScore = (enqueuedCreaturesAverageScore * oldQueueSize + score) / float(oldQueueSize + 1);
+		
+		// Enqueue
+		creaturesToAdd.push(pair<CreatureData, float>(data, score));
+
+		//cout << "\t Enqueued! now queue size is " << creaturesToAdd.size() << endl;
+	}
+
+	bool HasCreatureToGive()
+	{
+		return creaturesToAdd.size() > 0;
+	}
+
+	void SpawnTrainedFirstGenerationCreature(vec2 pos, vec2 vel)
+	{
+
+		//cout << "Training wheels: requested to spawn first gen creature... " << endl;
+
+		unsigned int oldQueueSize = creaturesToAdd.size();
+		
+		// Dequeue
+		pair<CreatureData, float> creatureDataAndScore = creaturesToAdd.front();
+		CreatureData data = creatureDataAndScore.first;
+		float score = creatureDataAndScore.second;
+		creaturesToAdd.pop();
+
+		// The best creature is fed back in
+		if (score >= maxScore)
+		{
+			maxScore = score;
+			creaturesToAdd.push(creatureDataAndScore);
+		}
+
+		//cout << "creature dequeued with score " << score << ", max score is " << maxScore << endl;
+
+		// Update score
+		enqueuedCreaturesAverageScore = oldQueueSize <= 1 ? 0 : (enqueuedCreaturesAverageScore * oldQueueSize - score) / float(oldQueueSize - 1);
+
+
+		// Randomize all non-trained creature data
+
+		data.pos = pos;
+		data.vel = vel;
+
+		data.generation = 1;
+		data.offspringCount = 0;
+
+		data.skinPattern = vec2(random(), random());
+		data.skinHue = random();
+		data.skinSaturation = CREATURE_MAX_SKIN_SATURATION.value;
+		data.skinLightness = CREATURE_MAX_SKIN_LIGHTNESS.value;
+
+		data.angle = random() * 2 * M_PI;
+		data.angleVel = 0;
+
+		data.hardness = SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS.value;
+		data.rad = SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS.value;
+
+		data.life = SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE.value;
+		data.energy = SIMULATION_FIRSTGEN_CREATURE_INITIAL_ENERGY.value;
+		data.meat = SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT.value;
+
+		float spikeState = 0.0;
+		float feederState = 0.0;
+		float shieldState = 0.0;
+		float shieldSpan = 0.5;
+		data.spike = vec4(0, 0, spikeState, 0);
+		data.feeder = vec4(0, 0, feederState, 0);
+		data.shield = vec4(0, 0, shieldState, shieldSpan);
+
+		data.forwardDir = vec2(0.0f, 0.0f);
+		data.rightDir = vec2(0.0f, 0.0f);
+
+		data.eyeConeRadius = 0.0;
+		data.eyePos = vec2(0, 0);
+		data.eyeMuscles = vec2(0.0, 0.0);
+
+		// Add
+		CreatureData_AddCreature(data);
+	}
+
+
+	void ActivateOrInactiveIfNeeded()
+	{
+		// This is where we check if the training wheels protocol should be active or inactive
+		// Ideally we would have just iterated all active creatures and check the resulting generations histogram
+		// or something like that, but that's not too performant to do every frame - so we have two prominent options:
+		// 1. Only call this once every couple of frames (bad)
+		// 2. Keep an active statistics packet of information that we update every time we add or remove creatures and use those constantly updated statistics (good)
+		// Obviously we should work with 2...
+
+		// however to simplify this further (temporary), just store the current max generation here and return true iff maxGen < threshold
+		
+		// @TEMP @TODO: Actually what we described above
+		//active = true;
+	}
+}
+
+
+void CreatureSpawns::ToggleTraining()
+{
+	TrainingWheels::active = !TrainingWheels::active;
+	cout << "training active: " << TrainingWheels::active << endl;
+}
+
+void SpawnFirstGenerationCreature(vec2 pos, vec2 vel)
+{
+	CreatureData data;
+
+	data.pos = pos;
+	data.vel = vel;
+
+	data.generation = 1;
+	data.offspringCount = 0;
+
+	InitFirstGenBrain(&data.brainNodes, &data.brainBiasesExponents, &data.brainLinks, &data.brainStructure);
+
+	data.skinPattern = vec2(random(), random());
+	data.skinHue = random();
+	data.skinSaturation = CREATURE_MAX_SKIN_SATURATION.value;
+	data.skinLightness = CREATURE_MAX_SKIN_LIGHTNESS.value;
+
+	data.angle = random() * 2 * M_PI;
+	data.angleVel = 0;
+
+	data.hardness = SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS.value;
+	data.rad = SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS.value;
+
+	data.life = SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE.value;
+	data.energy = SIMULATION_FIRSTGEN_CREATURE_INITIAL_ENERGY.value;
+	data.meat = SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT.value;
+
+	float spikeState = 0.0;
+	float feederState = 0.0;
+	float shieldState = 0.0;
+	float shieldSpan = 0.5;
+	data.spike = vec4(0, 0, spikeState, 0);
+	data.feeder = vec4(0, 0, feederState, 0);
+	data.shield = vec4(0, 0, shieldState, shieldSpan);
+
+	data.spikeLocalAngle = random() * 2 * M_PI;
+	data.feederLocalAngle = random() * 2 * M_PI;
+	data.shieldLocalAngle = random() * 2 * M_PI;
+
+	data.forwardDir = vec2(0.0f, 0.0f);
+	data.rightDir = vec2(0.0f, 0.0f);
+
+	data.eyeConeRadius = 0.0;
+	data.eyePos = vec2(0, 0);
+	data.eyeMuscles = vec2(0.0, 0.0);
+
+	CreatureData_AddCreature(data);
+}
+
+float firstgenCreatureSpawn_CreaturesToSpawn = 0.0;
+bool firstgenCreatureSpawn_PulseActive = false;
+float firstgenCreatureSpawn_OscillateX = 0.0;
+vec2 firstgenCreatureSpawn_MovingSpawnPos = vec2(0, 0);
+vec2 firstgenCreatureSpawn_MovingSpawnVel = vec2(0, 0);
+void FirstgenCreatureSpawns()
+{
+	// Constant spawn
+	firstgenCreatureSpawn_CreaturesToSpawn += SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE.value;
+
+
+	// Pulse spawn
+	if (firstgenCreatureSpawn_PulseActive)
+	{
+		firstgenCreatureSpawn_CreaturesToSpawn += SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_RATE.value;
+		firstgenCreatureSpawn_PulseActive = creature_count + firstgenCreatureSpawn_CreaturesToSpawn < SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_UPPER_TARGET.value;
+	}
+	else
+	{
+		firstgenCreatureSpawn_PulseActive = creature_count < SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_LOWER_TARGET.value;
+	}
+
+	// Oscilalte spawn
+	float oscillateZeroToOne = cos(firstgenCreatureSpawn_OscillateX) / 2.0 + 0.5;
+	float oscillateZeroToOneExp = pow(oscillateZeroToOne, SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_SPAWN_RATE_EXPONENT.value);
+	float upRate = SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_UP_SPAWN_RATE.value;
+	float downRate = SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_DOWN_SPAWN_RATE.value;
+	float xStep = SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_STEP.value;
+	firstgenCreatureSpawn_CreaturesToSpawn += (downRate + (upRate - downRate) * oscillateZeroToOneExp);
+	firstgenCreatureSpawn_OscillateX = mod(firstgenCreatureSpawn_OscillateX + xStep, (float)(M_PI * 2.0));
+
+	// Move spawn
+	float movingSpawnSpeed = SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_RANDOM_VELOCITY_MAGNITUDE.value;
+	firstgenCreatureSpawn_MovingSpawnVel += vec2((random() - 0.5) * movingSpawnSpeed, (random() - 0.5) * movingSpawnSpeed);
+	float velocityLength = length(firstgenCreatureSpawn_MovingSpawnVel);
+	if (velocityLength > SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_MAX_VELOCITY_LENGTH.value)
+	{
+		firstgenCreatureSpawn_MovingSpawnVel /= velocityLength;
+		velocityLength = SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_MAX_VELOCITY_LENGTH.value;
+		firstgenCreatureSpawn_MovingSpawnVel *= velocityLength;
+	}
+
+	firstgenCreatureSpawn_MovingSpawnPos += firstgenCreatureSpawn_MovingSpawnVel;
+	
+	// Keep spawn in simulation zone
+	if (abs(firstgenCreatureSpawn_MovingSpawnPos.x) > SIMULATION_SPACE_WIDTH.value / 2.0)
+	{
+		firstgenCreatureSpawn_MovingSpawnPos.x = clamp(firstgenCreatureSpawn_MovingSpawnPos.x, -SIMULATION_SPACE_WIDTH.value / 2.0, SIMULATION_SPACE_WIDTH.value / 2.0);
+		firstgenCreatureSpawn_MovingSpawnVel.x *= -0.95;
+	}
+	if (abs(firstgenCreatureSpawn_MovingSpawnPos.y) > SIMULATION_SPACE_HEIGHT.value / 2.0)
+	{
+		firstgenCreatureSpawn_MovingSpawnPos.y = clamp(firstgenCreatureSpawn_MovingSpawnPos.y, -SIMULATION_SPACE_HEIGHT.value / 2.0, SIMULATION_SPACE_HEIGHT.value / 2.0);
+		firstgenCreatureSpawn_MovingSpawnVel.y *= -0.95;
+	}
+
+	vec2 finalCreaturePos = firstgenCreatureSpawn_MovingSpawnPos;
+	vec2 finalCreatureVel = vec2(0.0, 0.0);
+
+	// Finalize
+	while (firstgenCreatureSpawn_CreaturesToSpawn >= 1.0)
+	{
+
+		if (TrainingWheels::active && TrainingWheels::HasCreatureToGive())
+		{
+			TrainingWheels::SpawnTrainedFirstGenerationCreature(finalCreaturePos, finalCreatureVel);
+		}
+		else
+		{
+			SpawnFirstGenerationCreature(finalCreaturePos, finalCreatureVel);
+		}
+		
+		
+		firstgenCreatureSpawn_CreaturesToSpawn -= 1.0;
+	}
+}
+
+
+void CreatureSpawns::Update()
+{
+	TrainingWheels::ActivateOrInactiveIfNeeded();
+	FirstgenCreatureSpawns();
+}
+
+void CreatureSpawns::AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO)
+{
+	SpawnOffspringCreature(p1SSBO, p2SSBO);
+}
+
 void CreatureSpawns::RemoveCreatureByUniqueID(CreatureUniqueID creatureID)
 {
+	if (TrainingWheels::active)
+	{
+		TrainingWheels::InputDeadCreature(creatureID);
+	}
+
 	CreatureData_RemoveCreatureByUniqueID(creatureID);
 }

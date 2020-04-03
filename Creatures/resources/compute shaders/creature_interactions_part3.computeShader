@@ -101,7 +101,7 @@ void main()
 				uint bGID = colliderIndexAndPlacement.x;
 
 				bool bHornyToReproduce = Horninesses[bGID] > 0.5;
-				if (bHornyToReproduce)
+				if (bHornyToReproduce  && Lives[bGID] > 0.0)
 				{
 					// Are we in reproduction positions?
 					vec2 bForwardDir = ForwardDirections[bGID];

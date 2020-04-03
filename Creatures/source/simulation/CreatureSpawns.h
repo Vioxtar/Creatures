@@ -20,4 +20,5 @@ namespace CreatureSpawns
 	void Update();
 	void AddOffspringCreature(unsigned int p1SSBO, unsigned int p2SSBO);
 	void RemoveCreatureByUniqueID(CreatureUniqueID creatureID);
+	void ToggleTraining();
 }

@@ -189,14 +189,6 @@ extern const uint16_t CREATURE_EYE_NUM_OF_PUPIL_VALUES = 12;
 // UI settings
 extern TweakableFloatSetting UI_CREATURE_TRACKER_CAMERA_ZOOM_BASED_FOLLOW_INTERPOLATION_RATE = { 0.5, 0.001, 1.0 };
 
-
-// Evolution incubation settings
-extern TweakableIntegerSetting TRAINING_WHEELS_GENERATION_UPPER_THRESHOLD = { 3, 0, 100 };
-extern TweakableFloatSetting TRAINING_WHEELS_OFFSPRING_COUNT_SCORE_WEIGHT = { 0.25, 0.0, 1.0 };
-extern TweakableFloatSetting TRAINING_WHEELS_GENERATION_SCORE_WEIGHT = { 0.5, 0.0, 1.0 };
-
-
-
 // Simulation space settings
 extern TweakableFloatSetting SIMULATION_SPACE_WIDTH = { 1000, 1, 2000 };
 extern TweakableFloatSetting SIMULATION_SPACE_HEIGHT = { 1000, 1, 2000 };
@@ -206,20 +198,26 @@ extern TweakableFloatSetting SIMULATION_BORDER_RESTITUTION = { 0.0, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_VELOCITY_DOWNSCALE = { 0.992, 0.0, 1.0 };
 extern TweakableFloatSetting SIMULATION_ANGLE_VELOCITY_DOWNSCALE = { 0.9875, 0.0, 1.0 };
 
-// Simulation creature settings
+// Evolution incubation settings
+extern TweakableIntegerSetting TRAINING_WHEELS_GENERATION_UPPER_THRESHOLD = { 10, 0, 100 };
+extern TweakableFloatSetting TRAINING_WHEELS_OFFSPRING_COUNT_SCORE_WEIGHT = { 0.5, 0.0, 1.0 };
+extern TweakableFloatSetting TRAINING_WHEELS_GENERATION_SCORE_WEIGHT = { 0.05, 0.0, 1.0 };
 
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 4.0, 0.0, 50.0 };
+// Simulation creature settings
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 2.0, 0.0, 50.0 };
 
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_RATE = { 0.0, 0.0, 10000.0 };
-extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_UPPER_TARGET = { 30000, 0, 10000 };
-extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_LOWER_TARGET = { 20000, 0, 10000 };
+extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_UPPER_TARGET = { 15000, 0, 10000 };
+extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_LOWER_TARGET = { 1000, 0, 10000 };
 
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_UP_SPAWN_RATE = { 0.0, 0.0, 100.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_DOWN_SPAWN_RATE = { 0.0, 0.0, 100.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_STEP = { 0.001, 0.0, 10.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_OSCILLATE_SPAWN_RATE_EXPONENT = { 2.0, 0.0, 10.0 };
 
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_VELOCITY_MAGNITUDE = { 0.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_RANDOM_VELOCITY_MAGNITUDE = { 0.001, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_MOVING_SPAWN_MAX_VELOCITY_LENGTH = { 0.05, 0.0, 10.0 };
+
 
 // Render settings
 extern TweakableFloatSetting RENDER_CLEAR_COLOR_R = { 0.035, 0.0, 1.0 };
@@ -252,9 +250,9 @@ extern TweakableFloatSetting CREATURE_MAX_ENERGY = { 5.0, 0.1, 50.0 };
 extern TweakableFloatSetting CREATURE_MAX_MEAT = { 10.0, 0.1, 10.0 };
 extern TweakableFloatSetting CREATURE_MAX_LIFE = { 1.0, 0.1, 10.0 };
 
-extern TweakableFloatSetting CREATURE_ENERGY_TO_MEAT_CONVERSION_RATE = { 0.085, 0.1, 1.0 };
-extern TweakableFloatSetting CREATURE_MEAT_TO_ENERGY_CONVERSION_RATE = { 0.001, 0.1, 1.0 };
-extern TweakableFloatSetting CREATURE_ENERGY_TO_LIFE_CONVERSION_RATE = { 0.005, 0.1, 1.0 };
+extern TweakableFloatSetting CREATURE_ENERGY_TO_MEAT_CONVERSION_RATE = { 0.085, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_MEAT_TO_ENERGY_CONVERSION_RATE = { 0.0001, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_ENERGY_TO_LIFE_CONVERSION_RATE = { 0.005, 0.0, 1.0 };
 
 extern TweakableFloatSetting CREATURE_LIFE_DRAIN_ON_NO_ENERGY = { 0.0025, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_ENERGY_DRAIN_CONSTANT = { 0.0001, 0.0, 1.0 };
