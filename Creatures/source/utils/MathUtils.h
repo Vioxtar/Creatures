@@ -33,4 +33,20 @@ namespace mathutils
 	{
 		return min + int(random() * (max - min + 1));
 	}
+
+	static float randomRange(float min, float max)
+	{
+		return min + random() * (max - min);
+	}
+	
+	static float randomRangeMinGravity(float min, float max, float minGravity)
+	{
+		return min + pow(random(), minGravity) * (max - min);
+	}
+
+	static void randomJitter(float& value, float jitterSize, float gravityToZeroJitter)
+	{
+		value += pow(random(), gravityToZeroJitter) * jitterSize * randomNegate();
+	}
+
 }

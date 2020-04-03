@@ -2,25 +2,6 @@
 #include <queue>
 
 
-//////////////////////////
-// -- MUTATION UTILS -- //
-//////////////////////////
-
-void MutateClampedCreatureTrait(GLfloat& value, GLfloat minValue, GLfloat maxValue, GLfloat chanceToMutate, GLfloat mutationJitter, GLfloat mutationJitterPercentageExponent)
-{
-	if (random() >= chanceToMutate) return;
-	GLfloat mutation = pow(random(), mutationJitterPercentageExponent) * mutationJitter * randomNegate();
-	value = clamp(value + mutation, minValue, maxValue);
-}
-
-void MutateCreatureTrait(GLfloat& value, GLfloat chanceToMutate, GLfloat mutationJitter, GLfloat mutationJitterPercentageExponent)
-{
-	if (random() >= chanceToMutate) return;
-	GLfloat mutation = pow(random(), mutationJitterPercentageExponent) * mutationJitter * randomNegate();
-	value += mutation;
-}
-
-
 //////////////////
 // -- BRAINS -- //
 //////////////////
@@ -109,6 +90,62 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 	// New very-possibly-naive mutation model (definitely for the lazy)
 	// Just copy the links, biasExponents, and nodes as is with a chance of error, plus (possibly) a change in structure if we can, and be done with it
 
+	// Find our mutation factors for link weights, biases and activation exponents
+	float linkWeightJitterChance = randomRangeMinGravity(
+		CREATURE_MUTATION_BRAIN_JITTER_LINK_WEIGHT_MIN_CHANCE,
+		CREATURE_MUTATION_BRAIN_JITTER_LINK_WEIGHT_MAX_CHANCE,
+		CREATURE_MUTATION_BRAIN_JITTER_LINK_WEIGHT_CHANCE_MIN_GRAVITY
+	);
+	
+	float linkWeightJitterStrength = randomRangeMinGravity(
+		CREATURE_MUTATION_BRAIN_JITTER_LINK_WEIGHT_MIN_STRENGTH,
+		CREATURE_MUTATION_BRAIN_JITTER_LINK_WEIGHT_MAX_STRENGTH,
+		CREATURE_MUTATION_BRAIN_JITTER_LINK_WEIGHT_STRENGTH_MIN_GRAVITY
+	);
+
+	float linkWeightJitterZeroGravity = randomRangeMinGravity(
+		CREATURE_MUTATION_BRAIN_JITTER_LINK_WEIGHT_MIN_ZERO_GRAVITY,
+		CREATURE_MUTATION_BRAIN_JITTER_LINK_WEIGHT_MAX_ZERO_GRAVITY,
+		CREATURE_MUTATION_BRAIN_JITTER_LINK_WEIGHT_ZERO_GRAVITY_MIN_GRAVITY
+	);
+
+
+	float biasJitterChance = randomRangeMinGravity(
+		CREATURE_MUTATION_BRAIN_JITTER_BIAS_MIN_CHANCE,
+		CREATURE_MUTATION_BRAIN_JITTER_BIAS_MAX_CHANCE,
+		CREATURE_MUTATION_BRAIN_JITTER_BIAS_CHANCE_MIN_GRAVITY
+	);
+
+	float biasJitterStrength = randomRangeMinGravity(
+		CREATURE_MUTATION_BRAIN_JITTER_BIAS_MIN_STRENGTH,
+		CREATURE_MUTATION_BRAIN_JITTER_BIAS_MAX_STRENGTH,
+		CREATURE_MUTATION_BRAIN_JITTER_BIAS_STRENGTH_MIN_GRAVITY
+	);
+
+	float biasJitterZeroGravity = randomRangeMinGravity(
+		CREATURE_MUTATION_BRAIN_JITTER_BIAS_MIN_ZERO_GRAVITY,
+		CREATURE_MUTATION_BRAIN_JITTER_BIAS_MAX_ZERO_GRAVITY,
+		CREATURE_MUTATION_BRAIN_JITTER_BIAS_ZERO_GRAVITY_MIN_GRAVITY
+	);
+
+
+	float activationExponentJitterChance = randomRangeMinGravity(
+		CREATURE_MUTATION_BRAIN_JITTER_ACTIVATION_EXPONENT_MIN_CHANCE,
+		CREATURE_MUTATION_BRAIN_JITTER_ACTIVATION_EXPONENT_MAX_CHANCE,
+		CREATURE_MUTATION_BRAIN_JITTER_ACTIVATION_EXPONENT_CHANCE_MIN_GRAVITY
+	);
+
+	float activationExponentJitterStrength = randomRangeMinGravity(
+		CREATURE_MUTATION_BRAIN_JITTER_ACTIVATION_EXPONENT_MIN_STRENGTH,
+		CREATURE_MUTATION_BRAIN_JITTER_ACTIVATION_EXPONENT_MAX_STRENGTH,
+		CREATURE_MUTATION_BRAIN_JITTER_ACTIVATION_EXPONENT_STRENGTH_MIN_GRAVITY
+	);
+
+	float activationExponentJitterZeroGravity = randomRangeMinGravity(
+		CREATURE_MUTATION_BRAIN_JITTER_ACTIVATION_EXPONENT_MIN_ZERO_GRAVITY,
+		CREATURE_MUTATION_BRAIN_JITTER_ACTIVATION_EXPONENT_MAX_ZERO_GRAVITY,
+		CREATURE_MUTATION_BRAIN_JITTER_ACTIVATION_EXPONENT_ZERO_GRAVITY_MIN_GRAVITY
+	);
 
 	// Fill nodes with zeros
 	for (int i = 0; i < CREATURE_BRAIN_MAX_NUM_OF_NODES; i++)
@@ -123,19 +160,16 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 		GLfloat bias = biasExponent.x;
 		GLfloat exponent = biasExponent.y;
 
-		MutateClampedCreatureTrait(bias,
-			-CREATURE_BRAIN_BIAS_MAX_ABS, CREATURE_BRAIN_BIAS_MAX_ABS,
-			CREATURE_MUTATION_BRAIN_JITTER_SINGLE_BIAS_CHANCE,
-			CREATURE_MUTATION_BRAIN_JITTER_SINGLE_BIAS_MAX_ABS,
-			CREATURE_MUTATION_BRAIN_JITTER_SINGLE_BIAS_PERCENTAGE_EXPONENT
-		);
 
-		MutateClampedCreatureTrait(exponent,
-			-CREATURE_BRAIN_ACTIVATION_EXPONENT_MAX_ABS, CREATURE_BRAIN_ACTIVATION_EXPONENT_MAX_ABS,
-			CREATURE_MUTATION_BRAIN_JITTER_SINGLE_ACTIVATION_EXPONENT_CHANCE,
-			CREATURE_MUTATION_BRAIN_JITTER_SINGLE_ACTIVATION_EXPONENT_MAX_ABS,
-			CREATURE_MUTATION_BRAIN_JITTER_SINGLE_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT
-		);
+		if (random() < biasJitterChance)
+		{
+			randomJitter(bias, biasJitterStrength, biasJitterZeroGravity);
+		}
+
+		if (random() < activationExponentJitterChance)
+		{
+			randomJitter(exponent, activationExponentJitterStrength, activationExponentJitterZeroGravity);
+		}
 
 		oBiasesExponents->at(i) = vec2(bias, exponent);
 	}
@@ -145,12 +179,10 @@ void InitOffspringBrain(unsigned int p1SSBO, vector<GLfloat>* oNodes, vector<vec
 	{
 		GLfloat linkWeight = p1Links.at(i);
 
-		MutateClampedCreatureTrait(linkWeight,
-			-CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS, CREATURE_BRAIN_LINK_WEIGHT_MAX_ABS,
-			CREATURE_MUTATION_BRAIN_JITTER_SINGLE_LINK_WEIGHT_CHANCE,
-			CREATURE_MUTATION_BRAIN_JITTER_SINGLE_LINK_WEIGHT_MAX_ABS,
-			CREATURE_MUTATION_BRAIN_JITTER_SINGLE_LINK_WEIGHT_PERCENTAGE_EXPONENT
-		);
+		if (random() < linkWeightJitterChance)
+		{
+			randomJitter(linkWeight, linkWeightJitterStrength, linkWeightJitterZeroGravity);
+		}
 
 		oLinks->at(i) = linkWeight;
 	}
@@ -424,47 +456,41 @@ void SpawnOffspringCreature(unsigned int p1SSBO, unsigned p2SSBO)
 	GetCreatureAttributeBySSBOIndex(creature_FeederLocalAngles, p1SSBO, &data.feederLocalAngle);
 	GetCreatureAttributeBySSBOIndex(creature_ShieldLocalAngles, p1SSBO, &data.shieldLocalAngle);
 
-	MutateClampedCreatureTrait(data.skinPattern.x,
-		0.0, 1.0,
-		CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_CHANCE,
-		CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_MAX_ABS,
-		CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_PERCENTAGE_EXPONENT
-	);
+	
+	if (random() < CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_CHANCE)
+	{
+		randomJitter(data.skinPattern.x, CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_STRENGTH, CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_ZERO_GRAVITY);
+		data.skinPattern.x = clamp(data.skinPattern.x, 0.0, 1.0);
+	}
+	if (random() < CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_CHANCE)
+	{
+		randomJitter(data.skinPattern.y, CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_STRENGTH, CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_ZERO_GRAVITY);
+		data.skinPattern.y = clamp(data.skinPattern.y, 0.0, 1.0);
+	}
 
-	MutateClampedCreatureTrait(data.skinPattern.y,
-		0.0, 1.0,
-		CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_CHANCE,
-		CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_MAX_ABS,
-		CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_PERCENTAGE_EXPONENT
-	);
 
-	MutateCreatureTrait(data.skinHue,
-		CREATURE_MUTATION_BODY_JITTER_SKIN_HUE_CHANCE,
-		CREATURE_MUTATION_BODY_JITTER_SKIN_HUE_MAX_ABS,
-		CREATURE_MUTATION_BODY_JITTER_SKIN_HUE_PERCENTAGE_EXPONENT
-	);
-	data.skinHue = mod(data.skinHue, 1.0f);
+	if (random() < CREATURE_MUTATION_BODY_JITTER_SKIN_HUE_CHANCE)
+	{
+		randomJitter(data.skinHue, CREATURE_MUTATION_BODY_JITTER_SKIN_HUE_STRENGTH, CREATURE_MUTATION_BODY_JITTER_SKIN_HUE_ZERO_GRAVITY);
+		data.skinHue = mod(data.skinHue, 1.0f);
+	}
 
-	MutateCreatureTrait(data.spikeLocalAngle,
-		CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_CHANCE,
-		CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_MAX_ABS,
-		CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_PERCENTAGE_EXPONENT
-	);
-	data.spikeLocalAngle = mod(data.spikeLocalAngle, float(2.0 * M_PI));
 
-	MutateCreatureTrait(data.feederLocalAngle,
-		CREATURE_MUTATION_DEVICE_JITTER_FEEDER_ANGLE_CHANCE,
-		CREATURE_MUTATION_DEVICE_JITTER_FEEDER_ANGLE_MAX_ABS,
-		CREATURE_MUTATION_DEVICE_JITTER_FEEDER_ANGLE_PERCENTAGE_EXPONENT
-	);
-	data.feederLocalAngle = mod(data.feederLocalAngle, float(2.0 * M_PI));
-
-	MutateCreatureTrait(data.shieldLocalAngle,
-		CREATURE_MUTATION_DEVICE_JITTER_SHIELD_ANGLE_CHANCE,
-		CREATURE_MUTATION_DEVICE_JITTER_SHIELD_ANGLE_MAX_ABS,
-		CREATURE_MUTATION_DEVICE_JITTER_SHIELD_ANGLE_PERCENTAGE_EXPONENT
-	);
-	data.shieldLocalAngle = mod(data.shieldLocalAngle, float(2.0 * M_PI));
+	if (random() < CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_CHANCE)
+	{
+		randomJitter(data.spikeLocalAngle, CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_STRENGTH, CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_ZERO_GRAVITY);
+		data.spikeLocalAngle = mod(data.skinHue, float(2.0 * M_PI));
+	}
+	if (random() < CREATURE_MUTATION_DEVICE_JITTER_FEEDER_ANGLE_CHANCE)
+	{
+		randomJitter(data.feederLocalAngle, CREATURE_MUTATION_DEVICE_JITTER_FEEDER_ANGLE_STRENGTH, CREATURE_MUTATION_DEVICE_JITTER_FEEDER_ANGLE_ZERO_GRAVITY);
+		data.feederLocalAngle = mod(data.skinHue, float(2.0 * M_PI));
+	}
+	if (random() < CREATURE_MUTATION_DEVICE_JITTER_SHIELD_ANGLE_CHANCE)
+	{
+		randomJitter(data.shieldLocalAngle, CREATURE_MUTATION_DEVICE_JITTER_SHIELD_ANGLE_STRENGTH, CREATURE_MUTATION_DEVICE_JITTER_SHIELD_ANGLE_ZERO_GRAVITY);
+		data.shieldLocalAngle = mod(data.skinHue, float(2.0 * M_PI));
+	}
 
 
 	GetCreatureAttributeBySSBOIndex(creature_Positions, p1SSBO, &data.pos);
