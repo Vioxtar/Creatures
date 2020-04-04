@@ -148,7 +148,7 @@ void main()
 
 	EyeMuscles[gid] = vec2(0, 0);
 	EyeConeRadii[gid] = uCreatureEyeMaxConeRadius;
-	EyePupilConeCoverageFractions[gid] = 0.1;
+	EyePupilConeCoverageFractions[gid] = 0.0;
 
 
 	// Energy deductions

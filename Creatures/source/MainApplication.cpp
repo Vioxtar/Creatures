@@ -113,7 +113,7 @@ int main()
 	int frameCount = 0;
 
 	/*
-		add better mutations model
+		add better mutations model [+] still need to tweak!
 		decouple + keep negatives + 2*arctan(x) / pi + unclamp
 		remove hardcoded eye controls
 		add grid

@@ -26,15 +26,15 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 		GLfloat bias = 0.0;
 		if (random() < CREATURE_BRAIN_FIRSTGEN_BIAS_CHANCE_FOR_NON_NEUTRAL_VALUE)
 		{
-			bias = pow(random(), CREATURE_BRAIN_FIRSTGEN_BIAS_PERCENTAGE_EXPONENT)
+			bias = pow(random(), CREATURE_BRAIN_FIRSTGEN_BIAS_ZERO_GRAVITY)
 				* CREATURE_BRAIN_FIRSTGEN_BIAS_MAX_ABS
 				* randomNegate();
 		}
 
-		GLfloat activationExponent = 1.0;
+		GLfloat activationExponent = 0.0;
 		if (random() < CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_CHANCE_FOR_NON_NEUTRAL_VALUE)
 		{
-			activationExponent = pow(random(), CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_PERCENTAGE_EXPONENT)
+			activationExponent = pow(random(), CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_ZERO_GRAVITY)
 				* CREATURE_BRAIN_FIRSTGEN_ACTIVATION_EXPONENT_MAX_ABS
 				* randomNegate();
 		}
@@ -49,7 +49,7 @@ void InitFirstGenBrain(vector<GLfloat>* brainNodes, vector<vec2>* brainBiasesExp
 		GLfloat linkWeight = 0.0;
 		if (random() < CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_CHANCE_FOR_NON_NEUTRAL_VALUE)
 		{
-			linkWeight = pow(random(), CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_PERCENTAGE_EXPONENT)
+			linkWeight = pow(random(), CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_ZERO_GRAVITY)
 				* CREATURE_BRAIN_FIRSTGEN_LINK_WEIGHT_MAX_ABS
 				* randomNegate();
 		}

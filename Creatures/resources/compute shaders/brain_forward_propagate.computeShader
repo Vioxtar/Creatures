@@ -35,6 +35,8 @@ uniform uint uMaxNumOfActivatedNodesInBrain;
 uniform uint uMaxNumOfLinksInBrain;
 uniform uint uLevelToCompute;
 
+#define M_PI		3.1415926535897932384626433832795
+
 float ActivationFunctionHelper(float x, float exponent)
 {
 	if (x == 0.5)
@@ -173,8 +175,9 @@ void main()
 		float exponent = biasExponent.y;
 		//BrainsNodes[activeNode] = AltSigmoidActivationFunction(max(-1.0, min(sum + bias, 1.0)), exponent);
 		//BrainsNodes[activeNode] = ActivationFunction(max(0.0, min(sum + bias, 1.0)), exponent);
-		BrainsNodes[activeNode] = max(-1.0, min(sum + bias, 1.0));
+		//BrainsNodes[activeNode] = max(-1.0, min(sum + bias, 1.0));
 		//BrainsNodes[activeNode] = max(-1.0, min(sum, 1.0));
+		BrainsNodes[activeNode] = 2.0 * atan(sum * exponent + bias) / M_PI;
 
 		activeNode++;
 		activeBiasExponent++;
