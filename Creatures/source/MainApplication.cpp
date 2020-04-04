@@ -113,9 +113,7 @@ int main()
 	int frameCount = 0;
 
 	/*
-		add better mutations model [+] still need to tweak!
-		decouple + keep negatives + 2*arctan(x) / pi + unclamp
-		remove hardcoded eye controls
+		make pupil not fuck up cones
 		add grid
 		scan for other temp shit
 		research and implement lstms.Yes, that's right.
