@@ -489,9 +489,8 @@ void ProgramsSequence()
 	SetUniformFloat(programID, "uCreatureMaxHardness", CREATURE_MAX_HARDNESS.value);
 	SetUniformFloat(programID, "uCreatureMinHardness", CREATURE_MIN_HARDNESS.value);
 	SetUniformFloat(programID, "uCreatureHardnessInterpolationRate", CREATURE_HARDNESS_INTERPOLATION_RATE.value);
-	SetUniformFloat(programID, "uCreatureMaxStickyness", CREATURE_MAX_STICKYNESS.value);
-	SetUniformFloat(programID, "uCreatureMinStickyness", CREATURE_MIN_STICKYNESS.value);
-	SetUniformFloat(programID, "uCreatureStickynessInterpolationRate", CREATURE_STICKYNESS_INTERPOLATION_RATE.value);
+	SetUniformFloat(programID, "uCreatureMaxAdhesion", CREATURE_MAX_ADHESION.value);
+	SetUniformFloat(programID, "uCreatureAdhesionInterpolationRate", CREATURE_ADHESION_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureDeviceSpikeEnergyCost", CREATURE_DEVICE_SPIKE_ENERGY_COST.value);
 	SetUniformFloat(programID, "uCreatureDeviceShieldEnergyCost", CREATURE_DEVICE_SHIELD_ENERGY_COST.value);
 	SetUniformFloat(programID, "uCreatureDeviceFeederEnergyCost", CREATURE_DEVICE_FEEDER_ENERGY_COST.value);
@@ -520,7 +519,7 @@ void ProgramsSequence()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Meats.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Radii.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Harndesses.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Stickynesses.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Adhesions.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_Spikes.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_Shields.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_Feeders.bufferHandle);
@@ -557,6 +556,7 @@ void ProgramsSequence()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_Shields.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 13, creature_EyeMuscles.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 14, creature_EyePositions.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 15, creature_Adhesions.bufferHandle);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -608,7 +608,7 @@ void ProgramsSequence()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Meats.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Harndesses.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Stickynesses.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Adhesions.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, ugrid_SSBO);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_UniformGridTiles.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_GeneralPurposeVec2.bufferHandle); // Writes physics fix vector for decoupling purposes

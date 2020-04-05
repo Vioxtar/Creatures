@@ -54,7 +54,6 @@ extern CreaturesSSBOInfo creature_Energies{ sizeof(GLfloat) };
 extern CreaturesSSBOInfo creature_Meats{ sizeof(GLfloat) };
 extern CreaturesSSBOInfo creature_Harndesses{ sizeof(GLfloat) };
 extern CreaturesSSBOInfo creature_Horninesses{ sizeof(GLfloat) };
-extern CreaturesSSBOInfo creature_Stickynesses{ sizeof(GLfloat) };
 
 // Creature misc
 extern CreaturesSSBOInfo creature_Generations{ sizeof(GLuint) };
@@ -87,6 +86,7 @@ extern CreaturesSSBOInfo creature_Feeders{ sizeof(vec4) };
 extern CreaturesSSBOInfo creature_ShieldLocalAngles{ sizeof(GLfloat) };
 extern CreaturesSSBOInfo creature_Shields{ sizeof(vec4) };
 
+extern CreaturesSSBOInfo creature_Adhesions{ sizeof(mat4) };
 
 // General purpose data packets
 extern CreaturesSSBOInfo creature_GeneralPurposeVec2{ sizeof(vec2) };
@@ -169,7 +169,7 @@ void LoadCreatureSSBOInfosIntoIterableVectors()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_FeederLocalAngles);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_Shields);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_ShieldLocalAngles);
-	creatureAttributesSSBOInfosRefs.push_back(&creature_Stickynesses);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_Adhesions);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersCounts);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersIndicesAndPlacements);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_CollidersToPosDirs);
@@ -422,7 +422,7 @@ CreatureUniqueID CreatureData_AddCreature(CreatureData& newCreatureData)
 	SetCreatureAttribute(creature_ForwardDirections, newCreatureIndex, &newCreatureData.forwardDir);
 	SetCreatureAttribute(creature_RightDirections, newCreatureIndex, &newCreatureData.rightDir);
 	SetCreatureAttribute(creature_Harndesses, newCreatureIndex, &newCreatureData.hardness);
-	SetCreatureAttribute(creature_Stickynesses, newCreatureIndex, &newCreatureData.stickyness);
+	SetCreatureAttribute(creature_Adhesions, newCreatureIndex, &newCreatureData.adhesion);
 	SetCreatureAttribute(creature_SkinPatterns, newCreatureIndex, &newCreatureData.skinPattern);
 	SetCreatureAttribute(creature_SpikeLocalAngles, newCreatureIndex, &newCreatureData.spikeLocalAngle);
 	SetCreatureAttribute(creature_FeederLocalAngles, newCreatureIndex, &newCreatureData.feederLocalAngle);

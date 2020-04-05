@@ -27,7 +27,8 @@ struct CreatureData
 	vec4 spike;
 	vec4 feeder;
 	vec4 shield;
-	
+	mat4 adhesion;
+
 	// Appearance
 	vec2 skinPattern;
 	GLfloat skinHue;
@@ -45,7 +46,6 @@ struct CreatureData
 	// Body state
 	GLfloat hardness;
 	GLfloat rad;
-	GLfloat stickyness;
 
 	// Body parameters
 	GLfloat life;
@@ -141,7 +141,7 @@ extern CreaturesSSBOInfo creature_Energies;
 extern CreaturesSSBOInfo creature_Meats;
 extern CreaturesSSBOInfo creature_Harndesses;
 extern CreaturesSSBOInfo creature_Horninesses;
-extern CreaturesSSBOInfo creature_Stickynesses;
+
 
 // Creature misc
 extern CreaturesSSBOInfo creature_Generations;
@@ -172,6 +172,9 @@ extern CreaturesSSBOInfo creature_Feeders;
 
 extern CreaturesSSBOInfo creature_ShieldLocalAngles;
 extern CreaturesSSBOInfo creature_Shields;
+
+extern CreaturesSSBOInfo creature_Adhesions;
+
 
 // General purpose data packets
 extern CreaturesSSBOInfo creature_GeneralPurposeVec2;

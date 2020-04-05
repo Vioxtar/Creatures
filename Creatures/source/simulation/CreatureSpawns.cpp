@@ -479,17 +479,17 @@ void SpawnOffspringCreature(unsigned int p1SSBO, unsigned p2SSBO)
 	if (random() < CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_CHANCE)
 	{
 		randomJitter(data.spikeLocalAngle, CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_STRENGTH, CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_ZERO_GRAVITY);
-		data.spikeLocalAngle = mod(data.skinHue, float(2.0 * M_PI));
+		data.spikeLocalAngle = mod(data.spikeLocalAngle, float(2.0 * M_PI));
 	}
 	if (random() < CREATURE_MUTATION_DEVICE_JITTER_FEEDER_ANGLE_CHANCE)
 	{
 		randomJitter(data.feederLocalAngle, CREATURE_MUTATION_DEVICE_JITTER_FEEDER_ANGLE_STRENGTH, CREATURE_MUTATION_DEVICE_JITTER_FEEDER_ANGLE_ZERO_GRAVITY);
-		data.feederLocalAngle = mod(data.skinHue, float(2.0 * M_PI));
+		data.feederLocalAngle = mod(data.feederLocalAngle, float(2.0 * M_PI));
 	}
 	if (random() < CREATURE_MUTATION_DEVICE_JITTER_SHIELD_ANGLE_CHANCE)
 	{
 		randomJitter(data.shieldLocalAngle, CREATURE_MUTATION_DEVICE_JITTER_SHIELD_ANGLE_STRENGTH, CREATURE_MUTATION_DEVICE_JITTER_SHIELD_ANGLE_ZERO_GRAVITY);
-		data.shieldLocalAngle = mod(data.skinHue, float(2.0 * M_PI));
+		data.shieldLocalAngle = mod(data.shieldLocalAngle, float(2.0 * M_PI));
 	}
 
 
@@ -505,7 +505,6 @@ void SpawnOffspringCreature(unsigned int p1SSBO, unsigned p2SSBO)
 
 	data.hardness = SIMULATION_OFFSPRING_CREATURE_INITIAL_HARDNESS.value;
 	data.rad = SIMULATION_OFFSPRING_CREATURE_INITIAL_RADIUS.value;
-	data.stickyness = SIMULATION_OFFSPRING_CREATURE_INITIAL_STICKYNESS.value;
 
 	data.life = SIMULATION_OFFSPRING_CREATURE_INITIAL_LIFE.value;
 	data.energy = SIMULATION_OFFSPRING_CREATURE_INITIAL_ENERGY.value;
@@ -518,6 +517,18 @@ void SpawnOffspringCreature(unsigned int p1SSBO, unsigned p2SSBO)
 	data.spike = vec4(0, 0, spikeState, 0);
 	data.feeder = vec4(0, 0, feederState, 0);
 	data.shield = vec4(0, 0, shieldState, shieldSpan);
+
+	GetCreatureAttributeBySSBOIndex(creature_Adhesions, p1SSBO, &data.adhesion);
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (random() < CREATURE_MUTATION_DEVICE_JITTER_ADHESION_ANGLE_CHANCE)
+		{
+			randomJitter(data.adhesion[0][i], CREATURE_MUTATION_DEVICE_JITTER_ADHESION_ANGLE_STRENGTH, CREATURE_MUTATION_DEVICE_JITTER_ADHESION_ANGLE_ZERO_GRAVITY);
+			data.adhesion[0][i] = mod(data.adhesion[0][i], float(2.0 * M_PI));
+		}
+	}
+
 
 	data.forwardDir = vec2(0.0f, 0.0f);
 	data.rightDir = vec2(0.0f, 0.0f);
@@ -644,7 +655,6 @@ namespace TrainingWheels
 
 		data.hardness = SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS.value;
 		data.rad = SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS.value;
-		data.stickyness = SIMULATION_OFFSPRING_CREATURE_INITIAL_STICKYNESS.value;
 
 		data.life = SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE.value;
 		data.energy = SIMULATION_FIRSTGEN_CREATURE_INITIAL_ENERGY.value;
@@ -657,6 +667,16 @@ namespace TrainingWheels
 		data.spike = vec4(0, 0, spikeState, 0);
 		data.feeder = vec4(0, 0, feederState, 0);
 		data.shield = vec4(0, 0, shieldState, shieldSpan);
+
+		float adhesiveLocalAngle1 = random() * 2 * M_PI;
+		float adhesiveLocalAngle2 = random() * 2 * M_PI;
+		float adhesiveLocalAngle3 = random() * 2 * M_PI;
+		data.adhesion = mat4(
+			adhesiveLocalAngle1, adhesiveLocalAngle2, adhesiveLocalAngle3, 0,
+			0, 0, 0, 0,
+			0, 0, 0, 0,
+			0, 0, 0, 0
+		);
 
 		data.forwardDir = vec2(0.0f, 0.0f);
 		data.rightDir = vec2(0.0f, 0.0f);
@@ -715,8 +735,7 @@ void SpawnFirstGenerationCreature(vec2 pos, vec2 vel)
 
 	data.hardness = SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS.value;
 	data.rad = SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS.value;
-	data.stickyness = SIMULATION_OFFSPRING_CREATURE_INITIAL_STICKYNESS.value;
-
+	
 	data.life = SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE.value;
 	data.energy = SIMULATION_FIRSTGEN_CREATURE_INITIAL_ENERGY.value;
 	data.meat = SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT.value;
@@ -732,6 +751,16 @@ void SpawnFirstGenerationCreature(vec2 pos, vec2 vel)
 	data.spikeLocalAngle = random() * 2 * M_PI;
 	data.feederLocalAngle = random() * 2 * M_PI;
 	data.shieldLocalAngle = random() * 2 * M_PI;
+
+	float adhesiveLocalAngle1 = random() * 2 * M_PI;
+	float adhesiveLocalAngle2 = random() * 2 * M_PI;
+	float adhesiveLocalAngle3 = random() * 2 * M_PI;
+	data.adhesion = mat4(
+		adhesiveLocalAngle1, adhesiveLocalAngle2, adhesiveLocalAngle3, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	);
 
 	data.forwardDir = vec2(0.0f, 0.0f);
 	data.rightDir = vec2(0.0f, 0.0f);
