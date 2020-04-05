@@ -25,42 +25,47 @@ layout (std430, binding = 4) buffer CreatureHardnesses
 	float Hardnesses[];
 };
 
-layout (std430, binding = 5) buffer UniformGrid
+layout (std430, binding = 5) buffer CreatureStickynesses
+{
+	float Stickynesses[];
+};
+
+layout (std430, binding = 6) buffer UniformGrid
 {
 	uint UGrid[];
 };
 
-layout (std430, binding = 6) buffer CreatureTiles
+layout (std430, binding = 7) buffer CreatureTiles
 {
 	int Tiles[];
 };
 
-layout (std430, binding = 7) buffer CreatureGeneralPurposeVec2
+layout (std430, binding = 8) buffer CreatureGeneralPurposeVec2
 {
 	vec2 PhysicsFixes[];
 };
 
-layout (std430, binding = 8) buffer CreatureCollidersCounts
+layout (std430, binding = 9) buffer CreatureCollidersCounts
 {
 	uint CollidersCounts[];
 };
 
-layout (std430, binding = 9) buffer CreatureCollidersIndicesAndPlacements
+layout (std430, binding = 10) buffer CreatureCollidersIndicesAndPlacements
 {
 	uvec2 CollidersIndicesAndPlacements[];
 };
 
-layout (std430, binding = 10) buffer CreatureCollidersToPosDirs
+layout (std430, binding = 11) buffer CreatureCollidersToPosDirs
 {
 	vec2 CollidersToPosDirs[];
 };
 
-layout (std430, binding = 11) buffer CreatureCollidersPositions
+layout (std430, binding = 12) buffer CreatureCollidersPositions
 {
 	vec2 CollidersPositions[];
 };
 
-layout (std430, binding = 12) buffer CreatureCollidersRadii
+layout (std430, binding = 13) buffer CreatureCollidersRadii
 {
 	float CollidersRadii[];
 };
@@ -116,6 +121,7 @@ void main()
 	vec2 aOldPos = aPos - aVel;
 	float aRad = Radii[gid];
 	float aHardness = Hardnesses[gid];
+	float aStickyness = Stickynesses[gid];
 	float aMeat = Meats[gid];
 	float aMass = aMeat * aMeat;
 
@@ -192,10 +198,17 @@ void main()
 					
 					// Proceed as usual...
 				
-
+					
 
 					float dist = sqrt(distSquared);
+
+					vec2 c1c2Dir = c1c2PosDiff / dist;
+					vec2 c2c1Dir = -c1c2Dir;
+
 					float violation = RadiiSum - dist;
+
+					float bStickyness = Stickynesses[bGID];
+					float stickyFactor = min(aStickyness, bStickyness);
 
 					float bHardness = Hardnesses[bGID];
 					float hardnessFactor = max(aHardness, bHardness);
@@ -214,7 +227,10 @@ void main()
 
 					vec2 c1PosSub = -c1c2PosDiff * push * m2Frac;
 					vec2 c2PosSub = c1c2PosDiff * push * m1Frac;
-					
+
+					c1PosSub += c1c2Dir * stickyFactor * m2Frac;
+					c2PosSub += c2c1Dir * stickyFactor  * m1Frac;
+
 					// Register the physics collision fix
 					PhysicsFixes[gid] += c1PosSub;
 					PhysicsFixes[bGID] += c2PosSub;
@@ -234,9 +250,6 @@ void main()
 
 
 					uint bCollidersStartIndex = bGID * uMaxNumOfColliders;
-					
-					vec2 c1c2Dir = c1c2PosDiff / dist;
-					vec2 c2c1Dir = -c1c2Dir;
 
 					uint aColliderBPlacementIndex = aCollidersStartIndex + aCurrentCollidersCount;
 					uint bColliderAPlacementIndex = bCollidersStartIndex + bCurrentCollidersCount;

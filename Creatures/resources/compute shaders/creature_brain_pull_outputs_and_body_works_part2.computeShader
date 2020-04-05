@@ -35,37 +35,42 @@ layout (std430, binding = 6) buffer CreatureHardnesses
 	float Hardnesses[];
 };
 
-layout (std430, binding = 7) buffer CreatureSpikes
+layout (std430, binding = 7) buffer CreatureStickynesses
+{
+	float Stickynesses[];
+};
+
+layout (std430, binding = 8) buffer CreatureSpikes
 {
 	vec4 Spikes[];
 };
 
-layout (std430, binding = 8) buffer CreatureShields
+layout (std430, binding = 9) buffer CreatureShields
 {
 	vec4 Shields[];
 };
 
-layout (std430, binding = 9) buffer CreatureFeeders
+layout (std430, binding = 10) buffer CreatureFeeders
 {
 	vec4 Feeders[];
 };
 
-layout (std430, binding = 10) buffer CreatureSkinvValues
+layout (std430, binding = 11) buffer CreatureSkinvValues
 {
 	float SkinValues[];
 };
 
-layout (std430, binding = 11) buffer CreatureSkinSaturations
+layout (std430, binding = 12) buffer CreatureSkinSaturations
 {
 	float SkinSaturations[];
 };
 
-layout (std430, binding = 12) buffer CreatureHorninesses
+layout (std430, binding = 13) buffer CreatureHorninesses
 {
 	float Horninesses[];
 };
 
-layout (std430, binding = 13) buffer CreatureVanishes
+layout (std430, binding = 14) buffer CreatureVanishes
 {
 	uint Vanishes[];
 };
@@ -95,6 +100,10 @@ uniform float uCreatureRadiusPercentageMuscleWeight;
 uniform float uCreatureMaxHardness;
 uniform float uCreatureMinHardness;
 uniform float uCreatureHardnessInterpolationRate;
+
+uniform float uCreatureMaxStickyness;
+uniform float uCreatureMinStickyness;
+uniform float uCreatureStickynessInterpolationRate;
 
 uniform float uCreatureDeviceSpikeEnergyCost;
 uniform float uCreatureDeviceShieldEnergyCost;
@@ -203,11 +212,13 @@ void main()
 		// Acquire brain outputs
 		float radiusMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 7], 1.0));
 		float hardnessMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 8], 1.0));
-		float deviceSpikeStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 9], 1.0));
-		float deviceShieldStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 10], 1.0));
-		float deviceFeederStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 11], 1.0));
-		float skinValueMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 12], 1.0));
-		float hornyMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 13], 1.0));
+		float stickynessMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 9], 1.0));
+		float deviceSpikeStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 10], 1.0));
+		float deviceShieldStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 11], 1.0));
+		float deviceFeederStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 12], 1.0));
+		float skinValueMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 13], 1.0));
+		float hornyMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 14], 1.0));
+
 
 		// Radius
 		float radius = Radii[gid];
@@ -226,6 +237,12 @@ void main()
 		float newHardness = hardness * (1.0 - uCreatureHardnessInterpolationRate) + uCreatureHardnessInterpolationRate * targetHardness;
 		Hardnesses[gid] = newHardness;
 
+
+		// Stickyness
+		float stickyness = Stickynesses[gid];
+		float stickynessTarget = uCreatureMinStickyness + (uCreatureMaxStickyness - uCreatureMinStickyness) * stickynessMuscle;
+		float newStickyness = stickyness * (1.0 - uCreatureStickynessInterpolationRate) + uCreatureStickynessInterpolationRate * stickynessTarget;
+		Stickynesses[gid] = newStickyness;
 
 		// Devices
 		vec4 spike = Spikes[gid];

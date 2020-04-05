@@ -45,7 +45,8 @@ struct CreatureData
 	// Body state
 	GLfloat hardness;
 	GLfloat rad;
-	
+	GLfloat stickyness;
+
 	// Body parameters
 	GLfloat life;
 	GLfloat energy;
@@ -140,6 +141,7 @@ extern CreaturesSSBOInfo creature_Energies;
 extern CreaturesSSBOInfo creature_Meats;
 extern CreaturesSSBOInfo creature_Harndesses;
 extern CreaturesSSBOInfo creature_Horninesses;
+extern CreaturesSSBOInfo creature_Stickynesses;
 
 // Creature misc
 extern CreaturesSSBOInfo creature_Generations;

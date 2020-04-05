@@ -239,6 +239,8 @@ Project minimum requiremenets:
 
 
 	NON-OBVIOUS-TODOS:
+	use 2 skin hues! one is shown in pattern?
+	make patterns more visible
 	use namespaces instead of shitty NameSpace_ convention
 	go back to non-naive mutation model...
 	first gens training wheels: firstgens get special guidance - we make sure to make stronger (but still random) links between eyes and movement, and weak/non-existent links between other nodes

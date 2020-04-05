@@ -113,6 +113,8 @@ int main()
 	int frameCount = 0;
 
 	/*
+		increase stick value the more violation there is...
+		stick points
 		make pupil not fuck up cones
 		add grid
 		scan for other temp shit
