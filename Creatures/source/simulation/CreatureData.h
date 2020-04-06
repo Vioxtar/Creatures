@@ -121,7 +121,6 @@ extern CreaturesSSBOInfo creature_BrainsStructures;
 extern CreaturesSSBOInfo creature_EyeMuscles;
 extern CreaturesSSBOInfo creature_EyePositions;
 extern CreaturesSSBOInfo creature_EyeConeRadii;
-extern CreaturesSSBOInfo creature_EyePupilConeCoverageFraction;
 extern CreaturesSSBOInfo creature_EyePupilSights;
 extern CreaturesSSBOInfo creature_EyePupilTargetCreatureIndices;
 extern CreaturesSSBOInfo creature_EyeConeSights;

@@ -50,10 +50,6 @@ layout (std430, binding = 9) buffer CreatureEyeConeRadii
 	float EyeConeRadii[];
 };
 
-layout (std430, binding = 10) buffer CreatureEyePupilConeCoverageFractions
-{
-	float EyePupilConeCoverageFractions[];
-};
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
@@ -108,7 +104,6 @@ void main()
 	float outputEyeMuscleRightLeft = max(-1.0, min(BrainsNodes[firstOutputIndex + 3], 1.0));
 	float outputEyeMuscleUpDown = max(-1.0, min(BrainsNodes[firstOutputIndex + 4], 1.0));
 	float outputEyeConeRadiusSqueezePercentage = max(0.0, min(BrainsNodes[firstOutputIndex + 5], 1.0));
-	float outputEyePupilConeCoverageFraction = max(0.0, min(BrainsNodes[firstOutputIndex + 6], 1.0));
 
 	// Obtain energy and calculate our movement multiplier - used to make creatures on low energies move slower
 	float energy = Energies[gid];
@@ -135,15 +130,12 @@ void main()
 	// Eye controls
 	vec2 oldEyeMuscles = EyeMuscles[gid];
 	float oldEyeConeRadius = EyeConeRadii[gid];
-	float oldEyePupilConeCoverageFraction = EyePupilConeCoverageFractions[gid];
 	
 	vec2 targetEyeMuscles = vec2(outputEyeMuscleRightLeft, outputEyeMuscleUpDown);
 	float targetEyeRadius = (1.0 - outputEyeConeRadiusSqueezePercentage) * uCreatureEyeMaxConeRadius;
-	float targetEyePupilConeCoverageFraction = outputEyePupilConeCoverageFraction;
 
 	EyeMuscles[gid] = targetEyeMuscles * uCreatureEyeControlsInterpolationRate + oldEyeMuscles * (1.0 - uCreatureEyeControlsInterpolationRate);
 	EyeConeRadii[gid] = targetEyeRadius * uCreatureEyeControlsInterpolationRate + oldEyeConeRadius * (1.0 - uCreatureEyeControlsInterpolationRate);
-	EyePupilConeCoverageFractions[gid] = targetEyePupilConeCoverageFraction * uCreatureEyeControlsInterpolationRate + oldEyePupilConeCoverageFraction * (1.0 - uCreatureEyeControlsInterpolationRate);
 
 
 

@@ -39,8 +39,6 @@ CreatureData GetCreatureSnapshot(CreatureUniqueID creatureID)
 	snapShot.eyePupilSights.reserve(CREATURE_EYE_NUM_OF_PUPIL_VALUES);
 	GetCreatureAttributeByUniqueID(creature_EyePupilSights, creatureID, snapShot.eyePupilSights.data());
 
-	GetCreatureAttributeByUniqueID(creature_EyePupilConeCoverageFraction, creatureID, &snapShot.eyePupilConeCoverageFraction);
-
 	snapShot.brainStructure.reserve(CREATURE_BRAIN_MAX_NUM_OF_STRUCTURE_INDICES);
 	GetCreatureAttributeByUniqueID(creature_BrainsStructures, creatureID, snapShot.brainStructure.data());
 

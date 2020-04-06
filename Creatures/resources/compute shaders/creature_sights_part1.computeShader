@@ -35,27 +35,22 @@ layout (std430, binding = 6) buffer CreatureEyeConeSights
 	float EyeConeSights[];
 };
 
-layout (std430, binding = 7) buffer CreatureEyePupilConeCoverageFractions
-{
-	float EyePupilConeCoverageFractions[];
-};
-
-layout (std430, binding = 8) buffer CreatureGeneralPurposeUint
+layout (std430, binding = 7) buffer CreatureGeneralPurposeUint
 {
 	uint EyePupilTargetCreatureIndices[];
 };
 
-layout (std430, binding = 9) buffer CreatureGeneralPurposeFloat
+layout (std430, binding = 8) buffer CreatureGeneralPurposeFloat
 {
 	float EyePupilActivations[];
 };
 
-layout (std430, binding = 10) buffer CreatureGeneralPurposeSecondVec2
+layout (std430, binding = 9) buffer CreatureGeneralPurposeSecondVec2
 {
 	vec2 EyePupilC2C1PosDiffNorms[];
 };
 
-layout (std430, binding = 11) buffer CreatureLives
+layout (std430, binding = 10) buffer CreatureLives
 {
 	float Lives[];
 };
@@ -142,8 +137,6 @@ void main()
 
 	// Cache our values to be used during iterations
 	float eyeConeRadius = EyeConeRadii[gid];
-	float eyePupilRadius = EyePupilConeCoverageFractions[gid] * eyeConeRadius;
-	float eyeConeMinusPupilRadius = eyeConeRadius - eyePupilRadius;
 	vec2 aPos = Positions[gid];
 	float aAngle = Angles[gid];
 
@@ -189,17 +182,16 @@ void main()
 
 
 	// Find how many tiles our eye cone radius can cover
-	uint tilesCoveredByEyeConeRadius = uint(ceil(eyeConeRadius / uGridTileSize));
+	uint tilesCoveredByEyeConeRadius = uint(ceil(eyeConeRadius / uGridTileSize)) + 1;
 
 	// Iteration directions used to move outwards from the center point
 	ivec2 uniformGridIterationDirections[4] = ivec2[4](ivec2(0, 1), ivec2(1, 0), ivec2(0, -1), ivec2(-1, 0));
 
-	bool pupilActivated = false;
 	uint conesActivated = 0;
 
 	for (int diagDownLeft = 0; diagDownLeft < tilesCoveredByEyeConeRadius; ++diagDownLeft)
 	{
-		if (diagDownLeft > 1 && pupilActivated && conesActivated >= uCreatureEyeNumOfCones)
+		if (diagDownLeft > 1 && conesActivated >= uCreatureEyeNumOfCones)
 		{
 			break;
 		}
@@ -258,53 +250,44 @@ void main()
 					{
 						// The creature is within our eye...
 
-						// Did the creature land on our pupil?
-						if (bPosToPupilPosDist <= eyePupilRadius)
+
+						// Is it closer than previously seen creatures?
+						if (bPosToPupilPosDist < pupilClosestCreatureDistanceSeen || !pupilLandedOnCreature)
 						{
-							// Is it closer to this creature than previously seen creatures?
-							if (bPosToPupilPosDist < pupilClosestCreatureDistanceSeen || !pupilLandedOnCreature)
-							{
 
-								pupilClosestCreatureDistanceSeen = bPosToPupilPosDist;
-								pupilLandedOnCreature = true;
+							pupilClosestCreatureDistanceSeen = bPosToPupilPosDist;
+							pupilLandedOnCreature = true;
 
-								// Remember the closest creature index, activation and C2C1 normalized pos diff
-								pupilTargetCreatureIndex = bGID;
-								pupilActivation = 1.0 - bPosToPupilPosDist / eyePupilRadius;
+							// Remember the closest creature index, activation and C2C1 normalized pos diff
+							pupilTargetCreatureIndex = bGID;
+							pupilActivation = max(0.0, min(1.0 - bPosToPupilPosDistMinusBRad / eyeConeRadius, 1.0));
 							
-								// @TODO: Debug pupil activation correctness
-
-								vec2 c2c1PosDiff = aPos - bPos;
-								float c2c1PosDist = length(c2c1PosDiff);
-								pupilC2C1PosDiffNorms = c2c1PosDiff / c2c1PosDist;
-
-								pupilActivated = true;
-
-							}
+							vec2 c2c1PosDiff = aPos - bPos;
+							float c2c1PosDist = length(c2c1PosDiff);
+							pupilC2C1PosDiffNorms = c2c1PosDiff / c2c1PosDist;
 						}
-						else // The pupil is not on the creature, place it in one of our cones
-						{
-							// Find out the relative angle between our eye and the observed creature
-							vec2 bPosToPupilPosDirection = bPosToPupilPosDiff / bPosToPupilPosDist;
+	
 						
-							float absAng = ApproxAtan2(bPosToPupilPosDirection.x, -bPosToPupilPosDirection.y);
-							float relAng = mod(absAng + aAngle, M_PI_TWO);
+						// Find out the relative angle between our eye and the observed creature
+						vec2 bPosToPupilPosDirection = bPosToPupilPosDiff / bPosToPupilPosDist;
+						
+						float absAng = ApproxAtan2(bPosToPupilPosDirection.x, -bPosToPupilPosDirection.y);
+						float relAng = mod(absAng + aAngle, M_PI_TWO);
 
-							// Relative angle is between 0 and 2pi, map this to our cone indices
-							uint coneID = uint(floor(float(uCreatureEyeNumOfCones) * relAng / M_PI_TWO));
-							uint coneIndex = coneID * uCreatureEyeNumOfValuesInSingleCone;
+						// Relative angle is between 0 and 2pi, map this to our cone indices
+						uint coneID = uint(floor(float(uCreatureEyeNumOfCones) * relAng / M_PI_TWO));
+						uint coneIndex = coneID * uCreatureEyeNumOfValuesInSingleCone;
 
-							// Load our data into the mapped cone
-							float distanceToConeRadius = bPosToPupilPosDistMinusBRad - eyePupilRadius;
-							float activation = max(0, min(1.0 - (distanceToConeRadius) / (eyeConeMinusPupilRadius), 1));
-							float oldConeActivation = coneSights[coneIndex];
-							coneSights[coneIndex] = max(activation, oldConeActivation);
+						// Load our data into the mapped cone
+						float activation = max(0.0, min(1.0 - bPosToPupilPosDistMinusBRad / eyeConeRadius, 1.0));
+						float oldConeActivation = coneSights[coneIndex];
+						coneSights[coneIndex] = max(activation, oldConeActivation);
 
-							if (oldConeActivation == 0.0)
-							{
-								conesActivated++;
-							}
+						if (oldConeActivation == 0.0)
+						{
+							conesActivated++;
 						}
+						
 					}
 				}
 

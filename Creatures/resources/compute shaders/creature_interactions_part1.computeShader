@@ -80,6 +80,7 @@ uniform uint uIndicesInTile;
 uniform uint uMaxNumOfColliders;
 uniform vec2 uRandom;
 uniform float uCreatureDefaultBodyMass;
+uniform float uCreatureDeviceAdhesionEffectiveness;
 
 void main()
 {
@@ -123,6 +124,7 @@ void main()
 	float aHardness = Hardnesses[gid];
 	float aMeat = Meats[gid];
 	float aMass = aMeat * aMeat;
+	mat4 aAdhesion = Adhesions[gid];
 
 	uint aCollidersStartIndex = gid * uMaxNumOfColliders;
 	
@@ -196,17 +198,25 @@ void main()
 					}
 					
 					// Proceed as usual...
-				
 					
-
 					float dist = sqrt(distSquared);
-
 					vec2 c1c2Dir = c1c2PosDiff / dist;
 					vec2 c2c1Dir = -c1c2Dir;
-
 					float violation = RadiiSum - dist;
 
+					
 					float bHardness = Hardnesses[bGID];
+					mat4 bAdhesion = Adhesions[bGID];
+
+					float aAdhesionFactor = 0.0;
+					float bAdhesionFactor = 0.0;
+					for (uint i = 1; i < 3; ++i)
+					{
+						aAdhesionFactor = dot(aAdhesion[i].xy, c1c2Dir) > 0.75 ? max(aAdhesionFactor, aAdhesion[i].z) : aAdhesionFactor;
+						bAdhesionFactor = dot(bAdhesion[i].xy, c2c1Dir) > 0.75 ? max(bAdhesionFactor, bAdhesion[i].z) : bAdhesionFactor;
+					}
+					float adhesionFactor = aAdhesionFactor * bAdhesionFactor * uCreatureDeviceAdhesionEffectiveness;
+
 					float hardnessFactor = max(aHardness, bHardness);
 					float penetrationPercentage = violation / RadiiSum;
 					
@@ -223,6 +233,9 @@ void main()
 
 					vec2 c1PosSub = -c1c2PosDiff * push * m2Frac;
 					vec2 c2PosSub = c1c2PosDiff * push * m1Frac;
+
+					//c1PosSub += c1c2Dir * adhesionFactor * m2Frac;
+					//c2PosSub += c2c1Dir * adhesionFactor * m1Frac;
 
 					// Register the physics collision fix
 					PhysicsFixes[gid] += c1PosSub;

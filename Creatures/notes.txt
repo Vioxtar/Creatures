@@ -246,7 +246,8 @@ Project minimum requiremenets:
 	first gens training wheels: firstgens get special guidance - we make sure to make stronger (but still random) links between eyes and movement, and weak/non-existent links between other nodes
 	grid : bunch of triangulated vertices with values in them to be fragmented holding whatever the fuck we want, perhaps a vec3(horomone, )
 	rest mechanic: keep a 'rest' float for every creature that interpolations between 0 and 1 based on actuations and shit (high actuations means low rest, low actuations means high rest), have it interpolate to the target very slowly, then base meat to energy conversion on restness: high restness -> high meat to energy conversion
-	initial pre-simulation settings assert checks sequence + a dearIMGUI prompting system (in its own MessagePrompts.cpp)
+	initial pre-simulation settings 
+	checks sequence + a dearIMGUI prompting system (in its own MessagePrompts.cpp)
 	creatures cant reproduce unless their meat is above some threshold? Or to be more direct, decouple reproduction energy cost to reproduction energy cost AND reproduction energy threshold!
 	have creatures be able to control their device local angles?
 	each creature has different energy/meat/life conversion rates? hmmm

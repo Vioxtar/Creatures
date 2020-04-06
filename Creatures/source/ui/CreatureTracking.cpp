@@ -262,6 +262,7 @@ class CreatureTracker
 			{
 				vec2 nodeDrawPos = creatureTracker_BrainNodePositions[i];
 				float nodeActivation = creatureSnapShot.brainNodes[i];
+				
 				if (nodeActivation < 0.0)
 				{
 					drawList->AddCircleFilled(
@@ -347,8 +348,6 @@ class CreatureTracker
 
 			vec2 viewportEyePos = SimulationSpaceToViewportSpace(creatureSnapShot.eyePos);
 			float viewportEyeConeRadius = simToViewportScale * creatureSnapShot.eyeConeRadius;
-			float eyePupilConeCoverageFraction = creatureSnapShot.eyePupilConeCoverageFraction;
-			float viewportEyePupilRadius = eyePupilConeCoverageFraction * viewportEyeConeRadius;
 
 			// Draw eye cone ring
 			ImGui::GetBackgroundDrawList()->AddCircle(
@@ -359,22 +358,13 @@ class CreatureTracker
 				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 			);
 
-			// Draw eye pupil ring
-			ImGui::GetBackgroundDrawList()->AddCircle(
-				viewportEyePos,
-				viewportEyePupilRadius,
-				IM_COL32(0, 255, 0, 15),
-				int(viewportEyePupilRadius),
-				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
-			);
-
-			// Draw eye pupil activation
+			// Draw eye pupil activation ring
 			float pupilActivation = creatureSnapShot.eyePupilSights[0];
 			ImGui::GetBackgroundDrawList()->AddCircle(
 				viewportEyePos,
-				viewportEyePupilRadius * pupilActivation,
+				viewportEyeConeRadius * pupilActivation,
 				IM_COL32(0, 255, 0, 100),
-				int(viewportEyePupilRadius),
+				int(viewportEyeConeRadius),
 				UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
 			);
 
@@ -389,7 +379,7 @@ class CreatureTracker
 				float lineAng = M_PI + iAng - creatureAngle;
 				vec2 coneLineDir = vec2(sin(lineAng), cos(lineAng));
 				ImGui::GetBackgroundDrawList()->AddLine(
-					viewportEyePos + coneLineDir * viewportEyePupilRadius,
+					viewportEyePos,
 					viewportEyePos + coneLineDir * viewportEyeConeRadius,
 					IM_COL32(0, 255, 0, 15),
 					UI_CREATURE_TRACKER_DEFAULT_LINE_PIXEL_THICKNESS
@@ -398,7 +388,7 @@ class CreatureTracker
 				// Draw cone activation lines
 				float activationAng = M_PI + iAng + (angAdd / 2) - creatureAngle;
 				vec2 coneActivationDir = vec2(sin(activationAng), cos(activationAng));
-				vec2 p1 = viewportEyePos + coneActivationDir * viewportEyePupilRadius;
+				vec2 p1 = viewportEyePos;
 				vec2 p2 = viewportEyePos + coneActivationDir * viewportEyeConeRadius;
 				float activation = creatureSnapShot.eyeConeSights.data()[i];
 				float oneMinusActivation = 1.0 - activation;

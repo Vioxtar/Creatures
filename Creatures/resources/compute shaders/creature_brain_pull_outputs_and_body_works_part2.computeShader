@@ -101,9 +101,6 @@ uniform float uCreatureMaxHardness;
 uniform float uCreatureMinHardness;
 uniform float uCreatureHardnessInterpolationRate;
 
-uniform float uCreatureMaxAdhesion;
-uniform float uCreatureAdhesionInterpolationRate;
-
 uniform float uCreatureDeviceSpikeEnergyCost;
 uniform float uCreatureDeviceShieldEnergyCost;
 uniform float uCreatureDeviceFeederEnergyCost;
@@ -209,16 +206,16 @@ void main()
 		uint firstOutputIndex = (gid + 1) * uMaxNumOfNodesInBrain - numOfOutputs;
 
 		// Acquire brain outputs
-		float radiusMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 7], 1.0));
-		float hardnessMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 8], 1.0));
-		float adhesion1Muscle = max(0.0, min(BrainsNodes[firstOutputIndex + 9], 1.0));
-		float adhesion2Muscle = max(0.0, min(BrainsNodes[firstOutputIndex + 10], 1.0));
-		float adhesion3Muscle = max(0.0, min(BrainsNodes[firstOutputIndex + 11], 1.0));
-		float deviceSpikeStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 12], 1.0));
-		float deviceShieldStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 13], 1.0));
-		float deviceFeederStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 14], 1.0));
-		float skinValueMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 15], 1.0));
-		float hornyMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 16], 1.0));
+		float radiusMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 6], 1.0));
+		float hardnessMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 7], 1.0));
+		float adhesion1Muscle = max(0.0, min(BrainsNodes[firstOutputIndex + 8], 1.0));
+		float adhesion2Muscle = max(0.0, min(BrainsNodes[firstOutputIndex + 9], 1.0));
+		float adhesion3Muscle = max(0.0, min(BrainsNodes[firstOutputIndex + 10], 1.0));
+		float deviceSpikeStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 11], 1.0));
+		float deviceShieldStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 12], 1.0));
+		float deviceFeederStateMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 13], 1.0));
+		float skinValueMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 14], 1.0));
+		float hornyMuscle = max(0.0, min(BrainsNodes[firstOutputIndex + 15], 1.0));
 
 
 		// Radius
@@ -242,8 +239,8 @@ void main()
 		// Adhesion
 		mat4 adhesion = Adhesions[gid];
 		vec3 oldAdhesion = vec3(adhesion[1][2], adhesion[2][2], adhesion[3][2]);
-		vec3 adhesionTarget = vec3(adhesion1Muscle, adhesion2Muscle, adhesion3Muscle) * uCreatureMaxAdhesion;
-		vec3 newAdhesion = oldAdhesion * (1.0 - uCreatureAdhesionInterpolationRate) + uCreatureAdhesionInterpolationRate * adhesionTarget;
+		vec3 adhesionTarget = vec3(adhesion1Muscle, adhesion2Muscle, adhesion3Muscle);;
+		vec3 newAdhesion = oldAdhesion * (1.0 - uCreatureDeviceStateInterpolationRate) + uCreatureDeviceStateInterpolationRate * adhesionTarget;
 		adhesion[1][2] = newAdhesion.x;
 		adhesion[2][2] = newAdhesion.y;
 		adhesion[3][2] = newAdhesion.z;

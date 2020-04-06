@@ -338,7 +338,7 @@ void InitUniformGrid()
 
 void Simulation::Initialize()
 {
-	srand(38433412);
+	srand(1337);
 	CreatureData_Init();
 	InitLogicPrograms();
 	InitUniformGrid();
@@ -462,7 +462,6 @@ void ProgramsSequence()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_AngleVelocities.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_EyeMuscles.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_EyeConeRadii.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_EyePupilConeCoverageFraction.bufferHandle);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -489,8 +488,6 @@ void ProgramsSequence()
 	SetUniformFloat(programID, "uCreatureMaxHardness", CREATURE_MAX_HARDNESS.value);
 	SetUniformFloat(programID, "uCreatureMinHardness", CREATURE_MIN_HARDNESS.value);
 	SetUniformFloat(programID, "uCreatureHardnessInterpolationRate", CREATURE_HARDNESS_INTERPOLATION_RATE.value);
-	SetUniformFloat(programID, "uCreatureMaxAdhesion", CREATURE_MAX_ADHESION.value);
-	SetUniformFloat(programID, "uCreatureAdhesionInterpolationRate", CREATURE_ADHESION_INTERPOLATION_RATE.value);
 	SetUniformFloat(programID, "uCreatureDeviceSpikeEnergyCost", CREATURE_DEVICE_SPIKE_ENERGY_COST.value);
 	SetUniformFloat(programID, "uCreatureDeviceShieldEnergyCost", CREATURE_DEVICE_SHIELD_ENERGY_COST.value);
 	SetUniformFloat(programID, "uCreatureDeviceFeederEnergyCost", CREATURE_DEVICE_FEEDER_ENERGY_COST.value);
@@ -603,6 +600,7 @@ void ProgramsSequence()
 	SetUniformUInteger(programID, "uMaxNumOfColliders", CREATURE_MAX_NUM_OF_COLLIDERS);
 	SetUniformVector2f(programID, "uRandom", vec2(random() - 0.5, random() - 0.5)); // Used to resolve creatures absolutely clipped in each other
 	SetUniformFloat(programID, "uCreatureDefaultBodyMass", CREATURE_DEFAULT_BODY_MASS); // Used to avoid 0 mass on collisions
+	SetUniformFloat(programID, "uCreatureDeviceAdhesionEffectiveness", CREATURE_DEVICE_ADHESION_EFFECTIVENESS.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_Radii.bufferHandle);
@@ -694,11 +692,10 @@ void ProgramsSequence()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_EyePositions.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_EyeConeRadii.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_EyeConeSights.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_EyePupilConeCoverageFraction.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_GeneralPurposeUInt.bufferHandle); // Write pupil creature target index
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_GeneralPurposeFloat.bufferHandle); // Write pupil activation
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_GeneralPurposeSecondVec2.bufferHandle); // Write pupil normalized direction between creatures
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_Lives.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_GeneralPurposeUInt.bufferHandle); // Write pupil creature target index
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_GeneralPurposeFloat.bufferHandle); // Write pupil activation
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_GeneralPurposeSecondVec2.bufferHandle); // Write pupil normalized direction between creatures
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_Lives.bufferHandle);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -869,4 +866,9 @@ void Simulation::Update()
 	// Handle newborns
 	HandleNewbornCreatures();
 
+	// @DEBUG
+	if (random() < 0.001)
+	{
+		cout << creature_count << endl;
+	}
 }

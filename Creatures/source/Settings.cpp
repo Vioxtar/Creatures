@@ -270,9 +270,6 @@ extern TweakableFloatSetting CREATURE_MAX_HARDNESS = { 2.0, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_MIN_HARDNESS = { 0.15, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_HARDNESS_INTERPOLATION_RATE = { 0.1, 0.001, 1.0 };
 
-extern TweakableFloatSetting CREATURE_MAX_ADHESION = { 0.01, 0.0, 1.0 };
-extern TweakableFloatSetting CREATURE_ADHESION_INTERPOLATION_RATE = { 0.1, 0.001, 1.0 };
-
 extern TweakableFloatSetting CREATURE_MAX_SKIN_LIGHTNESS = { 0.85, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_MIN_SKIN_LIGHTNESS = { 0.15, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_SKIN_LIGHTNESS_INTERPOLATION_RATE = { 0.025, 0.001, 1.0 };
@@ -297,7 +294,6 @@ extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 10.0,
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE = { 1.0, 0.0, 10.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS = { 0.4, 0.0, 10.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS = { 0.0, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_STICKYNESS = { 0.0, 0.0, 1.0 };
 
 // Offspring initial energy + meat should NOT be more than reproduction energy cost for an energy balanced system, and for evolution to occur!
 // Moreso, keeping offspring initial energy + meat + life values BELOW reproduction energy cost would discourage creatures to utilize the reproduce-quickly-die-quickly technique!
@@ -306,7 +302,6 @@ extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_MEAT = { 0.0,
 extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_LIFE = { 1.0, 0.0, 10.0 };
 extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_RADIUS = { 0.01, 0.0, 10.0 };
 extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_HARDNESS = { 0.0, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_OFFSPRING_CREATURE_INITIAL_STICKYNESS = { 0.0, 0.0, 1.0 };
 
 // Creature energy costs
 extern TweakableFloatSetting CREATURE_REPRODUCTION_ENERGY_COST = { 2.5, 0.0, 5.0 };
@@ -322,6 +317,7 @@ extern TweakableFloatSetting CREATURE_TURN_MOVEMENT_ENERGY_COST = { 0.0002, 0.0,
 extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_ENERGY_COST = { 0.00002, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_ENERGY_COST = { 0.00002, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_ENERGY_COST = { 0.00001, 0.0, 1.0 };
+extern TweakableFloatSetting CREATURE_DEVICE_ADHESION_EFFECTIVENESS = { 0.05, 0.0, 1.0 };
 
 extern TweakableFloatSetting CREATURE_DEVICE_FEEDER_EFFECTIVENESS = { 0.1, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_LIFE_EFFECTIVENESS = { 0.01, 0.0, 1.0 };
@@ -383,7 +379,7 @@ extern const uint16_t CREATURE_EYE_NUM_OF_CONES_VALUES = CREATURE_EYE_NUM_OF_CON
 // Calculate buffer size extern constants (used to define the size of each structure/node/link creature attributes)
 extern const uint16_t CREATURE_BRAIN_NUM_OF_INPUTS = 6 + CREATURE_EYE_NUM_OF_PUPIL_VALUES + CREATURE_EYE_NUM_OF_CONES_VALUES + CREATURE_BRAIN_NUM_OF_TEMPORALS;
 
-extern const uint16_t CREATURE_BRAIN_NUM_OF_OUTPUTS = 17 + CREATURE_BRAIN_NUM_OF_TEMPORALS;
+extern const uint16_t CREATURE_BRAIN_NUM_OF_OUTPUTS = 16 + CREATURE_BRAIN_NUM_OF_TEMPORALS;
 
 extern const GLuint CREATURE_BRAIN_MAX_NUM_OF_NODES = CREATURE_BRAIN_NUM_OF_INPUTS + CREATURE_BRAIN_MAX_NUM_OF_MIDLEVELS * CREATURE_BRAIN_MAX_NUM_OF_NODES_IN_MIDLEVEL + CREATURE_BRAIN_NUM_OF_OUTPUTS;
 
