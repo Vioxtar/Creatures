@@ -40,9 +40,9 @@ layout (std430, binding = 7) buffer CreatureTiles
 	int Tiles[];
 };
 
-layout (std430, binding = 8) buffer CreatureGeneralPurposeVec2
+layout (std430, binding = 8) buffer CreatureGeneralPurposeVec4
 {
-	vec2 PhysicsFixes[];
+	vec4 PhysicsFixes[];
 };
 
 layout (std430, binding = 9) buffer CreatureCollidersCounts
@@ -168,8 +168,9 @@ void main()
 				if (distSquared <= 0)
 				{
 					// Both creatures are inside each other, give each other a small push...
-					PhysicsFixes[gid] += uRandom * aRad;
-					PhysicsFixes[bGID] -= uRandom * bRad;
+					vec4 push = vec4(0, 0, uRandom.xy * aRad);
+					PhysicsFixes[gid] += push;
+					PhysicsFixes[bGID] -= push;
 					continue; // @TODO: Continuing here is problematic because we're not registering colliders and stuff
 				}
 
@@ -217,6 +218,8 @@ void main()
 					}
 					float adhesionFactor = aAdhesionFactor * bAdhesionFactor * uCreatureDeviceAdhesionEffectiveness;
 
+
+
 					float hardnessFactor = max(aHardness, bHardness);
 					float penetrationPercentage = violation / RadiiSum;
 					
@@ -231,15 +234,19 @@ void main()
 					float m1Frac = m1 / (m1 + m2);
 					float m2Frac = m2 / (m1 + m2);
 
-					vec2 c1PosSub = -c1c2PosDiff * push * m2Frac;
-					vec2 c2PosSub = c1c2PosDiff * push * m1Frac;
+					vec2 c1PosFix = -c1c2PosDiff * push * m2Frac;
+					vec2 c2PosFix = c1c2PosDiff * push * m1Frac;
 
-					//c1PosSub += c1c2Dir * adhesionFactor * m2Frac;
-					//c2PosSub += c2c1Dir * adhesionFactor * m1Frac;
+					vec2 c1VelFix = c1PosFix;
+					vec2 c2VelFix = c2PosFix;
+
+
+					c1VelFix += (c1c2Dir - c2PosFix) * adhesionFactor * m2Frac * RadiiSum;
+					c2VelFix += (c2c1Dir - c1PosFix) * adhesionFactor * m1Frac * RadiiSum;
 
 					// Register the physics collision fix
-					PhysicsFixes[gid] += c1PosSub;
-					PhysicsFixes[bGID] += c2PosSub;
+					PhysicsFixes[gid] += vec4(c1PosFix.xy, c1VelFix.xy);
+					PhysicsFixes[bGID] += vec4(c2PosFix.xy, c2VelFix.xy);
 
 
 

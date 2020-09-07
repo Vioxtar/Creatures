@@ -126,6 +126,7 @@ extern const float CAMERA_START_ZOOM_TARGET;
 // Simulation settings
 extern const float SIMULATION_UNIFORM_GRID_DIMENSION_BUFFER;
 extern const int SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR;
+extern const float SIMULATION_UNIFORM_GRID_TILE_SIZE_SCALAR;
 
 // Render settings
 extern const uint16_t RENDER_NUM_OF_CREATURE_BODY_VERTICES;

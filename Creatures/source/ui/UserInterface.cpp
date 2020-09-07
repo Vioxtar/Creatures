@@ -276,7 +276,8 @@ void UserInterface::glfw_key_callback(GLFWwindow* window, int key, int scancode,
 
 	if (key == GLFW_KEY_D && action == GLFW_PRESS)
 	{
-		CreatureSpawns::ToggleTraining();
+		//CreatureSpawns::ToggleTraining();
+		Simulation::Debug();
 	}
 }
 

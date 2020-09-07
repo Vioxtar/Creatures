@@ -90,6 +90,7 @@ extern CreaturesSSBOInfo creature_Adhesions{ sizeof(mat4) };
 // General purpose data packets
 extern CreaturesSSBOInfo creature_GeneralPurposeVec2{ sizeof(vec2) };
 extern CreaturesSSBOInfo creature_GeneralPurposeSecondVec2{ sizeof(vec2) };
+extern CreaturesSSBOInfo creature_GeneralPurposeVec4{ sizeof(vec4) };
 extern CreaturesSSBOInfo creature_GeneralPurposeFloat{ sizeof(GLfloat) };
 extern CreaturesSSBOInfo creature_GeneralPurposeUInt{ sizeof(GLuint) };
 
@@ -154,6 +155,7 @@ void LoadCreatureSSBOInfosIntoIterableVectors()
 	creatureAttributesSSBOInfosRefs.push_back(&creature_UniformGridTiles);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeVec2);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeSecondVec2);
+	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeVec4);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeFloat);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_GeneralPurposeUInt);
 	creatureAttributesSSBOInfosRefs.push_back(&creature_SkinHues);
@@ -189,6 +191,7 @@ void LoadCreatureSSBOInfosIntoIterableVectors()
 // accept CreatureData values
 
 const vec2 defaultVec2 = vec2(0.0, 0.0);
+const vec4 defaultVec4 = vec4(0.0, 0.0, 0.0, 0.0);
 const uvec2 defaultUVec2 = uvec2(0, 0);
 const GLuint defaultUInt = 0;
 const GLfloat defaultFloat = 0.0;
@@ -438,8 +441,10 @@ CreatureUniqueID CreatureData_AddCreature(CreatureData& newCreatureData)
 	// Also set some zero values to avoid undefined values lurking in our buffers
 	SetCreatureAttribute(creature_GeneralPurposeVec2, newCreatureIndex, &defaultVec2);
 	SetCreatureAttribute(creature_GeneralPurposeSecondVec2, newCreatureIndex, &defaultVec2);
+	SetCreatureAttribute(creature_GeneralPurposeVec4, newCreatureIndex, &defaultVec4);
 	SetCreatureAttribute(creature_GeneralPurposeFloat, newCreatureIndex, &defaultFloat);
 	SetCreatureAttribute(creature_GeneralPurposeUInt, newCreatureIndex, &defaultUInt);
+
 
 	// Set new creature unique ID
 	CreatureUniqueID creatureUniqueID = creature_NextUniqueIDToBeAssigned;

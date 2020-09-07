@@ -112,6 +112,11 @@ int main()
 	double lastTime = 0;
 	int frameCount = 0;
 
+	//go back to pupil cone coverage, however don't block coneification...
+	//stick
+	//grid
+	//eye probe distance is inherited, instead has min and max
+
 	/*
 		increase stick value the more violation there is...
 		stick points

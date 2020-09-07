@@ -178,6 +178,7 @@ extern CreaturesSSBOInfo creature_Adhesions;
 // General purpose data packets
 extern CreaturesSSBOInfo creature_GeneralPurposeVec2;
 extern CreaturesSSBOInfo creature_GeneralPurposeSecondVec2;
+extern CreaturesSSBOInfo creature_GeneralPurposeVec4;
 extern CreaturesSSBOInfo creature_GeneralPurposeFloat;
 extern CreaturesSSBOInfo creature_GeneralPurposeUInt;
 

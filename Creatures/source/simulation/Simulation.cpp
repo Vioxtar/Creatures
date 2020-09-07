@@ -169,7 +169,7 @@ void BuildUniformGrid()
 		return;
 
 	// Things changed, we need to rebuild the uniform grid and update a bunch of values
-	ugrid_TileSize = newInteractDist;
+	ugrid_TileSize = newInteractDist * SIMULATION_UNIFORM_GRID_TILE_SIZE_SCALAR;
 
 	// A small buffer around our simulation width/height ensures that creatures never over-step our uniform grid space
 	// as long as they remain within the actual simulation space
@@ -178,11 +178,11 @@ void BuildUniformGrid()
 	ugrid_SimHeight = newSimulationHeight + uniformGridSimulationDimensionBuffer;
 
 	// Calculate how many tiles we are spreading over our simulation space
-	ugrid_GridXDim = (GLuint)std::max(1, (int)floor(ugrid_SimWidth / newInteractDist));
-	ugrid_GridYDim = (GLuint)std::max(1, (int)floor(ugrid_SimHeight / newInteractDist));
+	ugrid_GridXDim = (GLuint)std::max(1, (int)floor(ugrid_SimWidth / ugrid_TileSize));
+	ugrid_GridYDim = (GLuint)std::max(1, (int)floor(ugrid_SimHeight / ugrid_TileSize));
 
 	// Calculate how many creatures we can squeeze in a tile, and scale
-	float tileArea = pow(newInteractDist, 2);
+	float tileArea = pow(ugrid_TileSize, 2);
 	float minRadiusCreatureArea = M_PI * (pow(newMinCreatureRadius, 2));
 	uint maxNumOfCreaturesSqueezableInTile = ceil(tileArea / minRadiusCreatureArea);
 	maxNumOfCreaturesSqueezableInTile *= SIMULATION_UNIFORM_GRID_TILE_CREATURE_CAPACITY_SCALAR;
@@ -319,6 +319,7 @@ void InitLogicPrograms()
 }
 
 
+
 void InitUniformGrid()
 {
 	// Initialize uniform grid
@@ -338,7 +339,7 @@ void InitUniformGrid()
 
 void Simulation::Initialize()
 {
-	srand(1337);
+	srand(1334517);
 	CreatureData_Init();
 	InitLogicPrograms();
 	InitUniformGrid();
@@ -540,7 +541,7 @@ void ProgramsSequence()
 	SetUniformFloat(programID, "uCreatureEyeMaxProbeDistance", CREATURE_EYE_MAX_PROBE_DISTANCE.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Velocities.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurposeVec2.bufferHandle); // Applies physics fix vector, zerofies
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurposeVec4.bufferHandle); // Applies physics fix vector, zerofies
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_AngleVelocities.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_ForwardDirections.bufferHandle);
@@ -609,13 +610,12 @@ void ProgramsSequence()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Adhesions.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, ugrid_SSBO);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_UniformGridTiles.bufferHandle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_GeneralPurposeVec2.bufferHandle); // Writes physics fix vector for decoupling purposes
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_GeneralPurposeVec4.bufferHandle); // Writes physics fix vector for decoupling purposes
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_CollidersCounts.bufferHandle); // Count colliders
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_CollidersIndicesAndPlacements.bufferHandle); // Remember colliders (for interaction part 2/3)
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_CollidersToPosDirs.bufferHandle); // Remember direction of colliders (for interaction part 2/3)
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 12, creature_CollidersPositions.bufferHandle); // Remember positions of colliders (for deformations)
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 13, creature_CollidersRadii.bufferHandle); // Remember radius of colliders (for deformations)
-	// @TODO: Add stick states/dirs
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -871,4 +871,139 @@ void Simulation::Update()
 	{
 		cout << creature_count << endl;
 	}
+}
+
+void Simulation::Debug()
+{
+	cout << "Recompiling..." << endl;
+
+	glDeleteProgram(program_CreatureSightsPart1.program);
+
+	vector<pair<string, string>> replacers;
+	replacers.push_back(make_pair("@LOCAL_SIZE@", to_string(program_CreatureSightsPart1.workGroupLocalSize)));
+	replacers.push_back(make_pair("@CREATURE_EYE_NUM_OF_CONES_VALUES@", to_string(CREATURE_EYE_NUM_OF_CONES_VALUES)));
+	GLenum creatureSightsPart1ShaderTypes[] = { GL_COMPUTE_SHADER };
+	const char* creatureSightsPart1ShaderPaths[] = { "resources/compute shaders/creature_sights_part1.computeShader" };
+	program_CreatureSightsPart1.program = CreateLinkedShaderProgram(1, creatureSightsPart1ShaderTypes, creatureSightsPart1ShaderPaths, &replacers);
+	replacers.clear();
+
+	cout << "Dispatching..." << endl;
+
+
+	RecalculateAllProgramInfosNumberOfWorkGroupsNeeded();
+
+	GLuint programID;
+	GLuint workGroupsNeeded;
+
+
+	// Uniform grid bind
+	programID = program_UniformGridBind.program;
+	workGroupsNeeded = program_UniformGridBind.workGroupsNeeded;
+	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformVector2f(programID, "uSimDimensions", vec2(ugrid_SimWidth, ugrid_SimHeight));
+	SetUniformVector2ui(programID, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
+	SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ugrid_SSBO);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_UniformGridTiles.bufferHandle);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+	// Creature sights part 1 (find which creatures we're looking at in the simulation space, cone activation)
+	// We don't load actual observed data just yet due to the GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS <= 16 limit
+	programID = program_CreatureSightsPart1.program;
+	workGroupsNeeded = program_CreatureSightsPart1.workGroupsNeeded;
+	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformVector2f(programID, "uSimDimensions", vec2(ugrid_SimWidth, ugrid_SimHeight));
+	SetUniformVector2ui(programID, "uGridDimensions", uvec2(ugrid_GridXDim, ugrid_GridYDim));
+	SetUniformFloat(programID, "uGridTileSize", ugrid_TileSize);
+	SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfCones", CREATURE_EYE_NUM_OF_CONES);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfValuesInSingleCone", CREATURE_EYE_NUM_OF_VALUES_IN_SINGLE_CONE);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfConesValues", CREATURE_EYE_NUM_OF_CONES_VALUES);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_Positions.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_Radii.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, ugrid_SSBO);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_Angles.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_EyePositions.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_EyeConeRadii.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_EyeConeSights.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_GeneralPurposeUInt.bufferHandle); // Write pupil creature target index
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_GeneralPurposeFloat.bufferHandle); // Write pupil activation
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_GeneralPurposeSecondVec2.bufferHandle); // Write pupil normalized direction between creatures
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_Lives.bufferHandle);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+
+	// Load observed creatures' data observed by pupils
+
+	// Creature sights part 2 - devices
+	programID = program_CreatureSightsPart2.program;
+	workGroupsNeeded = program_CreatureSightsPart2.workGroupsNeeded;
+	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfPupilValues", CREATURE_EYE_NUM_OF_PUPIL_VALUES);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_EyePupilSights.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_GeneralPurposeUInt.bufferHandle); // Read pupil creature target index
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_GeneralPurposeFloat.bufferHandle); // Read pupil activation
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_GeneralPurposeSecondVec2.bufferHandle); // Read pupil normalized direction between creatures
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_Shields.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_Spikes.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Feeders.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_ForwardDirections.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_Lives.bufferHandle);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+
+	// Creature sights part 3 - appearances
+	programID = program_CreatureSightsPart3.program;
+	workGroupsNeeded = program_CreatureSightsPart3.workGroupsNeeded;
+	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformUInteger(programID, "uCreatureEyeNumOfPupilValues", CREATURE_EYE_NUM_OF_PUPIL_VALUES);
+	SetUniformFloat(programID, "uCreatureMaxRadius", CREATURE_MAX_RADIUS.value);
+	SetUniformFloat(programID, "uCreatureMinRadius", CREATURE_MIN_RADIUS.value);
+	SetUniformFloat(programID, "uCreatureMaxEnergy", CREATURE_MAX_ENERGY.value);
+	SetUniformFloat(programID, "uCreatureMaxLife", CREATURE_MAX_LIFE.value);
+	SetUniformFloat(programID, "uCreatureMaxSkinValue", CREATURE_MAX_SKIN_LIGHTNESS.value);
+	SetUniformFloat(programID, "uCreatureMinSkinValue", CREATURE_MIN_SKIN_LIGHTNESS.value);
+	SetUniformFloat(programID, "uCreatureMaxSkinSaturation", CREATURE_MAX_SKIN_SATURATION.value);
+	SetUniformFloat(programID, "uCreatureMinSkinSaturation", CREATURE_MIN_SKIN_SATURATION.value);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_EyePupilSights.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_GeneralPurposeUInt.bufferHandle); // Read pupil creature target index
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_SkinHues.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, creature_SkinSaturations.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, creature_SkinValues.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, creature_SkinPatterns.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, creature_Lives.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Energies.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_Radii.bufferHandle);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+	// Uniform grid unbind
+	programID = program_UniformGridUnBind.program;
+	workGroupsNeeded = program_UniformGridUnBind.workGroupsNeeded;
+	glUseProgram(programID);
+	SetUniformUInteger(programID, "uCreatureCount", creature_count);
+	SetUniformUInteger(programID, "uIndicesInTile", ugrid_IndicesInTile);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ugrid_SSBO);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_UniformGridTiles.bufferHandle);
+	glDispatchCompute(workGroupsNeeded, 1, 1);
+
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+	// Wait until OpenGL finished with all command dequeues
+	glFinish();
+
+	cout << "Done..." << endl;
+
 }

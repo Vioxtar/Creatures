@@ -23,4 +23,5 @@ namespace Simulation
 	void Initialize();
 	void Update();
 	void LogicPause(bool enablePause);
+	void Debug();
 }

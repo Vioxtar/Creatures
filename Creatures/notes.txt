@@ -239,9 +239,8 @@ Project minimum requiremenets:
 
 
 	NON-OBVIOUS-TODOS:
+	keep old vel, compare to new vel, if the difference is high enough then a lot of force was experienced, take life away
 	use 2 skin hues! one is shown in pattern?
-	make patterns more visible
-	use namespaces instead of shitty NameSpace_ convention
 	go back to non-naive mutation model...
 	first gens training wheels: firstgens get special guidance - we make sure to make stronger (but still random) links between eyes and movement, and weak/non-existent links between other nodes
 	grid : bunch of triangulated vertices with values in them to be fragmented holding whatever the fuck we want, perhaps a vec3(horomone, )
