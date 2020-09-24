@@ -62,6 +62,7 @@ struct CreatureData
 	GLfloat spikeLocalAngle;
 	GLfloat feederLocalAngle;
 	GLfloat shieldLocalAngle;
+	GLfloat meatPriority;
 
 };
 
@@ -140,7 +141,7 @@ extern CreaturesSSBOInfo creature_Energies;
 extern CreaturesSSBOInfo creature_Meats;
 extern CreaturesSSBOInfo creature_Harndesses;
 extern CreaturesSSBOInfo creature_Horninesses;
-
+extern CreaturesSSBOInfo creature_MeatPriorities;
 
 // Creature misc
 extern CreaturesSSBOInfo creature_Generations;

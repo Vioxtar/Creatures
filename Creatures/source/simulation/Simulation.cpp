@@ -632,6 +632,8 @@ void ProgramsSequence()
 	SetUniformFloat(programID, "uCreatureSpikeVersusLifeEffectiveness", CREATURE_DEVICE_SPIKE_VERSUS_LIFE_EFFECTIVENESS.value);
 	SetUniformFloat(programID, "uCreatureSpikeVersusMeatEffectiveness", CREATURE_DEVICE_SPIKE_VERSUS_MEAT_EFFECTIVENESS.value);
 	SetUniformFloat(programID, "uCreatureShieldEffectiveness", CREATURE_DEVICE_SHIELD_EFFECTIVENESS.value);
+	SetUniformFloat(programID, "uCreatureBestPriorityMatchEnergyMultiplier", CREATURE_MEAT_PRIORITY_BEST_MATCH_ENERGY_MULTIPLIER.value);
+	SetUniformFloat(programID, "uCreatureWorstPriorityMatchEnergyMultiplier", CREATURE_MEAT_PRIORITY_WORST_MATCH_ENERGY_MULTIPLIER.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_CollidersCounts.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_CollidersIndicesAndPlacements.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_CollidersToPosDirs.bufferHandle);
@@ -642,6 +644,8 @@ void ProgramsSequence()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, creature_Lives.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, creature_Energies.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, creature_Meats.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 10, creature_MeatPriorities.bufferHandle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 11, creature_SkinHues.bufferHandle);
 	glDispatchCompute(workGroupsNeeded, 1, 1);
 
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);

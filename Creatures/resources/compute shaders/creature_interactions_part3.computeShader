@@ -50,6 +50,8 @@ layout (std430, binding = 9) buffer CreatureNewBorns
 	uvec2 NewBorns[];
 };
 
+
+
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
 
@@ -88,6 +90,12 @@ void main()
 	{
 		float energyGivenByCollider = CollidersGivenEnergy[collidersStartIndex + i];
 		energy += energyGivenByCollider;
+
+		// Energy given by the collider could be negative, so clamp to avoid trouble up ahead
+		if (energy < 0.0)
+		{
+			energy = 0.0;
+		}
 
 		// Zerofiy the given energy
 		CollidersGivenEnergy[collidersStartIndex + i] = 0.0;

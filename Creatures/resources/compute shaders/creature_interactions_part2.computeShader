@@ -50,6 +50,16 @@ layout (std430, binding = 9) buffer CreatureMeats
 	float Meats[];
 };
 
+layout (std430, binding = 10) buffer CreatureMeatPriorities
+{
+	float MeatPriorities[];
+};
+
+layout (std430, binding = 11) buffer CreatureSkinHues
+{
+	float SkinHues[];
+};
+
 
 layout (local_size_x = @LOCAL_SIZE@, local_size_y = 1, local_size_z = 1) in;
 
@@ -62,6 +72,9 @@ uniform float uCreatureFeederEffectiveness;
 uniform float uCreatureSpikeVersusLifeEffectiveness;
 uniform float uCreatureSpikeVersusMeatEffectiveness;
 uniform float uCreatureShieldEffectiveness;
+uniform float uCreatureBestPriorityMatchEnergyMultiplier;
+uniform float uCreatureWorstPriorityMatchEnergyMultiplier;
+
 
 void main()
 {
@@ -177,6 +190,8 @@ void main()
 		// We're dead, handle:
 		// 1. Getting spiked by B (reduce our meat, give energy to B)
 
+		// Gather some information about ourselves
+		float aSkinHue = SkinHues[gid];
 		float meatLeft = Meats[gid];
 
 		// Start collider iterations
@@ -204,12 +219,18 @@ void main()
 			{
 				// We don't care about our shields - we're dead!
 
+				float bMeatPriority = MeatPriorities[bGID];
+				float meatPriorityMatchFactor = abs(bMeatPriority - aSkinHue); // Raw distance between hue values
+				meatPriorityMatchFactor = meatPriorityMatchFactor > 0.5 ? 1.0 - meatPriorityMatchFactor : meatPriorityMatchFactor; // Can't be more than 0.5, if it is we're getting closer from the other side (hue is cyclic)
+				meatPriorityMatchFactor = (meatPriorityMatchFactor - 0.25) * 4.0; // Map [0, 0.5] -> [-0.25, 0.25] -> [-1, 1]
+				meatPriorityMatchFactor *= meatPriorityMatchFactor > 0.0 ? uCreatureBestPriorityMatchEnergyMultiplier : -uCreatureWorstPriorityMatchEnergyMultiplier;
+
 				float spikeFactor = bSpikeState * uCreatureSpikeVersusMeatEffectiveness;
 
 				float meatReduction = min(spikeFactor, meatLeft);
 				meatLeft -= meatReduction;
 
-				float energyToGiveB = meatReduction; // @TODO: Meat to energy conversion scalar?
+				float energyToGiveB = meatReduction * meatPriorityMatchFactor; // @TODO: Meat to energy conversion scalar?
 
 				uint ourColliderPlacementIndexGivenByB = colliderIndexAndPlacement.y;
 				CollidersGivenEnergy[ourColliderPlacementIndexGivenByB] = energyToGiveB;

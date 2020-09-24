@@ -456,7 +456,7 @@ void SpawnOffspringCreature(unsigned int p1SSBO, unsigned p2SSBO)
 	GetCreatureAttributeBySSBOIndex(creature_FeederLocalAngles, p1SSBO, &data.feederLocalAngle);
 	GetCreatureAttributeBySSBOIndex(creature_ShieldLocalAngles, p1SSBO, &data.shieldLocalAngle);
 
-	
+	// Skin pattern
 	if (random() < CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_CHANCE)
 	{
 		randomJitter(data.skinPattern.x, CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_STRENGTH, CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_ZERO_GRAVITY);
@@ -468,14 +468,14 @@ void SpawnOffspringCreature(unsigned int p1SSBO, unsigned p2SSBO)
 		data.skinPattern.y = clamp(data.skinPattern.y, 0.0, 1.0);
 	}
 
-
+	// Skin hue
 	if (random() < CREATURE_MUTATION_BODY_JITTER_SKIN_HUE_CHANCE)
 	{
 		randomJitter(data.skinHue, CREATURE_MUTATION_BODY_JITTER_SKIN_HUE_STRENGTH, CREATURE_MUTATION_BODY_JITTER_SKIN_HUE_ZERO_GRAVITY);
 		data.skinHue = mod(data.skinHue, 1.0f);
 	}
 
-
+	// Devices
 	if (random() < CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_CHANCE)
 	{
 		randomJitter(data.spikeLocalAngle, CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_STRENGTH, CREATURE_MUTATION_DEVICE_JITTER_SPIKE_ANGLE_ZERO_GRAVITY);
@@ -490,6 +490,13 @@ void SpawnOffspringCreature(unsigned int p1SSBO, unsigned p2SSBO)
 	{
 		randomJitter(data.shieldLocalAngle, CREATURE_MUTATION_DEVICE_JITTER_SHIELD_ANGLE_STRENGTH, CREATURE_MUTATION_DEVICE_JITTER_SHIELD_ANGLE_ZERO_GRAVITY);
 		data.shieldLocalAngle = mod(data.shieldLocalAngle, float(2.0 * M_PI));
+	}
+
+	// Meat priorities
+	if (random() < CREATURE_MUTATION_MEAT_PRIORITY_JITTER_CHANCE)
+	{
+		randomJitter(data.meatPriority, CREATURE_MUTATION_MEAT_PRIORITY_JITTER_STRENGTH, CREATURE_MUTATION_MEAT_PRIORITY_JITTER_ZERO_GRAVITY);
+		data.meatPriority = clamp(data.meatPriority, 0.0, 1.0);
 	}
 
 
@@ -528,7 +535,6 @@ void SpawnOffspringCreature(unsigned int p1SSBO, unsigned p2SSBO)
 			data.adhesion[0][i] = mod(data.adhesion[0][i], float(2.0 * M_PI));
 		}
 	}
-
 
 	data.forwardDir = vec2(0.0f, 0.0f);
 	data.rightDir = vec2(0.0f, 0.0f);
@@ -761,6 +767,8 @@ void SpawnFirstGenerationCreature(vec2 pos, vec2 vel)
 		0, 0, 0, 0,
 		0, 0, 0, 0
 	);
+
+	data.meatPriority = random();
 
 	data.forwardDir = vec2(0.0f, 0.0f);
 	data.rightDir = vec2(0.0f, 0.0f);
