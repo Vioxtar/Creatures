@@ -72,9 +72,10 @@ uniform float uCreatureFeederEffectiveness;
 uniform float uCreatureSpikeVersusLifeEffectiveness;
 uniform float uCreatureSpikeVersusMeatEffectiveness;
 uniform float uCreatureShieldEffectiveness;
-uniform float uCreatureBestPriorityMatchEnergyMultiplier;
-uniform float uCreatureWorstPriorityMatchEnergyMultiplier;
-
+uniform float uCreatureMeatConsumptionEffectivenessMultiplierOnPriorityMatch;
+uniform float uCreatureMeatConsumptionEffectivenessMultiplierOnPriorityMismatch;
+uniform float uCreatureMeatConsumptionEffectivenessExponentOnPriorityMatch;
+uniform float uCreatureMeatConsumptionEffectivenessExponentOnPriorityMismatch;
 
 void main()
 {
@@ -222,8 +223,10 @@ void main()
 				float bMeatPriority = MeatPriorities[bGID];
 				float meatPriorityMatchFactor = abs(bMeatPriority - aSkinHue); // Raw distance between hue values
 				meatPriorityMatchFactor = meatPriorityMatchFactor > 0.5 ? 1.0 - meatPriorityMatchFactor : meatPriorityMatchFactor; // Can't be more than 0.5, if it is we're getting closer from the other side (hue is cyclic)
-				meatPriorityMatchFactor = (meatPriorityMatchFactor - 0.25) * 4.0; // Map [0, 0.5] -> [-0.25, 0.25] -> [-1, 1]
-				meatPriorityMatchFactor *= meatPriorityMatchFactor > 0.0 ? uCreatureBestPriorityMatchEnergyMultiplier : -uCreatureWorstPriorityMatchEnergyMultiplier;
+				// meatPriorityMatchFactor = (meatPriorityMatchFactor - 0.25) * 4.0; // Map [0, 0.5] -> [-0.25, 0.25] -> [-1, 1]
+				meatPriorityMatchFactor *= 2.0;// Map [0, 0.5] -> [0, 1]
+				// meatPriorityMatchFactor = pow(meatPriorityMatchFactor, meatPriorityMatchFactor > 0.0 ? uCreatureMeatConsumptionEffectivenessExponentOnPriorityMatch : uCreatureMeatConsumptionEffectivenessExponentOnPriorityMismatch);
+				// meatPriorityMatchFactor *= meatPriorityMatchFactor > 0.0 ? uCreatureMeatConsumptionEffectivenessMultiplierOnPriorityMatch : -uCreatureMeatConsumptionEffectivenessMultiplierOnPriorityMismatch;
 
 				float spikeFactor = bSpikeState * uCreatureSpikeVersusMeatEffectiveness;
 

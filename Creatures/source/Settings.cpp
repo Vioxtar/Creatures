@@ -242,9 +242,9 @@ extern TweakableFloatSetting TRAINING_WHEELS_OFFSPRING_COUNT_SCORE_WEIGHT = { 0.
 extern TweakableFloatSetting TRAINING_WHEELS_GENERATION_SCORE_WEIGHT = { 0.05, 0.0, 1.0 };
 
 // Simulation creature settings
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 1.0, 0.0, 50.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_CONSTANT_SPAWN_RATE = { 0.001, 0.0, 50.0 };
 
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_RATE = { 0.0, 0.0, 10000.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_RATE = { 10.0, 0.0, 10000.0 };
 extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_UPPER_TARGET = { 20000, 0, 10000 };
 extern TweakableIntegerSetting SIMULATION_FIRSTGEN_CREATURE_PULSE_SPAWN_NUM_OF_CREATURES_LOWER_TARGET = { 5000, 0, 10000 };
 
@@ -285,7 +285,7 @@ extern TweakableFloatSetting CREATURE_MIN_SKIN_SATURATION = { 0.2, 0.0, 1.0 };
 
 // Creature energy/meat/life settings
 extern TweakableFloatSetting CREATURE_MAX_ENERGY = { 5.0, 0.1, 50.0 };
-extern TweakableFloatSetting CREATURE_MAX_MEAT = { 10.0, 0.1, 10.0 };
+extern TweakableFloatSetting CREATURE_MAX_MEAT = { 100.0, 0.1, 100000.0 };
 extern TweakableFloatSetting CREATURE_MAX_LIFE = { 1.0, 0.1, 10.0 };
 
 extern TweakableFloatSetting CREATURE_ENERGY_TO_MEAT_CONVERSION_RATE = { 0.085, 0.0, 1.0 };
@@ -296,7 +296,7 @@ extern TweakableFloatSetting CREATURE_LIFE_DRAIN_ON_NO_ENERGY = { 0.0025, 0.0, 1
 extern TweakableFloatSetting CREATURE_ENERGY_DRAIN_CONSTANT = { 0.0001, 0.0, 1.0 }; // Consider meat to energy conversion rate
 
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_ENERGY = { 2.0, 0.0, 10.0 };
-extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 10.0, 0.0, 10.0 };
+extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_MEAT = { 100.0, 0.0, 100000.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_LIFE = { 1.0, 0.0, 10.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_RADIUS = { 0.4, 0.0, 10.0 };
 extern TweakableFloatSetting SIMULATION_FIRSTGEN_CREATURE_INITIAL_HARDNESS = { 0.0, 0.0, 10.0 };
@@ -331,9 +331,10 @@ extern TweakableFloatSetting CREATURE_DEVICE_SPIKE_VERSUS_MEAT_EFFECTIVENESS = {
 extern TweakableFloatSetting CREATURE_DEVICE_SHIELD_EFFECTIVENESS = { 1.0, 0.0, 1.0 };
 
 
-extern TweakableFloatSetting CREATURE_MEAT_PRIORITY_BEST_MATCH_ENERGY_MULTIPLIER = { 1.0, -1.0, 1.0 };
-extern TweakableFloatSetting CREATURE_MEAT_PRIORITY_WORST_MATCH_ENERGY_MULTIPLIER = { -0.5, -1.0, 1.0 };
-
+extern TweakableFloatSetting CREATURE_MEAT_CONSUMPTION_EFFECTIVENESS_MULTIPLIER_ON_PRIORITY_MATCH = { 1.0, -1.0, 1.0 };
+extern TweakableFloatSetting CREATURE_MEAT_CONSUMPTION_EFFECTIVENESS_MULTIPLIER_ON_PRIORITY_MISMATCH = { -0.5, -1.0, 1.0 };
+extern TweakableFloatSetting CREATURE_MEAT_CONSUMPTION_EFFECTIVENESS_EXPONENT_ON_PRIORITY_MATCH = { 0.2, 0.0, 2.0 };
+extern TweakableFloatSetting CREATURE_MEAT_CONSUMPTION_EFFECTIVENESS_EXPONENT_ON_PRIORITY_MISMATCH = { 2.0, 0.0, 2.0 }; // Make sure this doesn't negate the value!
 
 extern TweakableFloatSetting CREATURE_FORWARD_MOVEMENT_EFFECTIVENESS = { 0.0004, 0.0, 1.0 };
 extern TweakableFloatSetting CREATURE_BACKWARD_MOVEMENT_EFFECTIVENESS = { 0.0001, 0.0, 1.0 };

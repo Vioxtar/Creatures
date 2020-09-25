@@ -632,8 +632,10 @@ void ProgramsSequence()
 	SetUniformFloat(programID, "uCreatureSpikeVersusLifeEffectiveness", CREATURE_DEVICE_SPIKE_VERSUS_LIFE_EFFECTIVENESS.value);
 	SetUniformFloat(programID, "uCreatureSpikeVersusMeatEffectiveness", CREATURE_DEVICE_SPIKE_VERSUS_MEAT_EFFECTIVENESS.value);
 	SetUniformFloat(programID, "uCreatureShieldEffectiveness", CREATURE_DEVICE_SHIELD_EFFECTIVENESS.value);
-	SetUniformFloat(programID, "uCreatureBestPriorityMatchEnergyMultiplier", CREATURE_MEAT_PRIORITY_BEST_MATCH_ENERGY_MULTIPLIER.value);
-	SetUniformFloat(programID, "uCreatureWorstPriorityMatchEnergyMultiplier", CREATURE_MEAT_PRIORITY_WORST_MATCH_ENERGY_MULTIPLIER.value);
+	SetUniformFloat(programID, "uCreatureMeatConsumptionEffectivenessMultiplierOnPriorityMatch", CREATURE_MEAT_CONSUMPTION_EFFECTIVENESS_MULTIPLIER_ON_PRIORITY_MATCH.value);
+	SetUniformFloat(programID, "uCreatureMeatConsumptionEffectivenessMultiplierOnPriorityMismatch", CREATURE_MEAT_CONSUMPTION_EFFECTIVENESS_MULTIPLIER_ON_PRIORITY_MISMATCH.value);
+	SetUniformFloat(programID, "uCreatureMeatConsumptionEffectivenessExponentOnPriorityMatch", CREATURE_MEAT_CONSUMPTION_EFFECTIVENESS_EXPONENT_ON_PRIORITY_MATCH.value);
+	SetUniformFloat(programID, "uCreatureMeatConsumptionEffectivenessExponentOnPriorityMismatch", CREATURE_MEAT_CONSUMPTION_EFFECTIVENESS_EXPONENT_ON_PRIORITY_MISMATCH.value);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, creature_CollidersCounts.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, creature_CollidersIndicesAndPlacements.bufferHandle);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, creature_CollidersToPosDirs.bufferHandle);
