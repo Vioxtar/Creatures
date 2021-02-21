@@ -443,7 +443,7 @@ public:
 		overlay_Halo = true;
 		overlay_ForwardDir = false;
 		overlay_RightDir = false;
-		overlay_Eye = true;
+		overlay_Eye = false;
 
 		// Get initial snapshot
 		UpdateCreatureData();

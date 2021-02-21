@@ -455,6 +455,7 @@ void SpawnOffspringCreature(unsigned int p1SSBO, unsigned p2SSBO)
 	GetCreatureAttributeBySSBOIndex(creature_SpikeLocalAngles, p1SSBO, &data.spikeLocalAngle);
 	GetCreatureAttributeBySSBOIndex(creature_FeederLocalAngles, p1SSBO, &data.feederLocalAngle);
 	GetCreatureAttributeBySSBOIndex(creature_ShieldLocalAngles, p1SSBO, &data.shieldLocalAngle);
+	GetCreatureAttributeBySSBOIndex(creature_MeatPriorities, p1SSBO, &data.meatPriority);
 
 	// Skin pattern
 	if (random() < CREATURE_MUTATION_BODY_JITTER_SKIN_PATTERN_CHANCE)
